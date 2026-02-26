@@ -122,10 +122,8 @@ def compute_roi(video_path):
     # fps = float(stream.average_rate)
     # fourcc = cv2.VideoWriter_fourcc(*"XVID")
     # out = cv2.VideoWriter("video/post_detection.avi", fourcc, fps, (width, height))
-
     # img = first_frame.to_ndarray(format="bgr24")
     # output = process_frame(img)
-    # #out.write(output)    
     # cv2.imshow("video", output)
     # cv2.waitKey(1)
     
@@ -135,20 +133,23 @@ def compute_roi(video_path):
     # loop su tutti gli altri frame
     for frame in container.decode(stream):
         img = frame.to_ndarray(format="bgr24")
+        # out.write(output)    
+
 
         # tempo reale del frame
         t = float(frame.pts * frame.time_base)
 
         # ---- CV ----
-        output = process_frame(img)
-        #out.write(output)
+        process_frame(img)
+        
 
         # sincronizzazione vera
         while time.perf_counter() - start < t:
             time.sleep(0.001)
 
         # mostrare il frame processato
-        cv2.imshow("video", output)
+        cv2.imshow("video", img)
+        break
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
