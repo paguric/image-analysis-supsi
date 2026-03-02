@@ -26,8 +26,3 @@ def check_frames_number(video_paths):
 
     return first_video == second_video
    
-        
-
-video_paths = [r"video\\prima.avi", r"video\\dopo.avi"]
-
-print(f"Does the two vides have the same lenght? {check_frames_number(video_paths)}")

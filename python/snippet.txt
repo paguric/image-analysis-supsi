@@ -1,0 +1,12 @@
+grayA = cv2.cvtColor(frameA, cv2.COLOR_BGR2GRAY)
+grayB = cv2.cvtColor(frameB, cv2.COLOR_BGR2GRAY)
+
+# allineamento
+cc, warp_matrix = cv2.findTransformECC(...)
+aligned_B = cv2.warpAffine(...)
+
+# differenza
+diff = cv2.absdiff(grayA, aligned_B)
+
+# threshold per evidenziare cambiamenti reali
+_, mask = cv2.threshold(diff, 30, 255, cv2.THRESH_BINARY)
