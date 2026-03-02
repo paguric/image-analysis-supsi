@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import video_reading
 from app import roi_identification
+from app import contour_detection
 from app import canny_contour_detection_roi
 
 app = FastAPI()
@@ -30,7 +31,11 @@ def main():
     #roi_identification.compute_roi(video_to_analyze_path)
 
     # <-- CONTOUR DETECTION -->
-    canny_contour_detection_roi.canny_contour_detection(video_to_analyze_path)
+    #rm -rf video/threshold_test/*
+    contour_detection.threshold_test(video_to_analyze_path)
+
+    # <-- CANNY CONTOUR DETECTION -->
+    #canny_contour_detection_roi.canny_contour_detection(video_to_analyze_path)
 
 if __name__ == "__main__":
     main()
