@@ -1,3 +1,8 @@
+# Backend Tests
+backend/video/brightness_test/
+backend/video/contrast_test/
+backend/video/threshold_test/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
