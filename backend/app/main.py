@@ -31,9 +31,15 @@ def main():
     # <-- EDGE DETECTION -->
     #roi_identification.compute_roi(video_to_analyze_path)
 
-    # <-- CONTOUR DETECTION -->
+    # preprocessing
     #rm -rf video/threshold_test/*
-    preprocessing.threshold_test(video_to_analyze_path)
+    #rm -rf video/brightness_test/*
+    #rm -rf video/contrast_test/*
+    #preprocessing.threshold_test(video_to_analyze_path)
+    #preprocessing.brightness_test(video_to_analyze_path)
+    preprocessing.contrast_test(video_to_analyze_path)
+
+    # <-- CONTOUR DETECTION -->
 
     # <-- CANNY CONTOUR DETECTION -->
     #canny_contour_detection_roi.canny_contour_detection(video_to_analyze_path)
