@@ -5,7 +5,7 @@ from app import video_reading
 from app import roi_identification
 from app import contour_detection
 from app import canny_contour_detection_roi
-from app import threshold
+from app import preprocessing
 
 app = FastAPI()
 
@@ -33,7 +33,7 @@ def main():
 
     # <-- CONTOUR DETECTION -->
     #rm -rf video/threshold_test/*
-    threshold.threshold_test(video_to_analyze_path)
+    preprocessing.threshold_test(video_to_analyze_path)
 
     # <-- CANNY CONTOUR DETECTION -->
     #canny_contour_detection_roi.canny_contour_detection(video_to_analyze_path)

@@ -32,3 +32,11 @@ def threshold_test(input_video_path):
         ret, thresh = cv2.threshold(img_gray, i, 255, cv2.THRESH_BINARY)
 
         cv2.imwrite(f'video/threshold_test/image_thres_{i}.jpg', thresh)
+
+
+def brightness_test(input_video_path):
+    print("todo")
+
+
+def contrast_test(input_video_path):
+    print("todo")
