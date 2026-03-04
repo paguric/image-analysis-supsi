@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+import cv2
+
 from app import video_reading
 from app import roi_identification
 from app import contour_detection
@@ -40,8 +42,13 @@ def main():
     #preprocessing.brightness_test(video_dopo_path)
     #preprocessing.contrast_test(video_dopo_path)
 
-    preprocessing.extract_frame(video_prima_path, f"video_prima_{i}")
-    preprocessing.extract_frame(video_dopo_path, f"video_dopo_{i}")
+    i = 100
+
+    frame = preprocessing.extract_frame(video_prima_path, i)
+    cv2.imwrite(f'out/prima_frame_100.jpg', frame)
+
+    frame = preprocessing.extract_frame(video_dopo_path, i)
+    cv2.imwrite(f'out/dopo_frame_100.jpg', frame)
 
     # <-- CONTOUR DETECTION -->
 
