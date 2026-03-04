@@ -4,6 +4,27 @@ import numpy as np
 import os
 from PIL import Image
 
+def extract_frame(video_path: str, frame_idx: int) -> np.ndarray | None:
+    """
+    Extracts a single frame from a video by index.
+    Returns the frame as a BGR numpy array, or None if extraction fails.
+    """
+
+    # open video
+    container = av.open(video_path)
+    stream = container.streams.video[0]
+
+    if frame_idx >= stream.frames or frame_idx < 0:
+        return None
+
+    container.seek(frame_idx, stream=stream)
+    av_frame = next(container.decode(stream))
+
+    # PyAV -> OpenCV
+    frame = av_frame.to_ndarray(format="bgr24")
+    
+    return frame
+
 def threshold_test(input_video_path):
     """
     Applica un threshold da 0 a 254 sul frame "medio" (tot. frame / 2) del video
@@ -14,16 +35,12 @@ def threshold_test(input_video_path):
     # open video
     container = av.open(input_video_path)
     stream = container.streams.video[0]
-
     total_frames = stream.frames
     # if stream.frames returns 0 (not always populated), we can calculate total frames manually
     #total_frames = int(stream.duration * stream.time_base * stream.average_rate)
     middle_frame_idx = total_frames // 2
-    container.seek(middle_frame_idx, stream=stream)
-    frame = next(container.decode(stream))
 
-    # PyAV -> OpenCV
-    frame = frame.to_ndarray(format="bgr24")
+    frame = extract_frame(input_video_path, middle_frame_idx)
     cv2.imwrite(f'video/threshold_test/initial_image.jpg', frame)
 
     # convert the image to grayscale format
@@ -53,10 +70,7 @@ def brightness_test(input_video_path):
     total_frames = stream.frames
     middle_frame_idx = total_frames // 2
 
-    container.seek(middle_frame_idx, stream=stream)
-    frame = next(container.decode(stream))
-    frame = frame.to_ndarray(format="bgr24")
-
+    frame = extract_frame(input_video_path, middle_frame_idx)
     cv2.imwrite('video/brightness_test/initial_image.jpg', frame)
 
     for i in range(-127, 128):  # da -127 a +127 inclusi
@@ -81,10 +95,7 @@ def contrast_test(input_video_path):
     total_frames = stream.frames
     middle_frame_idx = total_frames // 2
 
-    container.seek(middle_frame_idx, stream=stream)
-    frame = next(container.decode(stream))
-    frame = frame.to_ndarray(format="bgr24")
-
+    frame = extract_frame(input_video_path, middle_frame_idx)
     cv2.imwrite('video/contrast_test/initial_image.jpg', frame)
 
     # np.arange con float: da 0.0 a 3.0 con step 0.01 → 301 valori
