@@ -1,7 +1,19 @@
 import cv2
 import av
 import time
+import numpy as np
+#from matplotlib import pyplot as plt
 
+def simple_canny_test(video_path: str,) -> np.ndarray | None:
+    """
+    Applica canny sul frame "medio" (tot. frame / 2) del video
+    con valori di T_lower e T_upper da 50 a 150
+    Output in video/simple_canny_test
+    """
+
+    edges = cv2.Canny(img,100,200)
+
+    return 1
 
 def time_convert(seconds):
     mins = seconds // 60
