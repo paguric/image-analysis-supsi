@@ -35,7 +35,7 @@ def main():
 
     # utils
     i, brightness = cv2_utils.brightest_frame(video_prima_path)
-    print(f"Brightest frame: {index}, brightness: {brightness:.2f}")
+    print(f"Brightest frame: {i}, brightness: {brightness:.2f}")
     frame = cv2_utils.extract_frame(video_prima_path, i)
     cv2.imwrite(f'out/prima_fl_{i}.jpg', frame)
 
@@ -50,7 +50,7 @@ def main():
     #canny_contour_detection_roi.canny_contour_detection(video_dopo_path)
 
     # WATERSHED CONTOUR DETECTION
-    watershed.watershed_test(video_prima_path, 100)
+    watershed.watershed_test(video_prima_path, i)
 
 if __name__ == "__main__":
     main()
