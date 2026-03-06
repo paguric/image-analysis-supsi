@@ -1,7 +1,7 @@
 import cv2
 import av
 import numpy as np
-
+from matplotlib import pyplot as plt
 
 def extract_frame(video_path: str, frame_idx: int) -> np.ndarray | None:
     """
@@ -52,3 +52,11 @@ def brightest_frame(video_path: str) -> tuple[int, float]:
 
     container.close()
     return brightest_index, max_brightness
+
+
+def plot_histogram(frame: np.ndarray):
+    """
+    Mostra il frame e il suo relativo istogramma con Matplotlib
+    """
+    assert frame is not None, "frame could not be read"
+    plt.hist(frame.ravel(),256,[0,256]); plt.show()

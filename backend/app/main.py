@@ -39,6 +39,8 @@ def main():
     frame = cv2_utils.extract_frame(video_prima_path, i)
     cv2.imwrite(f'out/prima_fl_{i}.jpg', frame)
 
+    cv2_utils.plot_histogram(frame)
+
     # preprocessing
     
     # <-- EDGE DETECTION -->
