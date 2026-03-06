@@ -25,9 +25,9 @@ def extract_frame(video_path: str, frame_idx: int) -> np.ndarray | None:
     return frame
 
 
-def brightest_frame(video_path: str) -> int:
+def brightest_frame(video_path: str) -> tuple[int, float]:
     """
-    Trova l'indice del frame più luminoso in un video in scala di grigi
+    Trova l'indice e la luminositò del frame più luminoso
     """
 
     brightest_index = 0
@@ -51,4 +51,4 @@ def brightest_frame(video_path: str) -> int:
             brightest_index = i
 
     container.close()
-    return brightest_index
+    return brightest_index, max_brightness

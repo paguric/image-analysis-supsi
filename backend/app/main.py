@@ -34,7 +34,8 @@ def main():
     video_prima_path = "video/prima.avi"
 
     # utils
-    i = cv2_utils.brightest_frame(video_prima_path)
+    i, brightness = cv2_utils.brightest_frame(video_prima_path)
+    print(f"Brightest frame: {index}, brightness: {brightness:.2f}")
     frame = cv2_utils.extract_frame(video_prima_path, i)
     cv2.imwrite(f'out/prima_fl_{i}.jpg', frame)
 
