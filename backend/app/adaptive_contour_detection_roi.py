@@ -2,6 +2,11 @@ import cv2
 import av
 import time
 
+"""
+DOVREBBE SOLAMENTE ESSERE UN TENTATIVO DI RENDERE PIU' SMART IL PRIMO CODICE DELLA CONTOUR DETECTION MA L'HO RUNNATO
+E FA ABBASTANZA PENA
+"""
+
 # -------------------------------
 # Utility: stampa durata
 # -------------------------------
@@ -13,7 +18,7 @@ def time_convert(seconds):
 # -------------------------------
 # Apertura video
 # -------------------------------
-container = av.open("video\\dopo.avi")
+container = av.open(R"../video/dopo.avi")
 stream = container.streams.video[0]
 
 start_perf = time.perf_counter()

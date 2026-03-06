@@ -4,6 +4,12 @@ import time
 import numpy as np
 #from matplotlib import pyplot as plt
 
+
+"""
+QUESTO E' IL CODICE CHE PERMETTE LA MIGLIOR CONTOUR DETECTION
+
+"""
+
 def simple_canny_test(video_path: str,) -> np.ndarray | None:
     """
     Applica canny sul frame "medio" (tot. frame / 2) del video

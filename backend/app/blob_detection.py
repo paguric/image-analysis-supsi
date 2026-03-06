@@ -5,6 +5,12 @@ import time
 # import numpy as np
 # import aspose.pycore as aspycore
 
+"""
+QUESTO CODICE FA LA BLOB DETECTION CHE HO MESSO SU OVERLEAF, MA FA UN PO' SCHIFO
+
+
+"""
+
 
 
 # ============================================================
@@ -53,7 +59,7 @@ import time
 # APERTURA VIDEO
 # ============================================================
 
-container = av.open("video\\dopo.avi")
+container = av.open("../video/dopo.avi")
 stream = container.streams.video[0]
 
 start = time.perf_counter()

@@ -3,6 +3,11 @@ import cv2
 import time
 import numpy as np
 
+
+"""
+CODICE PRESO DA: https://www.geeksforgeeks.org/python/real-time-edge-detection-using-opencv-python/ E POI ADATTATO 
+"""
+
 # ------------------------------
 # Global variables
 # ------------------------------
