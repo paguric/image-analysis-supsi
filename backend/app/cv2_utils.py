@@ -2,6 +2,7 @@ import cv2
 import av
 import numpy as np
 
+
 def extract_frame(video_path: str, frame_idx: int) -> np.ndarray | None:
     """
     Extracts a single frame from a video by index.
@@ -22,3 +23,32 @@ def extract_frame(video_path: str, frame_idx: int) -> np.ndarray | None:
     frame = av_frame.to_ndarray(format="bgr24")
     
     return frame
+
+
+def brightest_frame(video_path: str) -> int:
+    """
+    Trova l'indice del frame più luminoso in un video in scala di grigi
+    """
+
+    brightest_index = 0
+    max_brightness = -1
+    
+    # open video
+    container = av.open(video_path)
+    stream = container.streams.video[0]
+
+    for i, frame in enumerate(container.decode(stream)):
+        # PyAV -> OpenCV
+        frame = frame.to_ndarray(format="bgr24")
+        # convert the image to grayscale format
+        img_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        # calculate mean brightness of the frame
+        brightness = img_gray.mean()
+
+        if brightness > max_brightness:
+            max_brightness = brightness
+            brightest_index = i
+
+    container.close()
+    return brightest_index
