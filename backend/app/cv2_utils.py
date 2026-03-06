@@ -54,7 +54,7 @@ def brightest_frame(video_path: str) -> tuple[int, float]:
     return brightest_index, max_brightness
 
 
-def plot_histogram(frame: np.ndarray, bool = False, normalized: bool = False):
+def plot_histogram(frame: np.ndarray, log_scale: bool = False, normalized: bool = False):
     """
     Mostra il frame e a fianco il suo relativo istogramma con Matplotlib
     È possibile attivare la visualizzazione in scala logaritmica e/o con valori normalizzati (da 0.0 a 1.0)
