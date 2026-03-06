@@ -10,6 +10,7 @@ def min_max_norm(frame: np.ndarray) -> np.ndarray | None:
     """
     return cv2.normalize(frame, None, 0, 255, cv2.NORM_MINMAX)
 
+
 def histogram_equalization(frame: np.ndarray) -> np.ndarray | None:
     """
     Immagina l'istogramma come un grafico che mostra quanti pixel ci sono per ogni tonalità (da nero a bianco):
@@ -24,3 +25,14 @@ def histogram_equalization(frame: np.ndarray) -> np.ndarray | None:
     # convert the image to grayscale format
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     return cv2.equalizeHist(frame)
+
+
+def clahe(frame: np.ndarray, clipLimit: float = 2.0, tileGridSize: tuple = (8,8)) -> np.ndarray | None:
+    """
+    La CLAHE (Contrast Limited Adaptive Histogram Equalization) è l'evoluzione "intelligente" dell'equalizzazione standard
+    Mentre l'equalizzazione normale guarda l'intera immagine (globale), la CLAHE lavora su piccole porzioni locali
+    """
+    # convert the image to grayscale format
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    clahe = cv2.createCLAHE(clipLimit, tileGridSize)
+    return clahe.apply(frame)
