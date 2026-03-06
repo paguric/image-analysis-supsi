@@ -37,6 +37,8 @@ def threshold_test(input_video_path):
 
         cv2.imwrite(f'video/threshold_test/image_thres_{i}.jpg', thresh)
 
+    container.close()
+
 
 def brightness_test(input_video_path):
     """
@@ -60,6 +62,8 @@ def brightness_test(input_video_path):
     for i in range(-127, 128):  # da -127 a +127 inclusi
         bright = cv2.convertScaleAbs(frame, alpha=1, beta=i)
         cv2.imwrite(f'video/brightness_test/image_bright_{i}.jpg', bright)
+
+    container.close()
 
 
 def contrast_test(input_video_path):
@@ -88,3 +92,5 @@ def contrast_test(input_video_path):
         # sostituiamo il punto con underscore nel nome file
         alpha_str = f"{alpha:.2f}".replace('.', '_')
         cv2.imwrite(f'video/contrast_test/image_contrast_{alpha_str}.jpg', contrasted)
+
+    container.close()
