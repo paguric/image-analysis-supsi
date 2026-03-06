@@ -21,9 +21,6 @@ def watershed_test(img: np.ndarray) -> np.ndarray | None:
     # convert the image to grayscale format
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-    # find an approximate estimate of the ROIs with Otsu's binarization
-    ret, thresh = cv2.threshold(gray,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-
     ret, thresh = cv2.threshold(gray, 42, 255, cv2.THRESH_BINARY)
     
     # DEBUG
