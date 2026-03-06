@@ -1,6 +1,31 @@
 import cv2
 import numpy as np
 
+"""
+Autore: Lapo
+
+Ho usato questo file per testare brevemente:
+  - Image Registration (allineamento)
+  - Mappa differenziale
+
+Lo lascio in questo stato "grezzo" perchè ancora dobbiamo definir
+se allineamento e mappa differenziale possono tornarci utili
+
+Link al codice usato per Image Registration
+> https://www.geeksforgeeks.org/python/image-registration-using-opencv-python/
+
+Link al codice usato per mappa differenziale
+> https://nulldog.com/opencv-image-difference-detection-and-visualization
+
+Input:
+  - out/dopo_frame_100.jpg
+  - out/prima_frame_100.jpg
+
+Output:
+- out/diff.jpg
+- out/gray1.jpg
+"""
+
 # Load the two images
 image1 = cv2.imread("out/dopo_frame_100.jpg")
 image2 = cv2.imread("out/prima_frame_100.jpg")
@@ -57,24 +82,3 @@ diff = cv2.absdiff(gray1, gray2)
 cv2.imwrite(f'out/diff.jpg', diff)
 cv2.imwrite(f'out/gray1.jpg', gray1)
 cv2.imwrite(f'out/gray2.jpg', gray2)
-
-
-"""
-# Apply thresholding to the difference image
-thresh = cv2.threshold(diff, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
-
-# Find contours in the thresholded image
-cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-cnts = cnts[0] if len(cnts) == 2 else cnts[1]
-
-# Loop over the contours and draw bounding boxes around the differences
-for c in cnts:
-    x, y, w, h = cv2.boundingRect(c)
-    cv2.rectangle(image1, (x, y), (x + w, y + h), (0, 0, 255), 2)
-    cv2.rectangle(image2, (x, y), (x + w, y + h), (0, 0, 255), 2)
-
-# Save the images with highlighted differences
-#cv2.imshow("Image 1", image1)
-#cv2.imshow("Image 2", image2)
-#cv2.waitKey(0)
-"""
