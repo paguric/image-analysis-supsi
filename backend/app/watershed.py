@@ -4,27 +4,28 @@ import numpy as np
 import os
 from app import cv2_utils
 
-def watershed_test(input_video_path: str, i: int):
+def watershed_test(img: np.ndarray) -> np.ndarray | None:
     """
-    Applica watershed sul frame i-esimo del video
+    Applica watershed sull'immagine
     Output in out/watershed_test
-    src: https://docs.opencv.org/4.x/d3/db4/tutorial_py_watershed.html
+    src: https://docs.opencv2.org/4.x/d3/db4/tutorial_py_watershed.html
     chat: https://claude.ai/share/431e4b0b-53b2-494f-8c1c-1890db47d846
     """
     os.makedirs('out/watershed_test', exist_ok=True)
 
-    # open video
-    container = av.open(input_video_path)
-    stream = container.streams.video[0]
-
-    frame = cv2_utils.extract_frame(input_video_path, i)
-
+    # If image is grayscale, convert to BGR
+    # cv2.watershed (at the end of this function) requires a 3-channel image
+    if len(img.shape) == 2 or img.shape[2] == 1:
+        img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+    
     # convert the image to grayscale format
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     # find an approximate estimate of the ROIs with Otsu's binarization
     ret, thresh = cv2.threshold(gray,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
 
+    ret, thresh = cv2.threshold(gray, 42, 255, cv2.THRESH_BINARY)
+    
     # DEBUG
     cv2.imwrite(f'out/watershed_test/step_1.jpg', thresh)
 
@@ -56,8 +57,9 @@ def watershed_test(input_video_path: str, i: int):
     # Now, mark the region of unknown with zero
     markers[unknown==255] = 0
 
-    markers = cv2.watershed(frame,markers)
-    frame[markers == -1] = [255,0,0]
+    markers = cv2.watershed(img,markers)
+    img[markers == -1] = [255,0,0]
 
     # DEBUG
-    cv2.imwrite(f'out/watershed_test/step_4.jpg', frame)
+    cv2.imwrite(f'out/watershed_test/step_4.jpg', img)
+    return img
