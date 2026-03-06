@@ -5,6 +5,10 @@ import os
 from PIL import Image
 from app import cv2_utils
 
+#rm -rf video/threshold_test/*
+#rm -rf video/brightness_test/*
+#rm -rf video/contrast_test/*
+
 def threshold_test(input_video_path):
     """
     Applica un threshold da 0 a 254 sul frame "medio" (tot. frame / 2) del video
