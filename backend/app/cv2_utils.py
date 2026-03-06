@@ -57,6 +57,7 @@ def brightest_frame(video_path: str) -> tuple[int, float]:
 def plot_histogram(frame: np.ndarray):
     """
     Mostra il frame e il suo relativo istogramma con Matplotlib
+    src: https://docs.opencv.org/4.x/d1/db7/tutorial_py_histogram_begins.html
     """
     assert frame is not None, "frame could not be read"
     plt.hist(frame.ravel(),256,[0,256]); plt.yscale('log'); plt.show()
