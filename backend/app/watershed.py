@@ -21,6 +21,7 @@ def watershed_test(img: np.ndarray) -> np.ndarray | None:
     # convert the image to grayscale format
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
+    # ATTENZIONE - qua ho inserito un valore manualmente dopo vari test. Non è ideale ecco...
     ret, thresh = cv2.threshold(gray, 42, 255, cv2.THRESH_BINARY)
     
     # DEBUG
