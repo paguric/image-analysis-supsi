@@ -5,6 +5,7 @@ import cv2
 
 from app import preprocessing
 from app import cv2_utils
+from app import norm
 from app import video_reading
 from app import edge_detection
 from app import contour_detection
@@ -32,19 +33,8 @@ def main():
 
     video_dopo_path = "video/dopo.avi"
     video_prima_path = "video/prima.avi"
-
-    # utils
-    """i, brightness = cv2_utils.brightest_frame(video_prima_path)
-    print(f"Brightest frame: {i}, brightness: {brightness:.2f}")
-    frame = cv2_utils.extract_frame(video_prima_path, i)
-    cv2.imwrite(f'out/prima_fl_{i}.jpg', frame)"""
     
-    frame = cv2.imread("out/prima_fl_161.jpg")
-    cv2_utils.plot_histogram(frame)
-
-    # preprocessing
-    
-    # <-- EDGE DETECTION -->
+    # <-- EDGE DETECTION --> 
     #roi_identification.compute_roi(video_dopo_path)
 
     # <-- CONTOUR DETECTION -->
@@ -52,8 +42,12 @@ def main():
     # <-- CANNY CONTOUR DETECTION -->
     #canny_contour_detection_roi.canny_contour_detection(video_dopo_path)
 
-    # WATERSHED CONTOUR DETECTION
-    #watershed.watershed_test(video_prima_path, i)
+    # <-- WATERSHED CONTOUR DETECTION -->
+    img = cv2.imread("out/prima_fl_161.jpg")
+    img = norm.histogram_equalization(img)
+
+    os.makedirs('out/threshold_test', exist_ok=True)
+    watershed.watershed_test(img)
 
 if __name__ == "__main__":
     main()
