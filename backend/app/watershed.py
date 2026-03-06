@@ -6,7 +6,7 @@ from app import cv2_utils
 
 def watershed_test(input_video_path: str, i: int):
     """
-    Applica watershed sul frame iesimo
+    Applica watershed sul frame i-esimo del video
     Output in out/watershed_test
     src: https://docs.opencv.org/4.x/d3/db4/tutorial_py_watershed.html
     """
