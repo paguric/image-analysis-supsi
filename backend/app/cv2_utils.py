@@ -59,4 +59,4 @@ def plot_histogram(frame: np.ndarray):
     Mostra il frame e il suo relativo istogramma con Matplotlib
     """
     assert frame is not None, "frame could not be read"
-    plt.hist(frame.ravel(),256,[0,256]); plt.show()
+    plt.hist(frame.ravel(),256,[0,256]); plt.yscale('log'); plt.show()

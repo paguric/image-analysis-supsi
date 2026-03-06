@@ -34,11 +34,12 @@ def main():
     video_prima_path = "video/prima.avi"
 
     # utils
-    i, brightness = cv2_utils.brightest_frame(video_prima_path)
+    """i, brightness = cv2_utils.brightest_frame(video_prima_path)
     print(f"Brightest frame: {i}, brightness: {brightness:.2f}")
     frame = cv2_utils.extract_frame(video_prima_path, i)
-    cv2.imwrite(f'out/prima_fl_{i}.jpg', frame)
-
+    cv2.imwrite(f'out/prima_fl_{i}.jpg', frame)"""
+    
+    frame = cv2.imread("out/prima_fl_161.jpg")
     cv2_utils.plot_histogram(frame)
 
     # preprocessing
@@ -52,7 +53,7 @@ def main():
     #canny_contour_detection_roi.canny_contour_detection(video_dopo_path)
 
     # WATERSHED CONTOUR DETECTION
-    watershed.watershed_test(video_prima_path, i)
+    #watershed.watershed_test(video_prima_path, i)
 
 if __name__ == "__main__":
     main()
