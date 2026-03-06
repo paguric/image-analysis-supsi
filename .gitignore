@@ -1,7 +1,5 @@
-# Backend Tests
-backend/video/brightness_test/
-backend/video/contrast_test/
-backend/video/threshold_test/
+# Backend output
+backend/out/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
