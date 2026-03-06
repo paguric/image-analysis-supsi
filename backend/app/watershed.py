@@ -2,7 +2,7 @@ import cv2
 import av
 import numpy as np
 import os
-from app import preprocessing
+from app import cv2_utils
 
 def watershed_test(input_video_path: str, i: int):
     """
@@ -16,7 +16,7 @@ def watershed_test(input_video_path: str, i: int):
     container = av.open(input_video_path)
     stream = container.streams.video[0]
 
-    frame = preprocessing.extract_frame(input_video_path, i)
+    frame = cv2_utils.extract_frame(input_video_path, i)
 
     # convert the image to grayscale format
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
