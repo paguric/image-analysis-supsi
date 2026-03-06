@@ -47,7 +47,7 @@ def main():
     img = norm.histogram_equalization(img)
 
     os.makedirs('out/threshold_test', exist_ok=True)
-    watershed.watershed_test(img)
+    watershed.watershed_test(img, 42)
 
 if __name__ == "__main__":
     main()

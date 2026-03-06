@@ -4,7 +4,7 @@ import numpy as np
 import os
 from app import cv2_utils
 
-def watershed_test(img: np.ndarray) -> np.ndarray | None:
+def watershed_test(img: np.ndarray, threshold: int) -> np.ndarray | None:
     """
     Applica watershed sull'immagine
     Output in out/watershed_test
@@ -22,7 +22,7 @@ def watershed_test(img: np.ndarray) -> np.ndarray | None:
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     # ATTENZIONE - qua ho inserito un valore manualmente dopo vari test. Non è ideale ecco...
-    ret, thresh = cv2.threshold(gray, 42, 255, cv2.THRESH_BINARY)
+    ret, thresh = cv2.threshold(gray, threshold, 255, cv2.THRESH_BINARY)
     
     # DEBUG
     cv2.imwrite(f'out/watershed_test/step_1.jpg', thresh)
