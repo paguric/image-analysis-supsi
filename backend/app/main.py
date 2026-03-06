@@ -3,11 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import cv2
 
+from app import preprocessing
+from app import cv2_utils
 from app import video_reading
-from app import roi_identification
+from app import edge_detection
 from app import contour_detection
 from app import canny_contour_detection_roi
-from app import preprocessing
 from app import watershed
 
 app = FastAPI()
@@ -31,27 +32,16 @@ def main():
 
     video_dopo_path = "video/dopo.avi"
     video_prima_path = "video/prima.avi"
+
+    # utils
+    i = cv2_utils.brightest_frame(video_prima_path)
+    frame = cv2_utils.extract_frame(video_prima_path, i)
+    cv2.imwrite(f'out/prima_fl_{i}.jpg', frame)
+
+    # preprocessing
     
     # <-- EDGE DETECTION -->
     #roi_identification.compute_roi(video_dopo_path)
-
-    # preprocessing
-    """
-    #rm -rf video/threshold_test/*
-    #rm -rf video/brightness_test/*
-    #rm -rf video/contrast_test/*
-    #preprocessing.threshold_test(video_dopo_path)
-    #preprocessing.brightness_test(video_prima_path)
-    #preprocessing.contrast_test(video_prima_path)
-
-    i = 100
-
-    frame = preprocessing.extract_frame(video_prima_path, i)
-    cv2.imwrite(f'out/prima_frame_100.jpg', frame)
-
-    frame = preprocessing.extract_frame(video_dopo_path, i)
-    cv2.imwrite(f'out/dopo_frame_100.jpg', frame)
-    """
 
     # <-- CONTOUR DETECTION -->
 
