@@ -8,7 +8,7 @@ def watershed_test(img: np.ndarray, threshold: int) -> np.ndarray | None:
     """
     Applica watershed sull'immagine
     Output in out/watershed_test
-    src: https://docs.opencv2.org/4.x/d3/db4/tutorial_py_watershed.html
+    src: https://docs.opencv.org/4.x/d3/db4/tutorial_py_watershed.html
     chat: https://claude.ai/share/431e4b0b-53b2-494f-8c1c-1890db47d846
     """
     os.makedirs('out/watershed_test', exist_ok=True)
