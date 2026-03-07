@@ -3,12 +3,20 @@ import av
 import numpy as np
 from app import cv2_utils
 
-def min_max_norm(frame: np.ndarray) -> np.ndarray | None:
+def minmax_norm(img: np.ndarray, min_percentile: float = 0.0, max_percentile: float = 99.0):
     """
-    minmax prende il valore più basso presente nell'immagine e lo porta a 0, prende il più
-    alto e lo porta a 255, e distribuire proporzionalmente tutti gli altri valori nel mezzo
+    Minmax prende il valore più basso presente nell'immagine e lo porta a 0, prende il più
+    Alto e lo porta a 255, e distribuisce proporzionalmente tutti gli altri valori nel mezzo
+    Per migliorare la precisione, applichiamo qua percentile clipping (o percentile stretching)
     """
-    return cv2.normalize(frame, None, 0, 255, cv2.NORM_MINMAX)
+
+    low  = np.percentile(img, min_percentile)
+    high = np.percentile(img, max_percentile)
+
+    img_clipped = np.clip(img, low, high)
+    img_normalized = cv2.normalize(img_clipped, None, 0, 255, cv2.NORM_MINMAX)
+    
+    return img_normalized.astype(np.uint8)
 
 
 def histogram_equalization(frame: np.ndarray) -> np.ndarray | None:
