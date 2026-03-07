@@ -27,12 +27,18 @@ def histogram_equalization(frame: np.ndarray) -> np.ndarray | None:
     return cv2.equalizeHist(frame)
 
 
+
 def clahe(frame: np.ndarray, clipLimit: float = 2.0, tileGridSize: tuple = (8,8)) -> np.ndarray | None:
     """
-    La CLAHE (Contrast Limited Adaptive Histogram Equalization) è l'evoluzione "intelligente" dell'equalizzazione standard
-    Mentre l'equalizzazione normale guarda l'intera immagine (globale), la CLAHE lavora su piccole porzioni locali
+    La CLAHE (Contrast Limited Adaptive Histogram Equalization) è l'evoluzione "intelligente" dell'equalizzazione standard.
+    Lavora su piccole porzioni locali invece che sull'intera immagine.
+    
+    Se l'immagine è già in grayscale, non la converte.
     """
-    # convert the image to grayscale format
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    clahe = cv2.createCLAHE(clipLimit, tileGridSize)
-    return clahe.apply(frame)
+    # Controlla se l'immagine è già in grayscale (2 dimensioni)
+    if len(frame.shape) == 3 and frame.shape[2] == 3:
+        # Converti in grayscale solo se è un'immagine a colori
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    
+    clahe_obj = cv2.createCLAHE(clipLimit, tileGridSize)
+    return clahe_obj.apply(frame)
