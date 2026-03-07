@@ -1,265 +1,170 @@
 import cv2
-import av
-import time
 import numpy as np
+from app import cv2_utils
+from app import norm
 
-video_to_analyze_path = "../../video/dopo.avi"
+"""
+CHAT: https://chatgpt.com/share/69abfa77-7c6c-8013-a860-3c732e2b6a15
+CHAT: https://grok.com/share/bGVnYWN5_f4e97958-58eb-486d-8434-ebb476a30192
+"""
 
-# ─────────────────────────────────────────────
-# UTILITY
-# ─────────────────────────────────────────────
-
-def time_convert(seconds):
-    mins = seconds // 60
-    secs = seconds % 60
-    return f"{int(mins)}:{int(secs):02d}"
+video_to_analyze_path = "video/dopo.avi"
 
 
-def apply_clahe_gray(img):
-    clahe = cv2.createCLAHE(clipLimit=8.5, tileGridSize=(6, 6))
-    return clahe.apply(img)
+PARAMS = {
+    "bg_blur_size":          101,   # Kernel il filtro gaussiano (per rimozione sfondo)
+    "canny_low":             0,     # Soglia bassa di canny (con 0 va in modalità automatica)
+    "canny_high":            0,     # Soglia alta di canny (con 0 va in modalità automatica)
+    "bilateral_d":           5,     # Dimensione del kernel per applicazione filtro bilineare
+    "bilateral_sigma_color": 50,    # Quanto devono essere simili i colori dei pixel per essere mediati (da 0 a 255)
+    "bilateral_sigma_space": 1,     # Quanto devono essere vicini spazialmente dei pixel per essere mediati (da 0 a 15)
+    "morph_kernel_size":     3,     # Dimensione del kernel morfologico
+    "morph_iterations":      2,     # Quante volte applicare l'operazione morfologica
+    "min_area":              5000,  # Area minima in pixel per considerare un contorno valido
+    "min_circularity":       0.10,  # Soglia minima per accettare un cerchio
+}
 
 
-# ─────────────────────────────────────────────
-# ANALISI VIDEO
-# ─────────────────────────────────────────────
-
-def brightest_frame(video_path: str):
-
-    brightest_index = 0
-    max_brightness = -1
-
-    container = av.open(video_path)
-    stream = container.streams.video[0]
-
-    for i, frame in enumerate(container.decode(stream)):
-
-        img = frame.to_ndarray(format="bgr24")
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-        brightness = gray.mean()
-
-        if brightness > max_brightness:
-            max_brightness = brightness
-            brightest_index = i
-
-    container.close()
-
-    return brightest_index, max_brightness
-
-
-def extract_frame(video_path: str, frame_idx: int):
-
-    container = av.open(video_path)
-    stream = container.streams.video[0]
-
-    if frame_idx >= stream.frames or frame_idx < 0:
-        container.close()
-        return None
-
-    container.seek(frame_idx, stream=stream)
-    av_frame = next(container.decode(stream))
-    frame = av_frame.to_ndarray(format="bgr24")
-
-    container.close()
-
-    return frame
-
-
-# ─────────────────────────────────────────────
-# IMAGE PROCESSING
-# ─────────────────────────────────────────────
-
-def compute_contours(
-    img,
-    # ────────────────────────────────────────────────
-    #  Parametri principali che puoi modificare
-    # ────────────────────────────────────────────────
-    bg_blur_size=101,              # grandezza kernel sfocatura background (strano se < 51 o > 151)
-    canny_low=1,                  # soglia bassa Canny → più basso = più bordi (ma più rumore)
-    canny_high=120,                # soglia alta Canny → più alto = meno bordi deboli
-    bilateral_d=9,                 # diametro vicinato bilateral filter (5–15 tipicamente)
-    bilateral_sigma_color=30,      # quanto considerare differenza colore (più alto = più sfocatura)
-    bilateral_sigma_space=20,      # quanto considerare distanza spaziale
-    morph_kernel_size=7,           # dimensione kernel morfologico (3 o 5 più comune)
-    morph_iterations=2,            # quante volte applicare closing
-    min_area=200,                  # area minima in pixel per considerare un contorno valido
-    min_circularity=0.7,           # circolarità minima (1 = cerchio perfetto, 0.7 ≈ ellissi decenti)
-    draw_color=(0, 255, 0),        # colore contorni disegnati (BGR)
-    draw_thickness=2               # spessore linea contorno
-):
+def ensure_odd(v):
     """
-    Elabora un'immagine per rilevare cerchi / oggetti quasi circolari (es. cellule, particelle, bolle, pillole...)
-
-    Flusso principale:
-    1. Rimozione illuminazione non uniforme
-    2. Miglioramento contrasto locale (CLAHE)
-    3. Riduzione rumore preservando bordi (bilateral)
-    4. Edge detection robusta (Canny)
-    5. Chiusura morfologica per completare cerchi spezzati
-    6. Filtraggio contorni per forma (circolarità) e dimensione
-
-    Parametri consigliati per diversi contesti:
-
-    - Cellule al microscopio (luminosità irregolare) → bg_blur_size=81–121, min_area=150–500
-    - Pillole / compresse su nastro → bg_blur_size=61–91, canny_low=30, canny_high=100
-    - Particelle piccole rumorose → min_area più alto (400–800), min_circularity ≥ 0.75
-    - Immagini molto rumorose → bilateral_d=5–7, bilateral_sigma_color/space=40–60
+    Semplice controllo di disparità, OpenCV richiede che la dimensione del Kernel sia dispari
+    per funziona con Gaussian, Bilaterale e Morfologia
     """
-    # -------------------------------------------------------------------------
-    # 1. Conversione in scala di grigi
-    # -------------------------------------------------------------------------
+    v = max(1, int(v))
+    return v if v % 2 == 1 else v + 1
+
+
+
+def compute_contours(img, p):
+    bg_blur  = ensure_odd(p["bg_blur_size"])
+    morph_k  = ensure_odd(p["morph_kernel_size"])
+    min_circ = p["min_circularity"]
+
+    # passo ad una scala di grigi
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    
+    # applicando il filtro gaussiano posso sfocare l'immagine e stimare lo sfondo
+    # viene passta l'immagine, 
+    # la dimensione del kernel (ovvero la distanza da blurrare a partire da ogni pixel) 
+    # e la deviazione standard per 
+    # controllare il livello di blur (con 0 OpenCV sceglie in automatico)
+    background = cv2.GaussianBlur(gray, (bg_blur, bg_blur), 0)
 
-    # -------------------------------------------------------------------------
-    # 2. Rimozione background / correzione illuminazione non uniforme
-    #    (molto importante quando la luce non è omogenea)
-    # -------------------------------------------------------------------------
-    background = cv2.GaussianBlur(gray, (bg_blur_size, bg_blur_size), 0)
+    # rimuovo lo sfondo sottraendo all'immagine originale lo sfondo stimato 
     gray_no_bg = cv2.subtract(gray, background)
 
-    # -------------------------------------------------------------------------
-    # 3. Normalizzazione contrasto globale (porta valori tra 0–255)
-    # -------------------------------------------------------------------------
+    # la normalizzazione permette di enfatizzare le differenze tra i pixel chiari e quelli scuri (aumenta il contrasto)
     gray_norm = cv2.normalize(gray_no_bg, None, 0, 255, cv2.NORM_MINMAX)
 
-    # -------------------------------------------------------------------------
-    # 4. Miglioramento contrasto locale (CLAHE)
-    #    → molto utile dopo la sottrazione del background
-    # -------------------------------------------------------------------------
-    gray_enhanced = apply_clahe_gray(gray_norm)   # assumo tu abbia già questa funzione
+    # viene passata alla funzione l'immagine con l'attuale livello di processamento, 
+    # il cliplimit (ovvero di quanto il constrasto locale di ogni tile può essere aumentato)
+    # e il tileGridSize (ovvero la suddivisione in celle dell'immagine)
+    gray_enh = norm.clahe(gray_norm, 3.0, (8,8))
 
-    # -------------------------------------------------------------------------
-    # 5. Filtro bilaterale → rumore via, bordi preservati
-    # -------------------------------------------------------------------------
+    # questo tipo di filtraggio permette una maggiore precisione perchè 
+    # oltre a prendere in considerazione la distanza da blurrare a partire 
+    # da ogni pixel guarda anche il contributo che il colore 
+    # e la distanza spaziale portano alla media dei pixel
     blurred = cv2.bilateralFilter(
-        gray_enhanced,
-        d=bilateral_d,
-        sigmaColor=bilateral_sigma_color,
-        sigmaSpace=bilateral_sigma_space
+        gray_enh,
+        d=int(p["bilateral_d"]),
+        sigmaColor=p["bilateral_sigma_color"],
+        sigmaSpace=p["bilateral_sigma_space"]
     )
 
-    # -------------------------------------------------------------------------
-    # 6. Edge detection con Canny
-    #    Valori bassi → rileva anche bordi deboli (ma più falsi positivi)
-    #    Valori alti  → solo bordi forti (ma può spezzare cerchi)
-    # -------------------------------------------------------------------------
-    edges = cv2.Canny(blurred, canny_low, canny_high)
 
-    # -------------------------------------------------------------------------
-    # 7. Operazione morfologica di chiusura
-    #    Serve a collegare bordi interrotti (cerchi incompleti)
-    # -------------------------------------------------------------------------
-    kernel = np.ones((morph_kernel_size, morph_kernel_size), np.uint8)
-    edges_closed = cv2.morphologyEx(
-        edges,
-        cv2.MORPH_CLOSE,
-        kernel,
-        iterations=morph_iterations
-    )
+    # Passiamo a Canny un'immagine già preprocessata.
+    # Internamente, Canny utilizza operatori (es. Sobel) per calcolare 
+    # la derivata verticale e orizzontale di ogni pixel, identificando
+    # i potenziali bordi dove ci sono cambiamenti rapidi di intensità.
+    # Vengono considerati solo i picchi locali del gradiente (Non-Maximum Suppression).
+    # Per decidere effettivamente quali pixel sono bordi, si utilizzano i parametri
+    # low e high:
+    # - gradiente > high -> bordo sicuro
+    # - gradiente < low -> scartato
+    # - gradiente tra low e high -> diventa bordo solo se connesso a un pixel sicuro
+    # Canny restituisce un'immagine binaria con i bordi identificati
+    edges = cv2.Canny(blurred, p["canny_low"], p["canny_high"])
 
-    # -------------------------------------------------------------------------
-    # 8. Ricerca contorni (solo esterni – più pulito)
-    # -------------------------------------------------------------------------
-    contours, _ = cv2.findContours(
-        edges_closed,
-        cv2.RETR_EXTERNAL,
-        cv2.CHAIN_APPROX_SIMPLE
-    )
 
-    # -------------------------------------------------------------------------
-    # 9. Output + disegno contorni filtrati
-    # -------------------------------------------------------------------------
-    output = img.copy()
+    # Definisco un kernel per l'operazione morfologica, mi permette di 
+    # esplicitare la distanza di azione dell'operazione morfologica 
+    # rispetto ad un pixel.
+    kernel = np.ones((morph_k, morph_k), np.uint8)
 
+    # L'operazione morfologica (MORPH_CLOSE) mi permette di chiudere i bordi che sono stati 
+    # trovati da Canny. Per prima cosa effettua una "dilation", i pixel bianchi vengono espansi
+    # (quindi parte del bordo), la distanza di applicazione
+    # dell'operazione è sempre definita dalla dimensione del kernel; in secondo luogo viene 
+    # applicata una "erosion", dato che la diltation potrebbe aver sporcato il bordo l'operazione
+    # di erosione serve proprio a rimuovere i pixel bianchi posti sull'esterno del bordo mantenendo 
+    # però connessi quelli che erano già uniti in precedenza
+    edges_closed = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel,
+                                    iterations=int(p["morph_iterations"]))
+    
+
+    # A partire dall'immagine binaria preprocessata con il closing, questa funzione trova i contorni.
+    # Restituisce una lista di coordinate (x,y) dei contorni esterni (cv2.RETR_EXTERNAL).
+    # L'opzione cv2.CHAIN_APPROX_SIMPLE approssima il contorno rimuovendo punti ridondanti lungo la curva.
+    contours, _ = cv2.findContours(edges_closed, cv2.RETR_EXTERNAL,
+                                   cv2.CHAIN_APPROX_SIMPLE)
+
+    output  = img.copy()
+    matched = 0
+
+    # Viene passata la lista dei contori degli oggetti identificati
     for cnt in contours:
+        # questo calcolo ritorna in pixel^2 la dimensione di ogni oggetto       
         area = cv2.contourArea(cnt)
+        # questo invece calcola la lunghezza del perimetro, closed=True significa che il 
+        # il punto iniziale e quello finale sono connessi 
         perimeter = cv2.arcLength(cnt, closed=True)
-
-        if perimeter < 1e-6:  # evita divisione per zero (contorni degeneri)
+        # controllo che permette di scartare contorni troppo piccoli
+        if perimeter < 1e-6:
             continue
+        # calcoliamo la circolatià per determinare quanto il contorno
+        # assomigli ad un cerchio
+        circularity = 4 * np.pi * area / (perimeter ** 2)
+        
+        # se circolarità ed area sono nei bound stabiliti, il bordo viene disegnato
+        if circularity >= min_circ and area >= p["min_area"]:
+            cv2.drawContours(output, [cnt], -1, (0, 255, 0), 2)
+            matched += 1
 
-        circularity = 4 * np.pi * area / (perimeter * perimeter)
-
-        # ─── Filtro finale ────────────────────────────────────────
-        if circularity >= min_circularity and area >= min_area:
-            cv2.drawContours(
-                output,
-                [cnt],
-                contourIdx=-1,
-                color=draw_color,
-                thickness=draw_thickness
-            )
-
-    return output
+    return output, matched, len(contours)
 
 
-# ─────────────────────────────────────────────
-# VISUALIZZAZIONE
-# ─────────────────────────────────────────────
 
-def show_frame_img(img):
-
-    cv2.namedWindow("img", cv2.WINDOW_NORMAL)
-    cv2.resizeWindow("img", 1400, 800)
-
-    cv2.imshow("img", img)
-
-    while True:
-        if cv2.waitKey(100) & 0xFF == ord('q'):
-            break
-
-    cv2.destroyAllWindows()
+def print_params(p, matched):
+    print("\n" + "─" * 50)
+    print(f"  Contorni validi rilevati: {matched}")
+    print("─" * 50)
+    for key, val in p.items():
+        print(f"  {key:<26} = {val}")
+    print("─" * 50)
 
 
-def play_video_with_contours():
 
-    container = av.open(video_to_analyze_path)
-    stream = container.streams.video[0]
+print("Caricamento frame più luminoso...")
+try:
+    brightest_f, brightness = cv2_utils.brightest_frame(video_to_analyze_path)
+    print(f"Frame più luminoso: {brightest_f}  (brightness: {brightness:.2f})")
+    source_img = cv2_utils.extract_frame(video_to_analyze_path, brightest_f)
+    if source_img is None:
+        raise RuntimeError("Frame non estratto")
+except Exception as e:
+    print(f"[ERRORE] {e}")
+    print("Carico immagine demo (noise)...")
+    source_img = np.random.randint(30, 80, (600, 800, 3), dtype=np.uint8)
 
-    cv2.namedWindow("video", cv2.WINDOW_NORMAL)
-    cv2.resizeWindow("video", 1400, 800)
+result_img, matched, total = compute_contours(source_img, PARAMS)
+print_params(PARAMS, matched)
+print(f"  Contorni totali trovati: {total}")
 
-    start_perf = time.perf_counter()
-    start_time = time.time()
+cv2.namedWindow("Contour Result", cv2.WINDOW_NORMAL)
+cv2.resizeWindow("Contour Result", 1200, 700)
+cv2.imshow("Contour Result", result_img)
+print("\nPremi un tasto per chiudere la finestra...")
+cv2.waitKey(0)
+cv2.destroyAllWindows()
 
-    for frame in container.decode(stream):
-
-        img = frame.to_ndarray(format="bgr24")
-        t = float(frame.pts * frame.time_base)
-
-        output = compute_contours(img)
-
-        while time.perf_counter() - start_perf < t:
-            time.sleep(0.001)
-
-        cv2.imshow("video", output)
-
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    print("Durata video:", time_convert(time.time() - start_time))
-
-    cv2.destroyAllWindows()
-    container.close()
-
-
-# ─────────────────────────────────────────────
-# MAIN
-# ─────────────────────────────────────────────
-
-brightest_f, brightness = brightest_frame(video_to_analyze_path)
-
-print(f"Frame più luminoso: {brightest_f} (brightness: {brightness:.2f})")
-
-img = extract_frame(video_to_analyze_path, brightest_f)
-
-if img is not None:
-
-    output = compute_contours(img)
-    show_frame_img(output)
-
-else:
-    print("Errore: frame non estratto")
-
-# play_video_with_contours()
