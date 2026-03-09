@@ -199,9 +199,6 @@ def compute_contours(
     return output, matched, len(contours), contour_map
 
 
-video_to_analyze_path = "video/dopo.avi"
-
-
 PARAMS = {
     "bg_blur_size":          101,   # Kernel il filtro gaussiano (per rimozione sfondo)
     "canny_low":             0,     # Soglia bassa di canny (con 0 va in modalità automatica)
@@ -225,21 +222,25 @@ def print_params(p, matched):
     print("─" * 50)
 
 
-print("Caricamento frame più luminoso...")
-try:
-    brightest_f, brightness = cv2_utils.brightest_frame(video_to_analyze_path)
-    print(f"Frame più luminoso: {brightest_f}  (brightness: {brightness:.2f})")
-    source_img = cv2_utils.extract_frame(video_to_analyze_path, brightest_f)
-    if source_img is None:
-        raise RuntimeError("Frame non estratto")
-except Exception as e:
-    print(f"[ERRORE] {e}")
-    print("Carico immagine demo (noise)...")
-    source_img = np.random.randint(30, 80, (600, 800, 3), dtype=np.uint8)
-
-result_img, matched, total, contour_map = compute_contours(source_img, PARAMS)
-print_params(PARAMS, matched)
+print("ANALISI VIDEO PRIMA...")
+video_path = "video/prima.avi"
+imgb_index, _= cv2_utils.brightest_frame(video_path)
+imgb_prima = cv2_utils.extract_frame(video_path, imgb_index)
+result_imgb_prima, matched, total, contour_map_prima = compute_contours(imgb_prima, PARAMS)
 print(f"  Contorni totali trovati: {total}")
+print_params(PARAMS, matched)
+print("--------------------\n\n")
+
+
+print("ANALISI VIDEO DOPO...")
+video_path = "video/dopo.avi"
+imgb_index, _= cv2_utils.brightest_frame(video_path)
+imgb_prima = cv2_utils.extract_frame(video_path, imgb_index)
+result_imgb_dopo, matched, total, contour_map_dopo = compute_contours(imgb_prima, PARAMS)
+print(f"  Contorni totali trovati: {total}")
+print_params(PARAMS, matched)
+print("--------------------")
+
 
 cv2.namedWindow("Contour Result", cv2.WINDOW_NORMAL)
 cv2.resizeWindow("Contour Result", 1200, 700)
@@ -247,4 +248,3 @@ cv2.imshow("Contour Result", result_img)
 print("\nPremi un tasto per chiudere la finestra...")
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-
