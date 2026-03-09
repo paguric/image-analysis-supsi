@@ -1,5 +1,7 @@
 import cv2
 import numpy as np
+from scipy.optimize import linear_sum_assignment
+
 from app import cv2_utils
 from app import norm
 
@@ -32,6 +34,39 @@ def ensure_odd(v):
     """
     v = max(1, int(v))
     return v if v % 2 == 1 else v + 1
+
+
+def match_contours_by_center(dict1, dict2):
+    centers1 = list(dict1.keys())
+    centers2 = list(dict2.keys())
+
+    n = len(centers1)
+
+    # matrice delle distanze
+    dist_matrix = np.zeros((n, n))
+
+    for i, (x1, y1) in enumerate(centers1):
+        for j, (x2, y2) in enumerate(centers2):
+            dist_matrix[i, j] = np.hypot(x1 - x2, y1 - y2)
+
+    # Hungarian algorithm
+    rows, cols = linear_sum_assignment(dist_matrix)
+
+    result1 = {}
+    result2 = {}
+
+    for idx, (r, c) in enumerate(zip(rows, cols)):
+        result1[idx] = {
+            "center": centers1[r],
+            "contour": dict1[centers1[r]]
+        }
+
+        result2[idx] = {
+            "center": centers2[c],
+            "contour": dict2[centers2[c]]
+        }
+
+    return result1, result2
 
 
 def compute_contours(
