@@ -113,8 +113,7 @@ def compute_contours(img, p):
     matched = 0
 
     # Viene passata la lista dei contori degli oggetti identificati
-    for cnt in contours:
-        # questo calcolo ritorna in pixel^2 la dimensione di ogni oggetto       
+    for cnt in contours:        # questo calcolo ritorna in pixel^2 la dimensione di ogni oggetto       
         area = cv2.contourArea(cnt)
         # questo invece calcola la lunghezza del perimetro, closed=True significa che il 
         # il punto iniziale e quello finale sono connessi 
@@ -146,6 +145,17 @@ def compute_contours(img, p):
 
                 # disegno bounding box (giallo)
                 cv2.rectangle(output, (x, y), (x + w, y + h), (0, 255, 255), 2)
+
+                # indice del contorno (in alto a sx della bounding box)
+                cv2.putText(
+                    output,
+                    str(matched),
+                    (x, y - 5),   # leggermente sopra la bounding box
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.6,
+                    (0, 255, 255),
+                    2
+                )
 
                 # centro geometrico
                 cx = x + w // 2
