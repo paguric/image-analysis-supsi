@@ -34,8 +34,14 @@ def ensure_odd(v):
     return v if v % 2 == 1 else v + 1
 
 
+def compute_contours(
+    img: np.ndarray,
+    p: dict[str, int | float]
+) -> tuple[np.ndarray, int, int, dict[tuple[int, int], np.ndarray]]:
+    
+    # Struttura dati per salvare come chiave la tupla x/y e come valore il contorno
+    contour_map = {}
 
-def compute_contours(img, p):
     bg_blur  = ensure_odd(p["bg_blur_size"])
     morph_k  = ensure_odd(p["morph_kernel_size"])
     min_circ = p["min_circularity"]
@@ -115,20 +121,51 @@ def compute_contours(img, p):
     # Viene passata la lista dei contori degli oggetti identificati
     for cnt in contours:        # questo calcolo ritorna in pixel^2 la dimensione di ogni oggetto       
         area = cv2.contourArea(cnt)
-        # questo invece calcola la lunghezza del perimetro, closed=True significa che il 
+
+        # Lunghezza del perimetro, closed=True significa che il 
         # il punto iniziale e quello finale sono connessi 
         perimeter = cv2.arcLength(cnt, closed=True)
-        # controllo che permette di scartare contorni troppo piccoli
+
+        # Scartiamo i contorni troppo piccoli
         if perimeter < 1e-6:
             continue
+
         # calcoliamo la circolatià per determinare quanto il contorno
         # assomigli ad un cerchio
         circularity = 4 * np.pi * area / (perimeter ** 2)
         
         # se circolarità ed area sono nei bound stabiliti, il bordo viene disegnato
         if circularity >= min_circ and area >= p["min_area"]:
+
             cv2.drawContours(output, [cnt], -1, (0, 255, 0), 2)
             matched += 1
+
+            # bounding box
+            x, y, w, h = cv2.boundingRect(cnt)
+
+            # disegno bounding box (giallo)
+            cv2.rectangle(output, (x, y), (x + w, y + h), (0, 255, 255), 2)
+
+            # indice del contorno (in alto a sx della bounding box)
+            cv2.putText(
+                output,
+                str(matched),
+                (x, y - 5),   # leggermente sopra la bounding box
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.6,
+                (0, 255, 255),
+                2
+            )
+
+            # centro geometrico
+            cx = x + w // 2
+            cy = y + h // 2
+
+            contour_map[(cx, cy)] = cnt
+
+            # disegno centro (blu)
+            cv2.circle(output, (cx, cy), 6, (255, 0, 0), -1)
+
 
             # calcolo momenti
             M = cv2.moments(cnt)
@@ -140,32 +177,7 @@ def compute_contours(img, p):
                 # disegno centro di massa
                 cv2.circle(output, (cx, cy), 6, (0, 0, 255), -1)
 
-                # bounding box
-                x, y, w, h = cv2.boundingRect(cnt)
-
-                # disegno bounding box (giallo)
-                cv2.rectangle(output, (x, y), (x + w, y + h), (0, 255, 255), 2)
-
-                # indice del contorno (in alto a sx della bounding box)
-                cv2.putText(
-                    output,
-                    str(matched),
-                    (x, y - 5),   # leggermente sopra la bounding box
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.6,
-                    (0, 255, 255),
-                    2
-                )
-
-                # centro geometrico
-                cx = x + w // 2
-                cy = y + h // 2
-
-                # disegno centro (blu)
-                cv2.circle(output, (cx, cy), 6, (255, 0, 0), -1)
-
-    return output, matched, len(contours)
-
+    return output, matched, len(contours), contour_map
 
 
 def print_params(p, matched):
@@ -190,7 +202,7 @@ except Exception as e:
     print("Carico immagine demo (noise)...")
     source_img = np.random.randint(30, 80, (600, 800, 3), dtype=np.uint8)
 
-result_img, matched, total = compute_contours(source_img, PARAMS)
+result_img, matched, total, contour_map = compute_contours(source_img, PARAMS)
 print_params(PARAMS, matched)
 print(f"  Contorni totali trovati: {total}")
 
