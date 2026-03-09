@@ -131,6 +131,29 @@ def compute_contours(img, p):
             cv2.drawContours(output, [cnt], -1, (0, 255, 0), 2)
             matched += 1
 
+            # calcolo momenti
+            M = cv2.moments(cnt)
+
+            if M["m00"] != 0:
+                cx = int(M["m10"] / M["m00"])
+                cy = int(M["m01"] / M["m00"])
+
+                # disegno centro di massa
+                cv2.circle(output, (cx, cy), 6, (0, 0, 255), -1)
+
+                # bounding box
+                x, y, w, h = cv2.boundingRect(cnt)
+
+                # disegno bounding box (giallo)
+                cv2.rectangle(output, (x, y), (x + w, y + h), (0, 255, 255), 2)
+
+                # centro geometrico
+                cx = x + w // 2
+                cy = y + h // 2
+
+                # disegno centro (blu)
+                cv2.circle(output, (cx, cy), 6, (255, 0, 0), -1)
+
     return output, matched, len(contours)
 
 
