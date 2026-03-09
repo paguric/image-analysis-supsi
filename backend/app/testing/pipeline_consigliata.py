@@ -10,22 +10,6 @@ CHAT: https://chatgpt.com/share/69abfa77-7c6c-8013-a860-3c732e2b6a15
 CHAT: https://grok.com/share/bGVnYWN5_f4e97958-58eb-486d-8434-ebb476a30192
 """
 
-video_to_analyze_path = "video/dopo.avi"
-
-
-PARAMS = {
-    "bg_blur_size":          101,   # Kernel il filtro gaussiano (per rimozione sfondo)
-    "canny_low":             0,     # Soglia bassa di canny (con 0 va in modalità automatica)
-    "canny_high":            0,     # Soglia alta di canny (con 0 va in modalità automatica)
-    "bilateral_d":           5,     # Dimensione del kernel per applicazione filtro bilineare
-    "bilateral_sigma_color": 50,    # Quanto devono essere simili i colori dei pixel per essere mediati (da 0 a 255)
-    "bilateral_sigma_space": 1,     # Quanto devono essere vicini spazialmente dei pixel per essere mediati (da 0 a 15)
-    "morph_kernel_size":     3,     # Dimensione del kernel morfologico
-    "morph_iterations":      2,     # Quante volte applicare l'operazione morfologica
-    "min_area":              5000,  # Area minima in pixel per considerare un contorno valido
-    "min_circularity":       0.10,  # Soglia minima per accettare un cerchio
-}
-
 
 def ensure_odd(v):
     """
@@ -215,6 +199,23 @@ def compute_contours(
     return output, matched, len(contours), contour_map
 
 
+video_to_analyze_path = "video/dopo.avi"
+
+
+PARAMS = {
+    "bg_blur_size":          101,   # Kernel il filtro gaussiano (per rimozione sfondo)
+    "canny_low":             0,     # Soglia bassa di canny (con 0 va in modalità automatica)
+    "canny_high":            0,     # Soglia alta di canny (con 0 va in modalità automatica)
+    "bilateral_d":           5,     # Dimensione del kernel per applicazione filtro bilineare
+    "bilateral_sigma_color": 50,    # Quanto devono essere simili i colori dei pixel per essere mediati (da 0 a 255)
+    "bilateral_sigma_space": 1,     # Quanto devono essere vicini spazialmente dei pixel per essere mediati (da 0 a 15)
+    "morph_kernel_size":     3,     # Dimensione del kernel morfologico
+    "morph_iterations":      2,     # Quante volte applicare l'operazione morfologica
+    "min_area":              5000,  # Area minima in pixel per considerare un contorno valido
+    "min_circularity":       0.10,  # Soglia minima per accettare un cerchio
+}
+
+
 def print_params(p, matched):
     print("\n" + "─" * 50)
     print(f"  Contorni validi rilevati: {matched}")
@@ -222,7 +223,6 @@ def print_params(p, matched):
     for key, val in p.items():
         print(f"  {key:<26} = {val}")
     print("─" * 50)
-
 
 
 print("Caricamento frame più luminoso...")
