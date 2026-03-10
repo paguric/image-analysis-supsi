@@ -77,12 +77,6 @@ def side_by_side(img_left, img_right):
     """Affianca due immagini orizzontalmente."""
     return np.hstack([img_left, img_right])
 
-def shift_contour_x(contour, offset):
-    """Sposta un contorno orizzontalmente (utile per canvas affiancati)."""
-    shifted = contour.copy()
-    shifted[:, :, 0] += offset
-    return shifted
-
 
 # ─────────────────────────────────────────────
 #  MATCHING DEI CONTORNI (Hungarian algorithm)
