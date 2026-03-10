@@ -215,11 +215,16 @@ def draw_matched_contours(
     output = img.copy()
 
     for idx in matched_left:
-        center_l = matched_left[idx]["center"]
-        center_r = matched_right[idx]["center"]
+        center_l, contour_l = matched_left[idx]["center"],  matched_left[idx]["contour"]
+        center_r, contour_r = matched_right[idx]["center"],  matched_right[idx]["contour"]
 
-        draw_circle(output, center=center_l, radius=10, color=BLUE)
-        draw_circle(output, center=center_r, radius=6,  color=RED)
+        x, y, w, h = cv2.boundingRect(contour_l)
+        draw_circle(output, center=center_l, radius=w//2, color=BLUE, filled=False)
+        draw_label(output, idx, (center_l[0] - h//2, center_l[1] - h//2), BLUE, 0.6, 2)
+
+        x, y, w, h = cv2.boundingRect(contour_r)
+        draw_circle(output, center=center_l, radius=w//2, color=RED, filled=False)
+        draw_label(output, idx, (center_l[0] + h//2, center_l[1] + h//2), RED, 0.6, 2)
 
     return output
 
