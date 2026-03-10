@@ -197,6 +197,22 @@ def draw_contours_on_image(img, contour_map):
     return output
 
 
+def draw_centers_on_image(img, contour_map1, contour_map2):
+    """
+    Disegna su una copia dell'immagine i centri di contour_map1 in rosso
+    e i centri di contour_map2 in blu
+    """
+    output = img.copy()
+
+    for i, (center, cnt) in enumerate(contour_map1.items(), start=1):
+        draw_circle(output, center, color=RED)   # centro geometrico (rosso)
+
+    for i, (center, cnt) in enumerate(contour_map2.items(), start=1):
+        draw_circle(output, center, color=BLUE)   # centro geometrico (blu)
+
+    return output
+
+
 def draw_matched_contours(
     img: np.ndarray,
     matched_left: dict[int, MatchedContour],
@@ -270,9 +286,13 @@ print(f"Dopo  → trovati {total_dopo},  validi {len(contour_map_dopo)}")
 img_visual_prima = draw_contours_on_image(img_prima, contour_map_prima)
 img_visual_dopo  = draw_contours_on_image(img_dopo, contour_map_dopo)
 
+# Genera l'immagine del prima con i centri disegnati sopra
+img_centers_prima = draw_centers_on_image(img_prima, contour_map_prima, contour_map_dopo)
+
 # Scrittura su file
 cv2.imwrite("out/analisi_prima.jpg", img_visual_prima)
 cv2.imwrite("out/analisi_dopo.jpg", img_visual_dopo)
+cv2.imwrite("out/analisi_centri.jpg", img_centers_prima)
 
 print("Immagini salvate correttamente: analisi_prima.jpg, analisi_dopo.jpg")
 
