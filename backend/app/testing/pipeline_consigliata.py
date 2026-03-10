@@ -174,6 +174,91 @@ def find_valid_contours(
 
 
 # ─────────────────────────────────────────────
+#  POST PROCESSING
+# ─────────────────────────────────────────────
+
+def compare_rois_test(
+    img_prima: np.ndarray,
+    img_dopo: np.ndarray,
+    matched_prima: dict[int, MatchedContour],
+    matched_dopo: dict[int, MatchedContour]
+) -> np.ndarray:
+    """
+    Calcola il differenziale tra le ROI corrispondenti di img_prima e img_dopo.
+    Le ROI vengono allineate per centro prima di fare la sottrazione.
+    """
+
+    output = np.zeros_like(img_prima, dtype=np.float32)
+    peso   = np.zeros(img_prima.shape[:2], dtype=np.float32)
+
+    for idx in matched_prima:
+        if idx not in matched_dopo:
+            continue
+
+        contour_l = matched_prima[idx]["contour"]
+        contour_r = matched_dopo[idx]["contour"]
+
+        # --- centri e raggi ---
+        (cx_l, cy_l), radius_l = cv2.minEnclosingCircle(contour_l)
+        (cx_r, cy_r), radius_r = cv2.minEnclosingCircle(contour_r)
+        cx_l, cy_l = int(cx_l), int(cy_l)
+        cx_r, cy_r = int(cx_r), int(cy_r)
+        radius = int(max(radius_l, radius_r))   # raggio comune (puoi usare min se preferisci)
+
+        # --- bounding box centrata sul centro del "prima" ---
+        h, w = img_prima.shape[:2]
+        x0 = max(cx_l - radius, 0)
+        y0 = max(cy_l - radius, 0)
+        x1 = min(cx_l + radius, w)
+        y1 = min(cy_l + radius, h)
+
+        # offset di traslazione: sposta il patch del "dopo" sul centro del "prima"
+        dx = cx_l - cx_r
+        dy = cy_l - cy_r
+
+        # --- coordinate sorgente nel "dopo" (traslate) ---
+        x0_r = max(x0 - dx, 0)
+        y0_r = max(y0 - dy, 0)
+        x1_r = min(x1 - dx, w)
+        y1_r = min(y1 - dy, h)
+
+        # patch estratti
+        patch_prima = img_prima[y0:y1,   x0:x1  ].astype(np.float32)
+        patch_dopo  = img_dopo [y0_r:y1_r, x0_r:x1_r].astype(np.float32)
+
+        # --- gestione dimensioni diverse per via dei bordi ---
+        ph = min(patch_prima.shape[0], patch_dopo.shape[0])
+        pw = min(patch_prima.shape[1], patch_dopo.shape[1])
+        patch_prima = patch_prima[:ph, :pw]
+        patch_dopo  = patch_dopo [:ph, :pw]
+
+        # --- differenziale (valore assoluto) ---
+        diff = np.abs(patch_prima - patch_dopo)
+
+        # --- maschera circolare locale (nel sistema di coord. del patch) ---
+        maschera_locale = np.zeros((ph, pw), dtype=np.uint8)
+        cv2.circle(maschera_locale, (cx_l - x0, cy_l - y0), radius, 255, -1)
+        maschera_locale = maschera_locale[:ph, :pw]
+
+        # --- accumula nell'output globale ---
+        m = maschera_locale.astype(np.float32) / 255.0
+        if diff.ndim == 3:          # immagine a colori
+            m = m[:, :, np.newaxis]
+
+        output[y0:y0+ph, x0:x0+pw] += diff * m
+        peso  [y0:y0+ph, x0:x0+pw] += m[..., 0] if diff.ndim == 3 else m
+
+    # normalizza le zone sovrapposte (se i cerchi si sovrappongono)
+    if output.ndim == 3:
+        peso_3d = peso[:, :, np.newaxis]
+        output = np.where(peso_3d > 0, output / peso_3d, 0)
+    else:
+        output = np.where(peso > 0, output / peso, 0)
+
+    return np.clip(output, 0, 255).astype(np.uint8)
+
+
+# ─────────────────────────────────────────────
 #  VISUALIZZAZIONE
 # ─────────────────────────────────────────────
 
@@ -298,5 +383,8 @@ print("Immagini salvate correttamente: analisi_prima.jpg, analisi_dopo.jpg")
 
 matched_prima, matched_dopo = match_contours_by_center(contour_map_prima, contour_map_dopo)
 
+# TESTING
+cv2.imwrite("out/confronto_roi.png", norm.clahe(compare_rois_test(img_prima, img_dopo, matched_prima, matched_dopo), 3.0, (8, 8)))
+
 img = draw_matched_contours(img_prima, matched_prima, matched_dopo)
-show("Contour Match", img, width=1080)
+#show("Contour Match", img, width=1080)
