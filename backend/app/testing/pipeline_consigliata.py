@@ -2,11 +2,21 @@ import cv2
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 from typing import TypedDict
+from typing import TypeAlias
 from app import cv2_utils, norm
 
 class MatchedContour(TypedDict):
     center:  tuple[int, int]
     contour: np.ndarray
+
+Color: TypeAlias = tuple[int, int, int]
+
+BLUE:   Color = (255, 0, 0)
+RED:    Color = (0, 0, 255)
+GREEN:  Color = (0, 255, 0)
+YELLOW: Color = (0, 255, 255)
+WHITE:  Color = (255, 255, 255)
+BLACK:  Color = (0, 0, 0)
 
 # ─────────────────────────────────────────────
 #  HELPERS GEOMETRICI
@@ -193,29 +203,25 @@ def draw_contours_on_image(img, contour_map):
     return output
 
 
-def draw_matched_contours(img_left, img_right, matched_left, matched_right):
+def draw_matched_contours(
+    img: np.ndarray,
+    matched_left: dict[int, MatchedContour],
+    matched_right: dict[int, MatchedContour]
+) -> np.ndarray:
     """
-    Affianca le due immagini e collega i contorni abbinati
-    con lo stesso colore e una linea tra i centri.
+    Disegna sulla stessa immagine i centri delle due analisi come cerchi concentrici.
+    Blu = prima, Rosso = dopo.
     """
-    canvas   = side_by_side(img_left, img_right)
-    offset_x = img_left.shape[1]
+    output = img.copy()
 
-    np.random.seed(42)
-    colors = [
-        tuple(int(c) for c in color)
-        for color in np.random.randint(50, 255, (len(matched_left), 3))
-    ]
+    for idx in matched_left:
+        center_l = matched_left[idx]["center"]
+        center_r = matched_right[idx]["center"]
 
-    for idx, color in enumerate(colors):
-        draw_contour(canvas, matched_left[idx]["contour"], color)
-        draw_contour(canvas, shift_contour_x(matched_dopo[idx]["contour"], offset_x), color)
+        draw_circle(output, center=center_l, radius=10, color=BLUE)
+        draw_circle(output, center=center_r, radius=6,  color=RED)
 
-        cx_l, cy_l = matched_left[idx]["center"]
-        cx_r, cy_r = matched_right[idx]["center"]
-        draw_line(canvas, (cx_l, cy_l), (cx_r + offset_x, cy_r), color)
-
-    return canvas
+    return output
 
 
 def show(title, img, width=1200, height=700):
@@ -263,5 +269,5 @@ print(f"Dopo  → trovati {total_dopo},  validi {len(contour_map_dopo)}")
 
 matched_prima, matched_dopo = match_contours_by_center(contour_map_prima, contour_map_dopo)
 
-canvas = draw_matched_contours(img_prima, img_dopo, matched_prima, matched_dopo)
-show("Contour Match", canvas, width=1600)
+img = draw_matched_contours(img_prima, matched_prima, matched_dopo)
+show("Contour Match", img, width=1080)
