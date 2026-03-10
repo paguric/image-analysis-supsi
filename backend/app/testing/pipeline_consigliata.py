@@ -272,6 +272,16 @@ contour_map_dopo,  total_dopo  = find_valid_contours(preprocess(img_dopo,  PARAM
 print(f"Prima → trovati {total_prima}, validi {len(contour_map_prima)}")
 print(f"Dopo  → trovati {total_dopo},  validi {len(contour_map_dopo)}")
 
+# Genera le immagini con i contorni disegnati sopra
+img_visual_prima = draw_contours_on_image(img_prima, contour_map_prima)
+img_visual_dopo  = draw_contours_on_image(img_dopo, contour_map_dopo)
+
+# Scrittura su file
+cv2.imwrite("out/analisi_prima.jpg", img_visual_prima)
+cv2.imwrite("out/analisi_dopo.jpg", img_visual_dopo)
+
+print("Immagini salvate correttamente: analisi_prima.jpg, analisi_dopo.jpg")
+
 matched_prima, matched_dopo = match_contours_by_center(contour_map_prima, contour_map_dopo)
 
 img = draw_matched_contours(img_prima, matched_prima, matched_dopo)
