@@ -3,8 +3,37 @@ import av
 import numpy as np
 import os
 from app import cv2_utils
+from app import norm
 
-def watershed_test(img: np.ndarray, threshold: int) -> np.ndarray | None:
+# ─────────────────────────────────────────────
+#  PREPROCESSING
+# ─────────────────────────────────────────────
+
+def preprocess(img: np.ndarray, min_percentile: float = 0.0, max_percentile: float = 99.0):
+
+    """
+    Prepara l'immagine per il rilevamento dei contorni:
+    normalizzazione percentile → Otsu
+    """
+    
+    img_norm = norm.minmax_norm(img, min_percentile, max_percentile)
+    _, thresh = cv2.threshold(img_norm, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+    # DEBUG
+    cv2.imwrite(f'out/watershed_test/step_1.jpg', img_norm)
+    cv2.imwrite(f'out/watershed_test/step_2.jpg', thresh)
+
+    return thresh
+
+
+# ─────────────────────────────────────────────
+#  RILEVAMENTO CONTORNI
+# ─────────────────────────────────────────────
+
+def watershed_test(
+    img: np.ndarray,
+    p: dict[str, int | float]
+) -> np.ndarray | None:
     """
     Applica watershed sull'immagine
     Output in out/watershed_test
@@ -21,11 +50,7 @@ def watershed_test(img: np.ndarray, threshold: int) -> np.ndarray | None:
     # convert the image to grayscale format
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-    # ATTENZIONE - qua ho inserito un valore manualmente dopo vari test. Non è ideale ecco...
-    ret, thresh = cv2.threshold(gray, threshold, 255, cv2.THRESH_BINARY)
-    
-    # DEBUG
-    cv2.imwrite(f'out/watershed_test/step_1.jpg', thresh)
+    thresh = preprocess(gray, p["min_percentile"], p["max_percentile"])
 
     # noise removal
     kernel = np.ones((3,3),np.uint8)
@@ -43,8 +68,8 @@ def watershed_test(img: np.ndarray, threshold: int) -> np.ndarray | None:
     unknown = cv2.subtract(sure_bg,sure_fg)
 
     # DEBUG
-    cv2.imwrite(f'out/watershed_test/step_2.jpg', sure_bg)
-    cv2.imwrite(f'out/watershed_test/step_3.jpg', sure_fg)
+    cv2.imwrite(f'out/watershed_test/step_3.jpg', sure_bg)
+    cv2.imwrite(f'out/watershed_test/step_4.jpg', sure_fg)
     
     # Marker labelling
     ret, markers = cv2.connectedComponents(sure_fg)
@@ -59,5 +84,29 @@ def watershed_test(img: np.ndarray, threshold: int) -> np.ndarray | None:
     img[markers == -1] = [255,0,0]
 
     # DEBUG
-    cv2.imwrite(f'out/watershed_test/step_4.jpg', img)
+    cv2.imwrite(f'out/watershed_test/step_5.jpg', img)
     return img
+
+
+# ─────────────────────────────────────────────
+#  PARAMETRI
+# ─────────────────────────────────────────────
+
+PARAMS = {
+    "min_percentile":        1,
+    "max_percentile":        99,
+}
+
+
+# ─────────────────────────────────────────────
+#  MAIN
+# ─────────────────────────────────────────────
+
+def load_brightest_frame(video_path):
+    idx, _ = cv2_utils.brightest_frame(video_path)
+    return cv2_utils.extract_frame(video_path, idx)
+
+img_prima = load_brightest_frame("video/prima.avi")
+#img_dopo  = load_brightest_frame("video/dopo.avi")
+
+watershed_test(img_prima, PARAMS)
