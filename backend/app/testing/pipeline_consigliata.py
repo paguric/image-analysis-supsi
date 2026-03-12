@@ -80,38 +80,6 @@ def side_by_side(img_left, img_right):
 
 
 # ─────────────────────────────────────────────
-#  MATCHING DEI CONTORNI (Hungarian algorithm)
-# ─────────────────────────────────────────────
-
-def match_contours_by_center(
-    map1: dict[tuple[int, int], np.ndarray],
-    map2: dict[tuple[int, int], np.ndarray]
-) -> tuple[dict[int, MatchedContour], dict[int, MatchedContour]]:
-    """
-    Abbina i contorni più vicini tra due mappe {centro: contorno}.
-    Se le mappe hanno dimensioni diverse, lavora solo sui min(n1, n2) contorni
-    più vicini (i contorni in eccesso vengono ignorati).
-    """
-    centers1, centers2 = list(map1.keys()), list(map2.keys())
-
-    dist_matrix = np.array([
-        [np.hypot(x1 - x2, y1 - y2) for (x2, y2) in centers2]
-        for (x1, y1) in centers1
-    ])
-
-    rows, cols = linear_sum_assignment(dist_matrix)
-
-    # Se le dimensioni sono diverse, linear_sum_assignment restituisce
-    # solo min(n1, n2) coppie — quelle con distanza globalmente minima
-    result1, result2 = {}, {}
-    for idx, (r, c) in enumerate(zip(rows, cols)):
-        result1[idx] = {"center": centers1[r], "contour": map1[centers1[r]]}
-        result2[idx] = {"center": centers2[c], "contour": map2[centers2[c]]}
-
-    return result1, result2
-
-
-# ─────────────────────────────────────────────
 #  PREPROCESSING
 # ─────────────────────────────────────────────
 
@@ -177,6 +145,34 @@ def find_valid_contours(
 # ─────────────────────────────────────────────
 #  POST PROCESSING
 # ─────────────────────────────────────────────
+
+def match_contours_by_center(
+    map1: dict[tuple[int, int], np.ndarray],
+    map2: dict[tuple[int, int], np.ndarray]
+) -> tuple[dict[int, MatchedContour], dict[int, MatchedContour]]:
+    """
+    Abbina i contorni più vicini tra due mappe {centro: contorno}.
+    Se le mappe hanno dimensioni diverse, lavora solo sui min(n1, n2) contorni
+    più vicini (i contorni in eccesso vengono ignorati).
+    """
+    centers1, centers2 = list(map1.keys()), list(map2.keys())
+
+    dist_matrix = np.array([
+        [np.hypot(x1 - x2, y1 - y2) for (x2, y2) in centers2]
+        for (x1, y1) in centers1
+    ])
+
+    rows, cols = linear_sum_assignment(dist_matrix)
+
+    # Se le dimensioni sono diverse, linear_sum_assignment restituisce
+    # solo min(n1, n2) coppie — quelle con distanza globalmente minima
+    result1, result2 = {}, {}
+    for idx, (r, c) in enumerate(zip(rows, cols)):
+        result1[idx] = {"center": centers1[r], "contour": map1[centers1[r]]}
+        result2[idx] = {"center": centers2[c], "contour": map2[centers2[c]]}
+
+    return result1, result2
+
 
 def compute_aligned_roi_diff(
     img_prima: np.ndarray,
