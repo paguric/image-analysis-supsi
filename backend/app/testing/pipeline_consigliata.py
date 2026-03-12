@@ -382,26 +382,19 @@ contour_map_dopo,  total_dopo  = find_valid_contours(preprocess(img_dopo,  PARAM
 print(f"Prima → trovati {total_prima}, validi {len(contour_map_prima)}")
 print(f"Dopo  → trovati {total_dopo},  validi {len(contour_map_dopo)}")
 
-# Genera le immagini con i contorni disegnati sopra
-img_visual_prima = draw_contours_on_image(img_prima, contour_map_prima)
-img_visual_dopo  = draw_contours_on_image(img_dopo, contour_map_dopo)
-
-# Genera l'immagine del prima con i centri disegnati sopra
-img_centers_prima = draw_centers_on_image(img_prima, contour_map_prima, contour_map_dopo)
-
-# Scrittura su file
-cv2.imwrite("out/analisi_prima.jpg", img_visual_prima)
-cv2.imwrite("out/analisi_dopo.jpg", img_visual_dopo)
-cv2.imwrite("out/analisi_centri.jpg", img_centers_prima)
-
-print("Immagini salvate correttamente: analisi_prima.jpg, analisi_dopo.jpg")
-
 matched_prima, matched_dopo = match_contours_by_center(contour_map_prima, contour_map_dopo)
 
 diff = compute_aligned_roi_diff(img_prima, img_dopo, matched_prima, matched_dopo, save_steps_dir="out/postprocessing/steps")
 
-# DOCS
-cv2.imwrite("out/postprocessing/diff_clahe.png", norm.clahe(diff, 3.0, (8, 8)))
+# Genera le immagini con bounding box e indici
+img_visual_prima = draw_contours_on_image(img_prima, contour_map_prima, False, True, True, False, False)
+img_visual_dopo  = draw_contours_on_image(img_dopo, contour_map_dopo, False, True, True, False, False)
 
-img = draw_matched_contours(img_prima, matched_prima, matched_dopo)
-#show("Contour Match", img, width=1080)
+# Genera l'immagine del prima con i centri disegnati sopra
+img_centers_prima = draw_centers_on_image(img_prima, contour_map_prima, contour_map_dopo)
+
+# DOCS
+cv2.imwrite("out/postprocessing/prima_bounding_index.jpg", img_visual_prima)
+cv2.imwrite("out/postprocessing/dopo_bounding_index.jpg", img_visual_dopo)
+cv2.imwrite("out/postprocessing/analisi_centri.jpg", img_centers_prima)
+cv2.imwrite("out/postprocessing/diff_clahe.png", norm.clahe(diff, 3.0, (8, 8)))
