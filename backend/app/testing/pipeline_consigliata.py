@@ -264,15 +264,17 @@ def draw_contours_on_image(
     show_bounding_box=True,
     show_label=True,
     show_geometric_center=True,
+    geometric_center_color=RED,
     show_centroid=True,
+    centroid_color=BLUE
 ):
     """
     Disegna su una copia dell'immagine tutti i contorni validi.
     - show_contour: contorno verde
     - show_bounding_box: bounding box gialla
     - show_label: etichetta numerica gialla
-    - show_geometric_center: centro geometrico blu
-    - show_centroid: centroide rosso
+    - show_geometric_center: centro geometrico
+    - show_centroid: centroide
     """
     output = img.copy()
 
@@ -287,12 +289,12 @@ def draw_contours_on_image(
             draw_label(output, i, position=(center[0], center[1] - 10), color=(0, 255, 255))
 
         if show_geometric_center:
-            draw_circle(output, center, color=(255, 0, 0))
+            draw_circle(output, center, color=geometric_center_color)
 
         if show_centroid:
             centroid = contour_centroid(cnt)
             if centroid:
-                draw_circle(output, centroid, color=(0, 0, 255))
+                draw_circle(output, centroid, color=centroid_color)
 
     return output
 
@@ -387,8 +389,8 @@ matched_prima, matched_dopo = match_contours_by_center(contour_map_prima, contou
 diff = compute_aligned_roi_diff(img_prima, img_dopo, matched_prima, matched_dopo, save_steps_dir="out/postprocessing/steps")
 
 # Genera le immagini con bounding box e indici
-img_visual_prima = draw_contours_on_image(img_prima, contour_map_prima, False, True, True, False, False)
-img_visual_dopo  = draw_contours_on_image(img_dopo, contour_map_dopo, False, True, True, False, False)
+img_visual_prima = draw_contours_on_image(img_prima, contour_map_prima, show_contour=False, geometric_center_color=RED, show_centroid=False)
+img_visual_dopo  = draw_contours_on_image(img_dopo, contour_map_dopo, show_contour=False, geometric_center_color=BLUE, show_centroid=False)
 
 # Genera l'immagine del prima con i centri disegnati sopra
 img_centers_prima = draw_centers_on_image(img_prima, contour_map_prima, contour_map_dopo)
