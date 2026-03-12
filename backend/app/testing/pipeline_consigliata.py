@@ -74,6 +74,45 @@ def draw_label(img, text, position, color, font_scale=0.6, thickness=2):
 def draw_line(img, pt1, pt2, color, thickness=1):
     cv2.line(img, pt1, pt2, color, thickness, cv2.LINE_AA)
 
+
+def draw_arrow(img, pt1, pt2, color, thickness=4, tip_length=0.25, tip_width_ratio=2.5):
+    """
+    Freccia con punta come triangolo pieno — scala bene su immagini grandi.
+    
+    tip_length      : frazione della lunghezza totale occupata dalla punta
+    tip_width_ratio : larghezza della punta = thickness * tip_width_ratio
+    """
+    pt1 = np.array(pt1, dtype=np.float32)
+    pt2 = np.array(pt2, dtype=np.float32)
+
+    vec    = pt2 - pt1
+    length = np.linalg.norm(vec)
+    if length < 1e-6:
+        return
+
+    unit   = vec / length
+    normal = np.array([-unit[1], unit[0]])   # perpendicolare
+
+    # Base della punta (punto lungo l'asse a tip_length dalla coda)
+    tip_base_pt = pt2 - unit * (length * tip_length)
+    half_w      = thickness * tip_width_ratio / 2.0
+
+    # Corpo: da pt1 fino alla base della punta
+    cv2.line(img,
+             tuple(pt1.astype(int)),
+             tuple(tip_base_pt.astype(int)),
+             color, thickness, cv2.LINE_AA)
+
+    # Punta: triangolo pieno
+    tip_pts = np.array([
+        pt2,
+        tip_base_pt + normal * half_w,
+        tip_base_pt - normal * half_w,
+    ], dtype=np.int32)
+
+    cv2.fillPoly(img, [tip_pts], color)
+
+
 def side_by_side(img_left, img_right):
     """Affianca due immagini orizzontalmente."""
     return np.hstack([img_left, img_right])
@@ -250,9 +289,9 @@ def compute_aligned_roi_diff(
             # Cerchi e traslazione applicata
             draw_circle(output_docs, (cx_l, cy_l), int(radius_l), color=RED, filled=False)
             draw_circle(output_docs, (cx_r, cy_r), int(radius_r), color=BLUE, filled=False)
-            cv2.arrowedLine(output_docs, (cx_l, cy_l), (cx_r, cy_r), color=GREEN, thickness=4)
+            draw_arrow(output_docs, (cx_r, cy_r), (cx_l, cy_l), color=GREEN, thickness=4)
 
-    cv2.imwrite(f"{save_steps_dir}01_trasformazioni_geometriche.png", output_docs)
+    cv2.imwrite(f"out/postprocessing/03_trasformazioni_geometriche.png", output_docs)
 
     return np.clip(output, 0, 255).astype(np.uint8)
 
@@ -409,13 +448,9 @@ img_visual_dopo = draw_contours_on_image(
     show_contour=False, geometric_center_color=BLUE, show_centroid=False
 )
 
-# Genera l'immagine del prima con i centri disegnati sopra
-img_centers_prima = draw_centers_on_image(img_prima, contour_map_prima, contour_map_dopo)
-
 # DOCS
 cv2.imwrite("out/postprocessing/01_prima_bounding_index_raw.jpg", img_visual_prima_raw)
 cv2.imwrite("out/postprocessing/01_dopo_bounding_index_raw.jpg", img_visual_dopo_raw)
 cv2.imwrite("out/postprocessing/02_prima_bounding_index.jpg", img_visual_prima)
 cv2.imwrite("out/postprocessing/02_dopo_bounding_index.jpg", img_visual_dopo)
-cv2.imwrite("out/postprocessing/03_analisi_centri.jpg", img_centers_prima)
 cv2.imwrite("out/postprocessing/04_diff_clahe.png", norm.clahe(diff, 3.0, (8, 8)))
