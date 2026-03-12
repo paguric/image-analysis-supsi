@@ -232,18 +232,18 @@ def compute_aligned_roi_diff(
             os.makedirs(save_steps_dir, exist_ok=True)
 
             # Output singole ROI
-            prefix = os.path.join(save_steps_dir, f"contorno_{idx:02d}")
+            prefix = os.path.join(save_steps_dir, f"contorno_{idx+1:02d}")
 
-            cv2.imwrite(f"{prefix}_01_patch_prima.png",
+            cv2.imwrite(f"roi{prefix}_01_patch_prima.png",
                         np.clip(patch_prima, 0, 255).astype(np.uint8))
 
-            cv2.imwrite(f"{prefix}_02_patch_dopo.png",
+            cv2.imwrite(f"roi{prefix}_02_patch_dopo.png",
                         np.clip(patch_dopo, 0, 255).astype(np.uint8))
 
-            cv2.imwrite(f"{prefix}_03_diff.png",
+            cv2.imwrite(f"roi{prefix}_03_diff.png",
                         np.clip(diff, 0, 255).astype(np.uint8))
             
-            cv2.imwrite(f"{prefix}_04_diff_clahe.png",
+            cv2.imwrite(f"roi{prefix}_04_diff_clahe.png",
                     norm.clahe(np.clip(diff, 0, 255).astype(np.uint8), 3.0, (8, 8)))
 
 
