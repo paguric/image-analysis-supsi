@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from scipy.optimize import linear_sum_assignment
+import os
 from typing import TypedDict
 from typing import TypeAlias
 from app import cv2_utils, norm
@@ -181,7 +182,8 @@ def compute_aligned_roi_diff(
     img_prima: np.ndarray,
     img_dopo: np.ndarray,
     matched_prima: dict[int, MatchedContour],
-    matched_dopo: dict[int, MatchedContour]
+    matched_dopo: dict[int, MatchedContour],
+    save_steps_dir: str | None = None
 ) -> np.ndarray:
     """
     Calcola il differenziale tra le ROI corrispondenti di img_prima e img_dopo.
@@ -245,6 +247,20 @@ def compute_aligned_roi_diff(
             m = m[:, :, np.newaxis]
 
         output[y0:y0+ph, x0:x0+pw] += diff * m
+
+        # ── Salvataggio step intermedi ──────────────────────────────────────
+        if save_steps_dir is not None:
+            os.makedirs(save_steps_dir, exist_ok=True)
+            prefix = os.path.join(save_steps_dir, f"contorno_{idx:02d}")
+
+            cv2.imwrite(f"{prefix}_01_patch_prima.png",
+                        np.clip(patch_prima, 0, 255).astype(np.uint8))
+
+            cv2.imwrite(f"{prefix}_02_patch_dopo.png",
+                        np.clip(patch_dopo, 0, 255).astype(np.uint8))
+
+            cv2.imwrite(f"{prefix}_03_diff.png",
+                        np.clip(diff, 0, 255).astype(np.uint8))
 
     return np.clip(output, 0, 255).astype(np.uint8)
 
@@ -375,7 +391,7 @@ print("Immagini salvate correttamente: analisi_prima.jpg, analisi_dopo.jpg")
 matched_prima, matched_dopo = match_contours_by_center(contour_map_prima, contour_map_dopo)
 
 # TESTING
-cv2.imwrite("out/confronto_roi.png", norm.clahe(compute_aligned_roi_diff(img_prima, img_dopo, matched_prima, matched_dopo), 3.0, (8, 8)))
+cv2.imwrite("out/confronto_roi.png", norm.clahe(compute_aligned_roi_diff(img_prima, img_dopo, matched_prima, matched_dopo, save_steps_dir="out/steps"), 3.0, (8, 8)))
 
 img = draw_matched_contours(img_prima, matched_prima, matched_dopo)
 #show("Contour Match", img, width=1080)
