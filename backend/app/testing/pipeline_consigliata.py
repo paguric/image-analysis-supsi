@@ -388,15 +388,30 @@ matched_prima, matched_dopo = match_contours_by_center(contour_map_prima, contou
 
 diff = compute_aligned_roi_diff(img_prima, img_dopo, matched_prima, matched_dopo, save_steps_dir="out/postprocessing/steps")
 
-# Genera le immagini con bounding box e indici
-img_visual_prima = draw_contours_on_image(img_prima, contour_map_prima, show_contour=False, geometric_center_color=RED, show_centroid=False)
-img_visual_dopo  = draw_contours_on_image(img_dopo, contour_map_dopo, show_contour=False, geometric_center_color=BLUE, show_centroid=False)
+# Genera le immagini con bounding box e indici PRIMA di match_contours_by_center()
+img_visual_prima_raw = draw_contours_on_image(img_prima, contour_map_prima, show_contour=False, geometric_center_color=RED, show_centroid=False)
+img_visual_dopo_raw = draw_contours_on_image(img_dopo, contour_map_dopo, show_contour=False, geometric_center_color=BLUE, show_centroid=False)
+
+def matched_to_contour_map(matched: dict[int, MatchedContour]) -> dict[tuple[int, int], np.ndarray]:
+    return {v["center"]: v["contour"] for v in matched.values()}
+
+# Genera le immagini con bounding box e indici DOPO match_contours_by_center()
+img_visual_prima = draw_contours_on_image(
+    img_prima, matched_to_contour_map(matched_prima),
+    show_contour=False, geometric_center_color=RED, show_centroid=False
+)
+img_visual_dopo = draw_contours_on_image(
+    img_dopo, matched_to_contour_map(matched_dopo),
+    show_contour=False, geometric_center_color=BLUE, show_centroid=False
+)
 
 # Genera l'immagine del prima con i centri disegnati sopra
 img_centers_prima = draw_centers_on_image(img_prima, contour_map_prima, contour_map_dopo)
 
 # DOCS
-cv2.imwrite("out/postprocessing/prima_bounding_index.jpg", img_visual_prima)
-cv2.imwrite("out/postprocessing/dopo_bounding_index.jpg", img_visual_dopo)
-cv2.imwrite("out/postprocessing/analisi_centri.jpg", img_centers_prima)
-cv2.imwrite("out/postprocessing/diff_clahe.png", norm.clahe(diff, 3.0, (8, 8)))
+cv2.imwrite("out/postprocessing/01_prima_bounding_index_raw.jpg", img_visual_prima_raw)
+cv2.imwrite("out/postprocessing/01_dopo_bounding_index_raw.jpg", img_visual_dopo_raw)
+cv2.imwrite("out/postprocessing/02_prima_bounding_index.jpg", img_visual_prima)
+cv2.imwrite("out/postprocessing/02_dopo_bounding_index.jpg", img_visual_dopo)
+cv2.imwrite("out/postprocessing/03_analisi_centri.jpg", img_centers_prima)
+cv2.imwrite("out/postprocessing/04_diff_clahe.png", norm.clahe(diff, 3.0, (8, 8)))
