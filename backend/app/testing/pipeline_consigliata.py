@@ -190,7 +190,11 @@ def compute_aligned_roi_diff(
     Le ROI vengono allineate per centro prima di fare la sottrazione.
     """
 
+    # immagine su cui verranno "stampate" le differenze delle ROI
     output = np.zeros_like(img_prima, dtype=np.float32)
+
+    # immagine su cui verranno disegnati i centri e le trasformazioni geometriche, per documentazione
+    output_docs = np.zeros_like(img_prima, dtype=np.float32)
 
     for idx in matched_prima:
         if idx not in matched_dopo:
@@ -248,9 +252,11 @@ def compute_aligned_roi_diff(
 
         output[y0:y0+ph, x0:x0+pw] += diff * m
 
-        # ── Salvataggio step intermedi ──────────────────────────────────────
+        # ── Output per documentazione ──────────────────────────────────────
         if save_steps_dir is not None:
             os.makedirs(save_steps_dir, exist_ok=True)
+
+            # Output singole ROI
             prefix = os.path.join(save_steps_dir, f"contorno_{idx:02d}")
 
             cv2.imwrite(f"{prefix}_01_patch_prima.png",
@@ -261,6 +267,13 @@ def compute_aligned_roi_diff(
 
             cv2.imwrite(f"{prefix}_03_diff.png",
                         np.clip(diff, 0, 255).astype(np.uint8))
+
+            # Cerchi e traslazione applicata
+            draw_circle(output_docs, (cx_l, cy_l), int(radius_l), color=RED, filled=False)
+            draw_circle(output_docs, (cx_r, cy_r), int(radius_r), color=BLUE, filled=False)
+            cv2.arrowedLine(output_docs, (cx_l, cy_l), (cx_r, cy_r), color=GREEN, thickness=4)
+
+    cv2.imwrite(f"{save_steps_dir}01_trasformazioni_geometriche.png", output_docs)
 
     return np.clip(output, 0, 255).astype(np.uint8)
 
