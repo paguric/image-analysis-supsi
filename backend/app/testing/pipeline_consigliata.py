@@ -257,22 +257,42 @@ def compute_aligned_roi_diff(
 #  VISUALIZZAZIONE
 # ─────────────────────────────────────────────
 
-def draw_contours_on_image(img, contour_map):
+def draw_contours_on_image(
+    img,
+    contour_map,
+    show_contour=True,
+    show_bounding_box=True,
+    show_label=True,
+    show_geometric_center=True,
+    show_centroid=True,
+):
     """
-    Disegna su una copia dell'immagine tutti i contorni validi con:
-    contorno verde, bounding box gialla, centro geometrico blu, centroide rosso.
+    Disegna su una copia dell'immagine tutti i contorni validi.
+    - show_contour: contorno verde
+    - show_bounding_box: bounding box gialla
+    - show_label: etichetta numerica gialla
+    - show_geometric_center: centro geometrico blu
+    - show_centroid: centroide rosso
     """
     output = img.copy()
 
     for i, (center, cnt) in enumerate(contour_map.items(), start=1):
-        draw_contour(output, cnt, color=(0, 255, 0))
-        draw_bounding_box(output, cnt, color=(0, 255, 255))
-        draw_label(output, i, position=(center[0], center[1] - 10), color=(0, 255, 255))
-        draw_circle(output, center, color=(255, 0, 0))   # centro geometrico (blu)
+        if show_contour:
+            draw_contour(output, cnt, color=(0, 255, 0))
 
-        centroid = contour_centroid(cnt)
-        if centroid:
-            draw_circle(output, centroid, color=(0, 0, 255))  # centroide (rosso)
+        if show_bounding_box:
+            draw_bounding_box(output, cnt, color=(0, 255, 255))
+
+        if show_label:
+            draw_label(output, i, position=(center[0], center[1] - 10), color=(0, 255, 255))
+
+        if show_geometric_center:
+            draw_circle(output, center, color=(255, 0, 0))
+
+        if show_centroid:
+            centroid = contour_centroid(cnt)
+            if centroid:
+                draw_circle(output, centroid, color=(0, 0, 255))
 
     return output
 
