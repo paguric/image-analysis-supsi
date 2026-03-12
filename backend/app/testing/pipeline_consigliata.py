@@ -390,8 +390,10 @@ print("Immagini salvate correttamente: analisi_prima.jpg, analisi_dopo.jpg")
 
 matched_prima, matched_dopo = match_contours_by_center(contour_map_prima, contour_map_dopo)
 
-# TESTING
-cv2.imwrite("out/confronto_roi.png", norm.clahe(compute_aligned_roi_diff(img_prima, img_dopo, matched_prima, matched_dopo, save_steps_dir="out/steps"), 3.0, (8, 8)))
+diff = compute_aligned_roi_diff(img_prima, img_dopo, matched_prima, matched_dopo, save_steps_dir="out/postprocessing/steps")
+
+# DOCS
+cv2.imwrite("out/postprocessing/diff_clahe.png", norm.clahe(diff, 3.0, (8, 8)))
 
 img = draw_matched_contours(img_prima, matched_prima, matched_dopo)
 #show("Contour Match", img, width=1080)
