@@ -242,6 +242,10 @@ def compute_aligned_roi_diff(
 
             cv2.imwrite(f"{prefix}_03_diff.png",
                         np.clip(diff, 0, 255).astype(np.uint8))
+            
+            cv2.imwrite(f"{prefix}_04_diff_clahe.png",
+                    norm.clahe(np.clip(diff, 0, 255).astype(np.uint8), 3.0, (8, 8)))
+
 
             # Cerchi e traslazione applicata
             draw_circle(output_docs, (cx_l, cy_l), int(radius_l), color=RED, filled=False)
