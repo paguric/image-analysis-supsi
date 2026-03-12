@@ -177,7 +177,7 @@ def find_valid_contours(
 #  POST PROCESSING
 # ─────────────────────────────────────────────
 
-def compare_rois_test(
+def compute_aligned_roi_diff(
     img_prima: np.ndarray,
     img_dopo: np.ndarray,
     matched_prima: dict[int, MatchedContour],
@@ -189,7 +189,6 @@ def compare_rois_test(
     """
 
     output = np.zeros_like(img_prima, dtype=np.float32)
-    peso   = np.zeros(img_prima.shape[:2], dtype=np.float32)
 
     for idx in matched_prima:
         if idx not in matched_dopo:
@@ -246,14 +245,6 @@ def compare_rois_test(
             m = m[:, :, np.newaxis]
 
         output[y0:y0+ph, x0:x0+pw] += diff * m
-        peso  [y0:y0+ph, x0:x0+pw] += m[..., 0] if diff.ndim == 3 else m
-
-    # normalizza le zone sovrapposte (se i cerchi si sovrappongono)
-    if output.ndim == 3:
-        peso_3d = peso[:, :, np.newaxis]
-        output = np.where(peso_3d > 0, output / peso_3d, 0)
-    else:
-        output = np.where(peso > 0, output / peso, 0)
 
     return np.clip(output, 0, 255).astype(np.uint8)
 
@@ -384,7 +375,7 @@ print("Immagini salvate correttamente: analisi_prima.jpg, analisi_dopo.jpg")
 matched_prima, matched_dopo = match_contours_by_center(contour_map_prima, contour_map_dopo)
 
 # TESTING
-cv2.imwrite("out/confronto_roi.png", norm.clahe(compare_rois_test(img_prima, img_dopo, matched_prima, matched_dopo), 3.0, (8, 8)))
+cv2.imwrite("out/confronto_roi.png", norm.clahe(compute_aligned_roi_diff(img_prima, img_dopo, matched_prima, matched_dopo), 3.0, (8, 8)))
 
 img = draw_matched_contours(img_prima, matched_prima, matched_dopo)
 #show("Contour Match", img, width=1080)
