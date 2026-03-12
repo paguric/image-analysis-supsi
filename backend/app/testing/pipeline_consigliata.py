@@ -252,8 +252,8 @@ def compute_aligned_roi_diff(
         patch_prima = cv2.getRectSubPix(img_prima, size, (cx_l, cy_l)).astype(np.float32)
         patch_dopo  = cv2.getRectSubPix(img_dopo,  size, (cx_r, cy_r)).astype(np.float32)
 
-        # Differenza assoluta pixel per pixel
-        diff = np.abs(patch_dopo - patch_prima)
+        # Differenza pixel per pixel
+        diff = patch_dopo - patch_prima
 
         # Maschera circolare centrata nel patch: esclude gli angoli del quadrato
         maschera = np.zeros((2 * radius, 2 * radius), dtype=np.uint8)
