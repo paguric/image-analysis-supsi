@@ -227,7 +227,7 @@ def compute_aligned_roi_diff(
     """
 
     output = np.zeros_like(img_prima, dtype=np.float32)
-    output_docs = np.zeros_like(img_prima, dtype=np.float32)
+    trasformazioni_geometriche = np.full_like(img_prima, 255, dtype=np.float32)
 
     for idx in matched_prima:
         if idx not in matched_dopo:
@@ -287,11 +287,11 @@ def compute_aligned_roi_diff(
 
 
             # Cerchi e traslazione applicata
-            draw_circle(output_docs, (cx_l, cy_l), int(radius_l), color=RED, filled=False)
-            draw_circle(output_docs, (cx_r, cy_r), int(radius_r), color=BLUE, filled=False)
-            draw_arrow(output_docs, (cx_r, cy_r), (cx_l, cy_l), color=GREEN, thickness=4)
+            draw_circle(trasformazioni_geometriche, (cx_l, cy_l), int(radius_l), color=RED, filled=False)
+            draw_circle(trasformazioni_geometriche, (cx_r, cy_r), int(radius_r), color=BLUE, filled=False)
+            draw_arrow(trasformazioni_geometriche, (cx_r, cy_r), (cx_l, cy_l), color=BLACK, thickness=4)
 
-    cv2.imwrite(f"out/postprocessing/03_trasformazioni_geometriche.png", output_docs)
+    cv2.imwrite(f"out/postprocessing/03_trasformazioni_geometriche.png", trasformazioni_geometriche)
 
     return np.clip(output, 0, 255).astype(np.uint8)
 
