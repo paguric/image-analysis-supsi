@@ -448,9 +448,15 @@ img_visual_dopo = draw_contours_on_image(
     show_contour=False, geometric_center_color=BLUE, show_centroid=False
 )
 
+img_visual_limitations = draw_contours_on_image(
+    img_prima, matched_to_contour_map(matched_prima),
+    show_bounding_box=False, show_geometric_center=False, show_centroid=False
+)
+
 # DOCS
 cv2.imwrite("out/postprocessing/01_prima_bounding_index_raw.jpg", img_visual_prima_raw)
 cv2.imwrite("out/postprocessing/01_dopo_bounding_index_raw.jpg", img_visual_dopo_raw)
 cv2.imwrite("out/postprocessing/02_prima_bounding_index.jpg", img_visual_prima)
 cv2.imwrite("out/postprocessing/02_dopo_bounding_index.jpg", img_visual_dopo)
-cv2.imwrite("out/postprocessing/04_diff_clahe.png", norm.clahe(diff, 3.0, (8, 8)))
+cv2.imwrite("out/postprocessing/04_diff_clahe.jpg", norm.clahe(diff, 3.0, (8, 8)))
+cv2.imwrite("out/postprocessing/05_limitazioni.jpg", img_visual_limitations)
