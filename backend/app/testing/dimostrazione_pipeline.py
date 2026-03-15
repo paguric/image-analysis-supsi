@@ -33,8 +33,9 @@ PARAMS = {
     "bg_blur_size":     101,
     "canny_low":        0,
     "canny_high":       0,
+    "clahe_grid_dim":   8,
     "morph_kernel_size": 3,
-    "morph_iterations":  2,
+    "morph_iterations":  5,
     "min_area":          5000,
     "min_circularity":   0.10,
 }
@@ -162,23 +163,6 @@ def match_contours_by_center(
         result2[idx] = {"center": centers2[c], "contour": map2[centers2[c]]}
 
     return result1, result2
-
-
-# ─────────────────────────────────────────────
-#  PREPROCESSING
-# ─────────────────────────────────────────────
-
-def preprocess(img, p):
-    bg_blur    = ensure_odd(p["bg_blur_size"])
-    gray       = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    background = cv2.GaussianBlur(gray, (bg_blur, bg_blur), 0)
-    objects    = cv2.subtract(gray, background)
-    enhanced   = norm.clahe(objects, 3.0, (8, 8))
-    edges      = cv2.Canny(enhanced, p["canny_low"], p["canny_high"])
-    kernel     = np.ones((ensure_odd(p["morph_kernel_size"]),) * 2, np.uint8)
-    edges_closed = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel,
-                                    iterations=int(p["morph_iterations"]))
-    return edges_closed
 
 
 # ─────────────────────────────────────────────
@@ -323,6 +307,7 @@ def draw_matched_contours(
 #  PIPELINE DIMOSTRATIVA
 # ─────────────────────────────────────────────
 
+
 def compute_contours(img, p):
     bg_blur  = ensure_odd(p["bg_blur_size"])
     morph_k  = ensure_odd(p["morph_kernel_size"])
@@ -331,8 +316,8 @@ def compute_contours(img, p):
     gray         = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     background   = cv2.GaussianBlur(gray, (bg_blur, bg_blur), 0)
     objects      = cv2.subtract(gray, background)
-    gray_enh     = norm.clahe(objects, 3.0, (8, 8))
-    edges        = cv2.Canny(gray_enh, p["canny_low"], p["canny_high"])
+    gray_enh     = norm.clahe(objects, 3.0, (p["clahe_grid_dim"], p["clahe_grid_dim"]))
+    edges = cv2.Canny(gray_enh, p["canny_low"], p["canny_high"])
     kernel       = np.ones((morph_k, morph_k), np.uint8)
     edges_closed = cv2.morphologyEx(
         edges, cv2.MORPH_CLOSE, kernel,
