@@ -40,3 +40,14 @@
 .read-the-docs {
   color: #888;
 }
+
+
+/* @brief layout a griglia flessibile per allineare i componenti */
+/* @details usiamo flexbox per la disposizione su una riga, centrando il contenuto */
+.layout-tre-video {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-bottom: 40px;
+  flex-wrap: wrap; 
+}
