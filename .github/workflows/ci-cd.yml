@@ -1,5 +1,8 @@
 name: CI Backend + Frontend
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   push:
     branches: [main, dev]
@@ -27,18 +30,19 @@ jobs:
       - name: Installa dipendenze backend
         run: |
           cd backend
-          # installazione delle dipendenze nell'ambiente di sistema del runner
-          uv pip install -r requirements.txt --system
+          uv sync --all-extras --dev
 
       - name: Esegui test backend
         run: |
           cd backend
-          echo "Test non ancora implementati. Skipo per ora."
-          # DA DECOMMENTARE UNA VOLTA CHE LO AVREMO
-          # pytest --junitxml=test-results.xml
+          # lasciare echo, serve per non lanciare un errore (eliminare una volta creati i test)
+          echo "Test non ancora implementati."
+          # DA DECOMMENTARE UNA VOLTA CHE AVREMO I TEST
+          # uv run pytest --junitxml=test-results.xml
 
       - name: Upload artifact test backend
-        if: always() # Il job fallirà se pytest fallisce, ma questo step caricherà comunque i log
+        # Il job fallirà se pytest fallisce, ma questo step caricherà comunque i log
+        if: always() 
         uses: actions/upload-artifact@v4
         with:
           name: backend-test-results
