@@ -254,3 +254,13 @@ packages/react-devtools-fusebox/dist
 packages/react-devtools-inline/dist
 packages/react-devtools-shell/dist
 packages/react-devtools-timeline/dist
+
+
+
+# ----CARTELLE ESCLUSE----
+
+backend/Confronto/*
+backend/app/testing/*.jpg
+backend/app/testing/*.png
+backend/app/testing/canny_0,0/*
+backend/app/testing/valori_paper/
