@@ -1,0 +1,92 @@
+name: CI Backend + Frontend
+
+on:
+  push:
+    branches: [main, dev]
+
+jobs:
+  # ==================== JOB BACKEND (Python) ====================
+  backend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout codice
+        uses: actions/checkout@v4
+
+      # Setup di uv per gestione delle dipendenze
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Installa dipendenze backend
+        run: |
+          cd backend
+          # installazione delle dipendenze nell'ambiente di sistema del runner
+          uv pip install -r requirements.txt --system
+
+      - name: Esegui test backend
+        run: |
+          cd backend
+          echo "Test non ancora implementati. Skipo per ora."
+          # DA DECOMMENTARE UNA VOLTA CHE LO AVREMO
+          # pytest --junitxml=test-results.xml
+
+      - name: Upload artifact test backend
+        if: always() # Il job fallirà se pytest fallisce, ma questo step caricherà comunque i log
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-results
+          path: backend/test-results.xml
+          retention-days: 7
+
+  # ==================== JOB FRONTEND (React) ====================
+  frontend:
+    needs: backend # parte solo se il backend passa
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout codice
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Installa dipendenze frontend
+        run: |
+          cd frontend
+          npm ci
+
+      # DA DECOMMENTARE UNA VOLTA CHE LO AVREMO
+      # - name: Installa browser per Playwright
+      #   run: |
+      #     cd frontend
+      #     npx playwright install --with-deps
+
+      # - name: Esegui test E2E frontend (Playwright)
+      #   run: |
+      #     cd frontend
+      #     npx playwright test
+
+      - name: Build frontend (React)
+        run: |
+          cd frontend
+          npm run build
+
+      - name: Upload artifact build frontend
+        uses: actions/upload-artifact@v4
+        with:
+          # nome dell'artifact generato
+          name: frontend-build
+          path: frontend/dist/
+          # giorni di conservazione dell'artifact su GitHub
+          retention-days: 7
