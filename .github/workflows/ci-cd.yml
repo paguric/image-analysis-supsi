@@ -49,6 +49,19 @@ jobs:
           path: backend/test-results.xml
           retention-days: 7
 
+      - name: Upload artifact codice backend
+        uses: actions/upload-artifact@v4
+        with:
+          # nome dell'artifact generato per il backend
+          name: backend-source
+          # @salva l'intera cartella backend (tranne la venv)
+          path: |
+            backend/
+            !backend/.venv/
+            !backend/__pycache__/
+            !backend/.pytest_cache/
+          retention-days: 7
+
   # ==================== JOB FRONTEND (React) ====================
   frontend:
     needs: backend # parte solo se il backend passa
