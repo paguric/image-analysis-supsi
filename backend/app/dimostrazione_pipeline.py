@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import os
 from scipy.optimize import linear_sum_assignment
 from typing import TypedDict
 from typing import TypeAlias
@@ -260,17 +261,41 @@ def compare_rois_test(
 #  VISUALIZZAZIONE CONTORNI
 # ─────────────────────────────────────────────
 
+
 def draw_contours_on_image(img, contour_map):
     output = img.copy()
+    
+    black_img = np.zeros_like(img)
+    
     for i, (center, cnt) in enumerate(contour_map.items(), start=1):
         draw_contour(output, cnt, color=GREEN)
+        draw_contour(black_img, cnt, color=GREEN)
+        
         draw_bounding_box(output, cnt, color=YELLOW)
+        draw_bounding_box(black_img, cnt, color=YELLOW)
+        
         draw_label(output, i, position=(center[0], center[1] - 10), color=YELLOW)
+        draw_label(black_img, i, position=(center[0], center[1] - 10), color=YELLOW)
+        
         draw_circle(output, center, color=BLUE)
+        draw_circle(black_img, center, color=BLUE)
+        
         centroid = contour_centroid(cnt)
         if centroid:
             draw_circle(output, centroid, color=RED)
-    return output
+            draw_circle(black_img, centroid, color=RED)
+            
+        
+        
+        # Questa parte serve per estrarre i 3 canali
+        # e rendere lo sfondo trasparente
+        b, g, r = cv2.split(black_img)
+        alpha = cv2.max(cv2.max(b, g), r)
+        _, alpha = cv2.threshold(alpha, 0, 255, cv2.THRESH_BINARY)
+        transparent_img = cv2.merge((b, g, r, alpha))
+            
+            
+    return output, transparent_img
 
 
 def draw_centers_on_image(img, contour_map1, contour_map2):
@@ -325,7 +350,7 @@ def compute_contours(img, p):
     )
 
     contour_map, total = find_valid_contours(edges_closed, p)
-    output = draw_contours_on_image(img, contour_map)
+    output, contours = draw_contours_on_image(img, contour_map)
 
     steps = [
         ("Original",       original),
@@ -336,7 +361,7 @@ def compute_contours(img, p):
         ("Valid Contours", output),
     ]
 
-    return steps, len(contour_map), total
+    return steps, len(contour_map), total, contours
 
 
 def save_step_pairs(steps: list[tuple[str, np.ndarray]], output_dir: str = "app/testing"):
@@ -376,6 +401,12 @@ def save_step_pairs(steps: list[tuple[str, np.ndarray]], output_dir: str = "app/
 #  MAIN
 # ─────────────────────────────────────────────
 
+
+def return_contours():
+    
+    
+    return contours_img
+
 print("Caricamento frame più luminoso...")
 
 try:
@@ -389,8 +420,12 @@ except Exception as e:
     source_img = np.random.randint(30, 80, (600, 800, 3), dtype=np.uint8)
 
 
-steps, matched, total = compute_contours(source_img, PARAMS)
+steps, matched, total, contours = compute_contours(source_img, PARAMS)
 
 save_step_pairs(steps, output_dir="app/testing")
+
+
+percorso_contorni = os.path.join("app", "testing", "contours.png")
+cv2.imwrite(percorso_contorni, contours)
 
 print(f"\nDone — {len(steps) - 1} file salvati (Step_1.jpg … Step_{len(steps) - 1}.jpg)")
