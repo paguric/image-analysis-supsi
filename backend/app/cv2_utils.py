@@ -84,3 +84,9 @@ def plot_histogram(frame: np.ndarray, log_scale: bool = False, normalized: bool 
     #plt.yscale('log')
     plt.tight_layout()
     plt.show()
+
+
+def time_convert(seconds):
+    mins = seconds // 60
+    secs = seconds % 60
+    return f"{int(mins)}:{int(secs):02d}"

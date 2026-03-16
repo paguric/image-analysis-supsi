@@ -257,7 +257,7 @@ packages/react-devtools-timeline/dist
 
 
 
-# ----CARTELLE ESCLUESE----
+# ----CARTELLE ESCLUSE----
 
 backend/Confronto/*
 backend/app/testing/*.jpg
