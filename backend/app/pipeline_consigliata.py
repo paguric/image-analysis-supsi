@@ -6,6 +6,11 @@ from typing import TypedDict
 from typing import TypeAlias
 from app import cv2_utils, norm
 
+## MODULO ANCORA DA SMEMBRARE
+from app import params_config as parcon
+from app import geometrical_helpers as geo_help
+from app import draw_helpers as dr_help
+
 class MatchedContour(TypedDict):
     center:  tuple[int, int]
     contour: np.ndarray

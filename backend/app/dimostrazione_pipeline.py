@@ -2,105 +2,15 @@ import cv2
 import numpy as np
 import os
 from scipy.optimize import linear_sum_assignment
-from typing import TypedDict
-from typing import TypeAlias
+from app import params_config as parcon
+from app import geometrical_helpers as geo_help
+from app import draw_helpers as dr_help
+
 from app import cv2_utils
 from app import norm
 
 video_to_analyze_path = "video/dopo.avi"
 
-# ─────────────────────────────────────────────
-#  TIPI
-# ─────────────────────────────────────────────
-
-class MatchedContour(TypedDict):
-    center:  tuple[int, int]
-    contour: np.ndarray
-
-Color: TypeAlias = tuple[int, int, int]
-
-# ─────────────────────────────────────────────
-#  COSTANTI COLORE
-# ─────────────────────────────────────────────
-
-BLUE:   Color = (255, 0, 0)
-RED:    Color = (0, 0, 255)
-GREEN:  Color = (0, 255, 0)
-YELLOW: Color = (0, 255, 255)
-WHITE:  Color = (255, 255, 255)
-BLACK:  Color = (0, 0, 0)
-
-PARAMS = {
-    "bg_blur_size":     101,
-    "canny_low":        0,
-    "canny_high":       0,
-    "clahe_grid_dim":   8,
-    "morph_kernel_size": 3,
-    "morph_iterations":  5,
-    "min_area":          5000,
-    "min_circularity":   0.10,
-}
-
-# spazio tra immagini
-BORDER = 40
-
-# altezza fascia titolo
-TITLE_BAR = 200
-
-
-# ─────────────────────────────────────────────
-#  HELPERS GEOMETRICI
-# ─────────────────────────────────────────────
-
-def ensure_odd(v):
-    v = max(1, int(v))
-    return v if v % 2 == 1 else v + 1
-
-
-def contour_center(contour: np.ndarray) -> tuple[int, int]:
-    x, y, w, h = cv2.boundingRect(contour)
-    return x + w // 2, y + h // 2
-
-
-def contour_centroid(contour: np.ndarray) -> tuple[int, int] | None:
-    M = cv2.moments(contour)
-    if M["m00"] == 0:
-        return None
-    return int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"])
-
-
-def contour_circularity(contour: np.ndarray) -> float:
-    area      = cv2.contourArea(contour)
-    perimeter = cv2.arcLength(contour, closed=True)
-    if perimeter < 1e-6:
-        return 0
-    return 4 * np.pi * area / (perimeter ** 2)
-
-
-# ─────────────────────────────────────────────
-#  HELPERS DI DISEGNO
-# ─────────────────────────────────────────────
-
-def draw_contour(img, contour, color, thickness=2):
-    cv2.drawContours(img, [contour], -1, color, thickness)
-
-def draw_bounding_box(img, contour, color, thickness=2):
-    x, y, w, h = cv2.boundingRect(contour)
-    cv2.rectangle(img, (x, y), (x + w, y + h), color, thickness)
-
-def draw_circle(img, center, radius=6, color=(255, 0, 0), filled=True):
-    thickness = -1 if filled else 2
-    cv2.circle(img, center, radius, color, thickness)
-
-def draw_label(img, text, position, color, font_scale=0.6, thickness=2):
-    cv2.putText(img, str(text), position,
-                cv2.FONT_HERSHEY_SIMPLEX, font_scale, color, thickness)
-
-def draw_line(img, pt1, pt2, color, thickness=1):
-    cv2.line(img, pt1, pt2, color, thickness, cv2.LINE_AA)
-
-def side_by_side(img_left, img_right):
-    return np.hstack([img_left, img_right])
 
 
 # ─────────────────────────────────────────────
@@ -115,13 +25,13 @@ def to_bgr(img):
 
 def add_title(img, text):
     h, w = img.shape[:2]
-    title = np.ones((TITLE_BAR, w, 3), dtype=np.uint8) * 255
+    title = np.ones((parcon.TITLE_BAR, w, 3), dtype=np.uint8) * 255
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = w / 600
     thickness = int(font_scale * 4)
     (tw, th), _ = cv2.getTextSize(text, font, font_scale, thickness)
     x = (w - tw) // 2
-    y = TITLE_BAR // 2 + th // 2
+    y = parcon.TITLE_BAR // 2 + th // 2
     cv2.putText(title, text, (x, y),
                 font, font_scale, (0, 0, 255),
                 thickness, cv2.LINE_AA)
@@ -131,8 +41,8 @@ def add_title(img, text):
 def add_border(img):
     return cv2.copyMakeBorder(
         img,
-        BORDER, BORDER,
-        BORDER, BORDER,
+        parcon.BORDER, parcon.BORDER,
+        parcon.BORDER, parcon.BORDER,
         cv2.BORDER_CONSTANT,
         value=(255, 255, 255)
     )
@@ -145,7 +55,7 @@ def add_border(img):
 def match_contours_by_center(
     map1: dict[tuple[int, int], np.ndarray],
     map2: dict[tuple[int, int], np.ndarray]
-) -> tuple[dict[int, MatchedContour], dict[int, MatchedContour]]:
+) -> tuple[dict[int, parcon.MatchedContour], dict[int, parcon.MatchedContour]]:
     centers1, centers2 = list(map1.keys()), list(map2.keys())
 
     if not centers1 or not centers2:
@@ -181,8 +91,8 @@ def find_valid_contours(
     contour_map = {}
     for cnt in all_contours:
         if cv2.contourArea(cnt) >= p["min_area"] and \
-           contour_circularity(cnt) >= p["min_circularity"]:
-            contour_map[contour_center(cnt)] = cnt
+           geo_help.contour_circularity(cnt) >= p["min_circularity"]:
+            contour_map[geo_help.contour_center(cnt)] = cnt
 
     return contour_map, len(all_contours)
 
@@ -194,8 +104,8 @@ def find_valid_contours(
 def compare_rois_test(
     img_prima: np.ndarray,
     img_dopo: np.ndarray,
-    matched_prima: dict[int, MatchedContour],
-    matched_dopo: dict[int, MatchedContour]
+    matched_prima: dict[int, parcon.MatchedContour],
+    matched_dopo: dict[int, parcon.MatchedContour]
 ) -> np.ndarray:
     output = np.zeros_like(img_prima, dtype=np.float32)
     peso   = np.zeros(img_prima.shape[:2], dtype=np.float32)
@@ -268,22 +178,22 @@ def draw_contours_on_image(img, contour_map):
     black_img = np.zeros_like(img)
     
     for i, (center, cnt) in enumerate(contour_map.items(), start=1):
-        draw_contour(output, cnt, color=GREEN)
-        draw_contour(black_img, cnt, color=GREEN)
+        dr_help.draw_contour(output, cnt, color=parcon.GREEN)
+        dr_help.draw_contour(black_img, cnt, color=parcon.GREEN)
         
-        draw_bounding_box(output, cnt, color=YELLOW)
-        draw_bounding_box(black_img, cnt, color=YELLOW)
+        dr_help.draw_bounding_box(output, cnt, color=parcon.YELLOW)
+        dr_help.draw_bounding_box(black_img, cnt, color=parcon.YELLOW)
         
-        draw_label(output, i, position=(center[0], center[1] - 10), color=YELLOW)
-        draw_label(black_img, i, position=(center[0], center[1] - 10), color=YELLOW)
+        dr_help.draw_label(output, i, position=(center[0], center[1] - 10), color=parcon.YELLOW)
+        dr_help.draw_label(black_img, i, position=(center[0], center[1] - 10), color=parcon.YELLOW)
         
-        draw_circle(output, center, color=BLUE)
-        draw_circle(black_img, center, color=BLUE)
+        dr_help.draw_circle(output, center, color=parcon.BLUE)
+        dr_help.draw_circle(black_img, center, color=parcon.BLUE)
         
-        centroid = contour_centroid(cnt)
+        centroid = geo_help.contour_centroid(cnt)
         if centroid:
-            draw_circle(output, centroid, color=RED)
-            draw_circle(black_img, centroid, color=RED)
+            dr_help.draw_circle(output, centroid, color=parcon.RED)
+            dr_help.draw_circle(black_img, centroid, color=parcon.RED)
             
         
         
@@ -301,16 +211,16 @@ def draw_contours_on_image(img, contour_map):
 def draw_centers_on_image(img, contour_map1, contour_map2):
     output = img.copy()
     for center, cnt in contour_map1.items():
-        draw_circle(output, center, color=RED)
+        dr_help.draw_circle(output, center, color=parcon.RED)
     for center, cnt in contour_map2.items():
-        draw_circle(output, center, color=BLUE)
+        dr_help.draw_circle(output, center, color=parcon.BLUE)
     return output
 
 
 def draw_matched_contours(
     img: np.ndarray,
-    matched_left: dict[int, MatchedContour],
-    matched_right: dict[int, MatchedContour]
+    matched_left: dict[int, parcon.MatchedContour],
+    matched_right: dict[int, parcon.MatchedContour]
 ) -> np.ndarray:
     output = img.copy()
     for idx in matched_left:
@@ -318,12 +228,12 @@ def draw_matched_contours(
         center_r, contour_r = matched_right[idx]["center"], matched_right[idx]["contour"]
 
         x, y, w, h = cv2.boundingRect(contour_l)
-        draw_circle(output, center=center_l, radius=w//2, color=BLUE, filled=False)
-        draw_label(output, idx, (center_l[0] - h//2, center_l[1] - h//2), BLUE, 0.6, 2)
+        dr_help.draw_circle(output, center=center_l, radius=w//2, color=parcon.BLUE, filled=False)
+        dr_help.draw_label(output, idx, (center_l[0] - h//2, center_l[1] - h//2), parcon.BLUE, 0.6, 2)
 
         x, y, w, h = cv2.boundingRect(contour_r)
-        draw_circle(output, center=center_l, radius=w//2, color=RED, filled=False)
-        draw_label(output, idx, (center_l[0] + h//2, center_l[1] + h//2), RED, 0.6, 2)
+        dr_help.draw_circle(output, center=center_l, radius=w//2, color=parcon.RED, filled=False)
+        dr_help.draw_label(output, idx, (center_l[0] + h//2, center_l[1] + h//2), parcon.RED, 0.6, 2)
 
     return output
 
@@ -334,8 +244,8 @@ def draw_matched_contours(
 
 
 def compute_contours(img, p):
-    bg_blur  = ensure_odd(p["bg_blur_size"])
-    morph_k  = ensure_odd(p["morph_kernel_size"])
+    bg_blur  = geo_help.ensure_odd(p["bg_blur_size"])
+    morph_k  = geo_help.ensure_odd(p["morph_kernel_size"])
     original = img.copy()
 
     gray         = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -364,7 +274,7 @@ def compute_contours(img, p):
     return steps, len(contour_map), total, contours
 
 
-def save_step_pairs(steps: list[tuple[str, np.ndarray]], output_dir: str = "app/testing"):
+def save_step_pairs(steps: list[tuple[str, np.ndarray]], output_dir: str = "app"):
     """
     Salva le immagini a coppie affiancate in JPEG (qualità 85).
       Step_1.jpg = (Original      | Objects)
@@ -405,7 +315,7 @@ def save_step_pairs(steps: list[tuple[str, np.ndarray]], output_dir: str = "app/
 def return_contours():
     
     
-    return contours_img
+    return parcon.contours_img
 
 print("Caricamento frame più luminoso...")
 
@@ -420,12 +330,12 @@ except Exception as e:
     source_img = np.random.randint(30, 80, (600, 800, 3), dtype=np.uint8)
 
 
-steps, matched, total, contours = compute_contours(source_img, PARAMS)
+steps, matched, total, contours = compute_contours(source_img, parcon.PARAMS)
 
-save_step_pairs(steps, output_dir="app/testing")
+save_step_pairs(steps, output_dir="app")
 
 
-percorso_contorni = os.path.join("app", "testing", "contours.png")
+percorso_contorni = os.path.join("app", "contours.png")
 cv2.imwrite(percorso_contorni, contours)
 
 print(f"\nDone — {len(steps) - 1} file salvati (Step_1.jpg … Step_{len(steps) - 1}.jpg)")

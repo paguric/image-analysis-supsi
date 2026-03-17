@@ -6,6 +6,9 @@ from app import cv2_utils
 from app import video_initial_controls as vic
 
 
+video_to_analyze_path = "video/prima.avi"
+
+
 def overlay_transparent(background, overlay):
     result = background.copy()
     mask = overlay[:, :, 3] > 0
@@ -37,7 +40,7 @@ def play_video_with_opencv_overlay(video_path, overlay_img):
         frame_sovrapposto = overlay_transparent(img, overlay_img)
         frame_ridimensionato = cv2.resize(frame_sovrapposto, (1400, 800))
 
-        cv2.imshow("Video Elaborato", frame_ridimensionato)
+        cv2.imshow(video_to_analyze_path, frame_ridimensionato)
 
         # Sincronizzazione approssimativa con FPS reale
         elapsed = (time.time() - start_time) * 1000
@@ -59,9 +62,9 @@ def play_video_with_opencv_overlay(video_path, overlay_img):
 
     print("Durata video:", cv2_utils.time_convert(end_time - start_time))
 
-video_to_analyze_path = "video/dopo.avi"
+
 
 print("Avvio estrazione contorni...")
-contours = estrazione_contorni.return_contours_only(video_to_analyze_path)
+contours = estrazione_contorni.return_computed_contours(video_to_analyze_path)
 print("Estrazione completata. Avvio player...")
 play_video_with_opencv_overlay(video_to_analyze_path, contours)
