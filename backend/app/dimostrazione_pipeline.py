@@ -25,16 +25,23 @@ def to_bgr(img):
 
 def add_title(img, text):
     h, w = img.shape[:2]
-    title = np.ones((parcon.TITLE_BAR, w, 3), dtype=np.uint8) * 255
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = w / 600
     thickness = int(font_scale * 4)
-    (tw, th), _ = cv2.getTextSize(text, font, font_scale, thickness)
+    
+    (tw, th), baseline = cv2.getTextSize(text, font, font_scale, thickness)
+    
+    bar_height = max(parcon.TITLE_BAR, th + baseline + 30)
+    
+    title = np.ones((bar_height, w, 3), dtype=np.uint8) * 255
+    
     x = (w - tw) // 2
-    y = parcon.TITLE_BAR // 2 + th // 2
+    y = (bar_height + th - baseline) // 2
+    
     cv2.putText(title, text, (x, y),
                 font, font_scale, (0, 0, 255),
                 thickness, cv2.LINE_AA)
+    
     return np.vstack((title, img))
 
 
