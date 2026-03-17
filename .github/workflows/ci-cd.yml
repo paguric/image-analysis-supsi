@@ -35,19 +35,18 @@ jobs:
       - name: Esegui test backend
         run: |
           cd backend
-          # lasciare echo, serve per non lanciare un errore (eliminare una volta creati i test)
-          echo "Test non ancora implementati."
-          # DA DECOMMENTARE UNA VOLTA CHE AVREMO I TEST
-          # uv run pytest --junitxml=test-results.xml
+          uv run pytest --junitxml=test-results.xml --cov=src --cov-report=xml
 
-      - name: Upload artifact test backend
+      - name: Upload artifact test backend e coverage backend
         # Il job fallirà se pytest fallisce, ma questo step caricherà comunque i log
         if: always() 
         uses: actions/upload-artifact@v4
         with:
           name: backend-test-results
-          path: backend/test-results.xml
-          retention-days: 7
+          path: |
+            backend/test-results.xml
+            backend/coverage.xml
+            retention-days: 7
 
       - name: Upload artifact codice backend
         uses: actions/upload-artifact@v4
@@ -83,16 +82,28 @@ jobs:
           cd frontend
           npm ci
 
-      # DA DECOMMENTARE UNA VOLTA CHE LO AVREMO
+      # DA DECOMMENTARE UNA VOLTA CHE AVREMO I TEST
       # - name: Installa browser per Playwright
       #   run: |
       #     cd frontend
       #     npx playwright install --with-deps
 
-      # - name: Esegui test E2E frontend (Playwright)
+      # - name: Esegui test E2E frontend con coverage
       #   run: |
       #     cd frontend
-      #     npx playwright test
+      #     # Spesso si usa una variabile d'ambiente per far sapere al bundler 
+      #     # che deve generare il codice "strumentato" per la coverage
+      #     VITE_COVERAGE=true npx playwright test
+
+      # - name: Upload artifact test e coverage frontend
+      #   if: always()
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: frontend-test-results
+      #     path: |
+      #       frontend/playwright-report/
+      #       frontend/coverage/
+      #     retention-days: 7
 
       - name: Build frontend (React)
         run: |
