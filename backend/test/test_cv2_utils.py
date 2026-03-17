@@ -18,6 +18,8 @@ def test_plot_histogram(mocker):
     import matplotlib.pyplot as plt
     plt.show.assert_called_once()
 
+
+# simile al foreach
 @pytest.fixture
 def video_test(tmp_path):
     percorso = str(tmp_path / "test.mp4")
