@@ -2,14 +2,16 @@
 
 Playwright deve essere istruito a salvare i dati di copertura alla fine di ogni test. Il modo più pulito per farlo è estendere la funzione base test di Playwright creando una fixture personalizzata.
 
+
+_GIÀ FATTO IO_
 ## 1. Installare le librerie necessarie
 
 Posizionati nel terminale all'interno della cartella `frontend/` e installa il plugin per Vite e lo strumento `nyc`:
-
 ```bash
 npm install -D vite-plugin-istanbul nyc
 ```
 
+_GIÀ FATTO IO_
 ## 2. Strumentare il codice in Vite
 
 Modifica il file `vite.config.ts` (o `.js`) per includere il plugin di Istanbul. Questo preparerà il codice per tracciare le righe eseguite:
