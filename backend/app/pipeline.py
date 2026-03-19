@@ -242,6 +242,8 @@ def load_brightest_frame(video_path):
     return cv2_utils.extract_frame(video_path, idx)
 
 
+# TODO
+# si potrebbe modificare analyze() per accettare bytes/numpy array oppure UploadFile
 def analyze(
     video_prima_path: str,
     video_dopo_path: str,
