@@ -40,3 +40,12 @@
 .read-the-docs {
   color: #888;
 }
+
+
+.layout-tre-video {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}

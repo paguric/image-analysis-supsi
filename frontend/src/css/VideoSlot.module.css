@@ -1,0 +1,75 @@
+/**
+ * @class VideoSlot.module.css
+ * @brief foglio di stile per il componente VideoSlot e i suoi sotto-componenti
+ */
+
+/* @brief stile base per il contenitore della singola finestra */
+/* @details definisce la forma e l'ombra del riquadro, indipendentemente dal contenuto */
+.finestraVideo {
+  background-color: #1a1a1a;
+  padding: 15px;
+  border-radius: 12px;
+  width: 320px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* @brief stile per il titolo della telecamera */
+.titoloVideo {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #ffffff;
+}
+
+/* @brief area di drop per l'uploader */
+.areaDrop {
+  border: 2px dashed #666;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  color: #aaa;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.areaDrop p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.areaDrop:hover {
+  border-color: #888;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* @brief applica un feedback visivo durante il trascinamento */
+.areaDropAttiva {
+  border-color: #4CAF50;
+  background-color: rgba(76, 175, 80, 0.1);
+  color: #fff;
+}
+
+/* @brief reset dello stato visivo per il player */
+/* @details evita margini indesiderati quando il player sostituisce l'uploader */
+.playerWrapper {
+  margin-top: 10px;
+  width: 100%;
+}
+
+
+/* @brief stile per lo stato d'attesa negli slot in sola lettura */
+.areaAttesa {
+  border: 2px dashed #444;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  color: #888;
+  background-color: rgba(255, 255, 255, 0.02);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1; /* @details permette al riquadro di occupare lo spazio lasciato vuoto dal player */
+}
