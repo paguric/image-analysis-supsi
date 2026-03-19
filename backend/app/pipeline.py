@@ -245,13 +245,16 @@ def load_brightest_frame(video_path):
 def analyze(
     video_prima_path: str,
     video_dopo_path: str,
+    diff_path: str,
     # qua andranno passati eventualmente i parametri!
-) -> str:
+):
     """
     Questa funzione esegue l'intera pipeline
-    Prende come input i due video, salvati su disco al path passato come parametro
-    Restituisce il path dove viene salvato il video differenziale
+    Prende come input i due video, salvati su disco al path passato come parametro e il path dove salvare il video differenziale
+    diff_path dev'essere nel formato "percorso/diff/nome_file.avi"
     """
+
+    # TODO aggiungere controllo/test per verificare che diff_path sia valido
 
     # Caricamento frame più luminoso per ciascuna immagine
     idx, _ = cv2_utils.brightest_frame(video_prima_path)
@@ -274,5 +277,24 @@ def analyze(
         contour_map_prima, contour_map_dopo
     )
 
-    # TODO calcolo differenziale SU TUTTI I FRAME
-    diff = compute_aligned_roi_diff(img_prima, img_dopo, matched_prima, matched_dopo)
+    # Calcolo differenziale a partire dai contorni trovati sul frame più luminoso
+    metadati_prima = cv2_utils.get_video_info(video_prima_path)
+    metadati_dopo = cv2_utils.get_video_info(video_dopo_path)
+
+    fps = min(metadati_prima["fps"], metadati_dopo["fps"])
+    width = min(metadati_prima["width"], metadati_dopo["width"])
+    height = min(metadati_prima["height"], metadati_dopo["height"])
+
+    fourcc = cv2.VideoWriter_fourcc(*"XVID")
+    out = cv2.VideoWriter(diff_path, fourcc, fps, (width, height))
+
+    for i in fps:
+        diff = compute_aligned_roi_diff(
+            cv2_utils.extract_frame(img_prima, i),
+            cv2_utils.extract_frame(img_dopo, i),
+            matched_prima,
+            matched_dopo,
+        )
+        out.write(diff)
+
+    out.release()
