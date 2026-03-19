@@ -283,6 +283,7 @@ def analyze(
     metadati_prima = cv2_utils.get_video_info(video_prima_path)
     metadati_dopo = cv2_utils.get_video_info(video_dopo_path)
 
+    total_frames = min(metadati_prima["total_frames"], metadati_dopo["total_frames"])
     fps = min(metadati_prima["fps"], metadati_dopo["fps"])
     width = min(metadati_prima["width"], metadati_dopo["width"])
     height = min(metadati_prima["height"], metadati_dopo["height"])
@@ -290,7 +291,7 @@ def analyze(
     fourcc = cv2.VideoWriter_fourcc(*"XVID")
     out = cv2.VideoWriter(diff_path, fourcc, fps, (width, height))
 
-    for i in range(int(fps)):
+    for i in range(total_frames):
         diff = compute_aligned_roi_diff(
             cv2_utils.extract_frame(video_prima_path, i),
             cv2_utils.extract_frame(video_dopo_path, i),
