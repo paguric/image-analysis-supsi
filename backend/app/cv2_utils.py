@@ -108,6 +108,27 @@ def get_video_info(video_path: str) -> dict[str, int | float]:
     return {"total_frames": frame_count, "width": width, "height": height, "fps": fps}
 
 
+class VideoReader:
+    """Context manager per lettura efficiente frame-by-frame."""
+
+    def __init__(self, path: str):
+        self.cap = cv2.VideoCapture(path)
+        self._opened = True
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        if self._opened:
+            self.cap.release()
+
+    def read(self) -> tuple[bool, np.ndarray | None]:
+        return self.cap.read()
+
+    def is_open(self) -> bool:
+        return self.cap.isOpened()
+
+
 def plot_histogram(
     frame: np.ndarray, log_scale: bool = False, normalized: bool = False
 ):
