@@ -1,10 +1,12 @@
 import os
-from fastapi import FastAPI, UploadFile, File
 from app import pipeline
+from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 
 app = FastAPI()
+app.mount("/videos", StaticFiles(directory="out"), name="videos")
 
 app.add_middleware(
     CORSMiddleware,
@@ -41,7 +43,7 @@ async def analyze(
     pipeline.analyze(prima_path, dopo_path, diff_path)
 
     return {
-        "video_prima_url": prima_path,
-        "video_dopo_url": dopo_path,
-        "video_diff_url": diff_path,
+        "video_prima_url": "http://localhost:8000/videos/prima.avi",
+        "video_dopo_url": "http://localhost:8000/videos/dopo.avi",
+        "video_diff_url": "http://localhost:8000/videos/diff.avi",
     }
