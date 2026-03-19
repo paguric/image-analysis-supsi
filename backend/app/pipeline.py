@@ -291,13 +291,17 @@ def analyze(
     fourcc = cv2.VideoWriter_fourcc(*"XVID")
     out = cv2.VideoWriter(diff_path, fourcc, fps, (width, height))
 
-    for i in range(total_frames):
-        diff = compute_aligned_roi_diff(
-            cv2_utils.extract_frame(video_prima_path, i),
-            cv2_utils.extract_frame(video_dopo_path, i),
-            matched_prima,
-            matched_dopo,
-        )
-        out.write(diff)
+    with cv2_utils.VideoReader(video_prima_path) as cap1:
+        with cv2_utils.VideoReader(video_dopo_path) as cap2:
+            for i in range(total_frames):
+                ret1, frame1 = cap1.read()
+                ret2, frame2 = cap2.read()
+                if not ret1 or not ret2:
+                    break
+
+                diff = compute_aligned_roi_diff(
+                    frame1, frame2, matched_prima, matched_dopo
+                )
+                out.write(diff)
 
     out.release()
