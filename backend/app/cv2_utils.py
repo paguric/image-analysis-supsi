@@ -4,7 +4,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-'''
+"""
 Questa DOVREBBE essere la versione corretta, l'altra fa fallire il test
 perché seek non vuole il numero del frame ma vuole un timestamp.
 I codec video (come l'MP4) non salvano ogni frame come un'immagine intera per risparmiare spazio;
@@ -18,7 +18,7 @@ ti restituisce il frame corrente e poi si incrementa.
 Se nel modulo di test provi a mettere:
 frame_scuro = np.full((10, 10, 3), 255, dtype=np.uint8) vedi che fallisce il test del frame più luminoso
 ma passa quello del frame estratto (perché passa il controllo sulla media della luminosità).
-'''
+"""
 # def extract_frame(video_path: str, frame_idx: int) -> np.ndarray | None:
 #     # open video
 #     container = av.open(video_path)
@@ -29,7 +29,7 @@ ma passa quello del frame estratto (perché passa il controllo sulla media della
 
 #     # Calcola il timestamp target (PTS) per il frame richiesto
 #     target_pts = int((frame_idx / stream.frames) * stream.duration)
-    
+
 #     # Salta al keyframe precedente
 #     container.seek(target_pts, stream=stream)
 
@@ -62,7 +62,7 @@ def extract_frame(video_path: str, frame_idx: int) -> np.ndarray | None:
 
     # PyAV -> OpenCV
     frame = av_frame.to_ndarray(format="bgr24")
-    
+
     return frame
 
 
@@ -73,7 +73,7 @@ def brightest_frame(video_path: str) -> tuple[int, float]:
 
     brightest_index = 0
     max_brightness = -1
-    
+
     # open video
     container = av.open(video_path)
     stream = container.streams.video[0]
@@ -95,7 +95,22 @@ def brightest_frame(video_path: str) -> tuple[int, float]:
     return brightest_index, max_brightness
 
 
-def plot_histogram(frame: np.ndarray, log_scale: bool = False, normalized: bool = False):
+def get_video_info(video_path: str) -> dict[str, int | float]:
+
+    container = av.open(video_path)
+    stream = container.streams.video[0]
+    frame_count = stream.frames
+    width = stream.width
+    height = stream.height
+    fps = float(stream.average_rate)
+    container.close()
+
+    return {"total_frames": frame_count, "width": width, "height": height, "fps": fps}
+
+
+def plot_histogram(
+    frame: np.ndarray, log_scale: bool = False, normalized: bool = False
+):
     """
     Mostra il frame e a fianco il suo relativo istogramma con Matplotlib
     È possibile attivare la visualizzazione in scala logaritmica e/o con valori normalizzati (da 0.0 a 1.0)
@@ -110,19 +125,19 @@ def plot_histogram(frame: np.ndarray, log_scale: bool = False, normalized: bool 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
 
     # Show image
-    ax1.imshow(img, cmap='gray', vmin=0, vmax=1)
-    ax1.set_title('Image')
-    ax1.axis('off')
+    ax1.imshow(img, cmap="gray", vmin=0, vmax=1)
+    ax1.set_title("Image")
+    ax1.axis("off")
 
     # Show histogram
     ax2.hist(img.ravel(), 256, x_range)
     if log_scale:
-        ax2.set_yscale('log')
-    ax2.set_title('Histogram')
-    ax2.set_xlabel('Intensity')
-    ax2.set_ylabel('Pixel Count')
+        ax2.set_yscale("log")
+    ax2.set_title("Histogram")
+    ax2.set_xlabel("Intensity")
+    ax2.set_ylabel("Pixel Count")
 
-    #plt.yscale('log')
+    # plt.yscale('log')
     plt.tight_layout()
     plt.show()
 
