@@ -25,29 +25,3 @@ app.add_middleware(
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
-
-
-def main():
-    #video_paths = ["video/prima.avi", "video/dopo.avi"]
-    #print(f"Does the two videos have the same lenght? {video_reading.check_frames_number(video_paths)}")
-
-    video_dopo_path = "video/dopo.avi"
-    video_prima_path = "video/prima.avi"
-    
-    # <-- EDGE DETECTION --> 
-    #roi_identification.compute_roi(video_dopo_path)
-
-    # <-- CONTOUR DETECTION -->
-
-    # <-- CANNY CONTOUR DETECTION -->
-    #canny_contour_detection_roi.canny_contour_detection(video_dopo_path)
-
-    # <-- WATERSHED CONTOUR DETECTION -->
-    img = cv2.imread("out/prima_fl_161.jpg")
-    img = norm.histogram_equalization(img)
-
-    os.makedirs('out/threshold_test', exist_ok=True)
-    watershed.watershed_test(img, 42)
-
-if __name__ == "__main__":
-    main()
