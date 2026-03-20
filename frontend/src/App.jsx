@@ -47,9 +47,10 @@ function App() {
       })
       
       // @brief applicazione dei risultati restituiti
-      setUrlPrima(res.data.video_prima_url)
-      setUrlDopo(res.data.video_dopo_url)
-      setUrlDifferenziale(res.data.video_diff_url)
+      // Bisogna fare cos'
+      setUrlPrima(res.data.video_prima_url + '?t=' + Date.now())
+      setUrlDopo(res.data.video_dopo_url + '?t=' + Date.now())
+      setUrlDifferenziale(res.data.video_diff_url + '?t=' + Date.now())
       
       setResponse("Analisi completata con successo.")
     } catch (err) {

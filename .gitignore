@@ -264,3 +264,4 @@ backend/app/testing/*.jpg
 backend/app/testing/*.png
 backend/app/testing/canny_0,0/*
 backend/app/testing/valori_paper/
+backend/app/out/*

@@ -19,37 +19,7 @@ Se nel modulo di test provi a mettere:
 frame_scuro = np.full((10, 10, 3), 255, dtype=np.uint8) vedi che fallisce il test del frame più luminoso
 ma passa quello del frame estratto (perché passa il controllo sulla media della luminosità).
 """
-# def extract_frame(video_path: str, frame_idx: int) -> np.ndarray | None:
-#     # open video
-#     container = av.open(video_path)
-#     stream = container.streams.video[0]
-
-#     if frame_idx >= stream.frames or frame_idx < 0:
-#         return None
-
-#     # Calcola il timestamp target (PTS) per il frame richiesto
-#     target_pts = int((frame_idx / stream.frames) * stream.duration)
-
-#     # Salta al keyframe precedente
-#     container.seek(target_pts, stream=stream)
-
-#     # Decodifica finché il timestamp del frame estratto non raggiunge il target
-#     for av_frame in container.decode(stream):
-#         if av_frame.pts >= target_pts:
-#             frame = av_frame.to_ndarray(format="bgr24")
-#             container.close()
-#             return frame
-
-#     container.close()
-#     return None
-
-
 def extract_frame(video_path: str, frame_idx: int) -> np.ndarray | None:
-    """
-    Extracts a single frame from a video by index.
-    Returns the frame as a BGR numpy array, or None if extraction fails.
-    """
-
     # open video
     container = av.open(video_path)
     stream = container.streams.video[0]
@@ -57,13 +27,23 @@ def extract_frame(video_path: str, frame_idx: int) -> np.ndarray | None:
     if frame_idx >= stream.frames or frame_idx < 0:
         return None
 
-    container.seek(frame_idx, stream=stream)
-    av_frame = next(container.decode(stream))
+    # Calcola il timestamp target (PTS) per il frame richiesto
+    target_pts = int((frame_idx / stream.frames) * stream.duration)
 
-    # PyAV -> OpenCV
-    frame = av_frame.to_ndarray(format="bgr24")
+    # Salta al keyframe precedente
+    container.seek(target_pts, stream=stream)
 
-    return frame
+    # Decodifica finché il timestamp del frame estratto non raggiunge il target
+    for av_frame in container.decode(stream):
+        if av_frame.pts >= target_pts:
+            frame = av_frame.to_ndarray(format="bgr24")
+            container.close()
+            return frame
+
+    container.close()
+    return None
+
+
 
 
 def brightest_frame(video_path: str) -> tuple[int, float]:
