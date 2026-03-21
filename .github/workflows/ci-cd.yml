@@ -166,7 +166,7 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           name: frontend-build
-          path: backend/dist
+          path: frontend/dist
 
       - name: Installa dipendenze backend
         run: |
