@@ -1,6 +1,6 @@
 from PyInstaller.utils.hooks import collect_data_files
 
-datas = collect_data_files('imageio')
+datas, binaries, hiddenimports = collect_all('imageio')
 
 a = Analysis(
     ['backend/app/main.py'],
