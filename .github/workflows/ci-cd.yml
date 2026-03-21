@@ -166,9 +166,7 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           name: frontend-build
-          # IMPORTANTE: scaricalo dentro la cartella del backend 
-          # così PyInstaller lo trova facilmente
-          path: backend/dist_frontend 
+          path: backend/dist
 
       - name: Installa dipendenze backend
         run: |
