@@ -8,17 +8,27 @@ on:
     branches: [main, dev]
 
 jobs:
-  # ==================== JOB BACKEND (Python) ====================
+  # JOB BACKEND
   backend:
     runs-on: ubuntu-latest
 
     steps:
+    # https://github.com/marketplace?type=actions
+    # questi codici sono molto interessanti perché fanno parte delle GitHub Actions
+    # cioè componenti già pronti che permettono di automatizzare una determinata
+    # task senza dover scrivere tutto il codice da zero, ma riutilizzando codice
+    # già esistente qui ad esempio actions è l'organizzazione ufficiale di GitHub 
+    # che fornisce
+    # l'azione, checkout è il nome dell'azione (in questo caso permette di
+    # scaricare il nostro codice sulla macchina creata)
+    # la @v4 serve semplicemente ad identificare la versione.
+    # La struttura generale è [Autore]/[Nome-Repository]@[Versione]
       - name: Checkout codice
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # Setup di uv per gestione delle dipendenze
       - name: Setup uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
 
@@ -40,20 +50,21 @@ jobs:
       - name: Upload artifact test backend e coverage backend
         # Il job fallirà se pytest fallisce, ma questo step caricherà comunque i log
         if: always() 
-        uses: actions/upload-artifact@v4
+        # non metto la 7 perché ho visto che è stata rilasciata 3 settimane fa
+        uses: actions/upload-artifact@v6
         with:
           name: backend-test-results
           path: |
             backend/test-results.xml
             backend/coverage.xml
-            retention-days: 7
+          retention-days: 7
 
       - name: Upload artifact codice backend
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           # nome dell'artifact generato per il backend
           name: backend-source
-          # @salva l'intera cartella backend (tranne la venv)
+          # salva l'intera cartella backend (tranne la venv)
           path: |
             backend/
             !backend/.venv/
@@ -61,14 +72,19 @@ jobs:
             !backend/.pytest_cache/
           retention-days: 7
 
-  # ==================== JOB FRONTEND (React) ====================
+
+
+
+
+
+  # JOB FRONTEND
   frontend:
     needs: backend # parte solo se il backend passa
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout codice
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -97,7 +113,7 @@ jobs:
 
       # - name: Upload artifact test e coverage frontend
       #   if: always()
-      #   uses: actions/upload-artifact@v4
+      #   uses: actions/upload-artifact@v6
       #   with:
       #     name: frontend-test-results
       #     path: |
@@ -111,10 +127,68 @@ jobs:
           npm run build
 
       - name: Upload artifact build frontend
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           # nome dell'artifact generato
           name: frontend-build
           path: frontend/dist/
           # giorni di conservazione dell'artifact su GitHub
           retention-days: 7
+
+          
+
+
+
+  # JOB BUILD EXE
+  build-windows:
+    # aspettiamo che vengano buildati backend e frontend
+    needs: [backend, frontend] 
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout codice
+        uses: actions/checkout@v6
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          # non scarichiamo tutte le volte i pacchetti necessari
+          enable-cache: true
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      # Scarica la build del frontend creata nel job precedente
+      - name: Download Frontend Build
+        # non metto la 8.0.1 perché ho visto che è stata rilasciata settimana scorsa
+        uses: actions/download-artifact@v7
+        with:
+          name: frontend-build
+          # IMPORTANTE: scaricalo dentro la cartella del backend 
+          # così PyInstaller lo trova facilmente
+          path: backend/dist_frontend 
+
+      - name: Installa dipendenze backend
+        run: |
+          cd backend
+          uv sync --all-extras
+
+      - name: Build EXE con PyInstaller
+        run: |
+          cd backend
+          uv run pyinstaller --clean --log-level=DEBUG imageanalysis.spec
+
+      - name: Upload Artifact EXE
+        uses: actions/upload-artifact@v6
+        with:
+          name: Applicazione-Windows
+          path: backend/dist/*.exe
+          retention-days: 30
+
+          
+      - name: Test EXE
+        run: |
+          cd backend/dist
+          ./SUPSI\ Image\ Analysis.exe --help

@@ -48,19 +48,17 @@ app.add_middleware(
 )
 
 
-# percorso base ai file statici del frontend 
-base_path = os.path.dirname(os.path.abspath(__file__))
-# cartella che contiene le build dei file react. pyinstaller la copia dentro l'exe
-static_dir = os.path.join(base_path, "..", "..", "frontend", "dist")
-
-
-# aggiungendo queste due righe sto facendo in modo che automaticamente, 
-# quando avvio il backend, venga lanciato anche un "npm run build", di modo 
-# da sostituire il codice compilato "vecchio" presente in dist (che è 
-# la cartella dove viene messo il codice compilato che il browser è
-# in grado di interpretare)
-frontend_dir = os.path.join(base_path, "..", "..", "frontend")
-subprocess.run(["npm", "run", "build"], cwd=frontend_dir, check=True)
+# percorso base ai file statici del frontend
+# - dentro l'exe (frozen): PyInstaller ha copiato frontend/dist → static/
+# - in sviluppo: punta direttamente a frontend/dist
+if getattr(sys, 'frozen', False):
+    base_path = sys._MEIPASS
+    static_dir = os.path.join(base_path, "static")
+else:
+    static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "frontend", "dist")
+    # in sviluppo rebuilda automaticamente il frontend
+    frontend_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "frontend")
+    subprocess.run(["npm", "run", "build"], cwd=frontend_dir, check=True)
 
 
 
@@ -71,7 +69,7 @@ async def root() -> FileResponse:
 
 
 
-# NON AVEVI MESSO IL TIPE HINT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# NON AVEVI MESSO IL TIPE HINT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! pallina
 @app.post("/analyze")
 async def analyze(
     video_prima: UploadFile = File(...), video_dopo: UploadFile = File(...)
@@ -109,9 +107,9 @@ async def analyze(
     clip.close()
 
     return {
-        "video_prima_url": "http://localhost:8000/videos/prima.webm",
-        "video_dopo_url": "http://localhost:8000/videos/dopo.webm",
-        "video_diff_url": "http://localhost:8000/videos/diff.webm",
+        "video_prima_url": "/videos/prima.webm",
+        "video_dopo_url": "/videos/dopo.webm",
+        "video_diff_url": "/videos/diff.webm",
     }
 
 
@@ -156,4 +154,4 @@ if __name__ == "__main__":
         resizable=True,
     )
     # questo apre effettivamente la finestra e la mantiene aperta
-    webview.start(debug=True)
+    webview.start()

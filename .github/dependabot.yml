@@ -1,0 +1,30 @@
+# https://docs.github.com/en/code-security/tutorials/secure-your-dependencies/dependabot-quickstart-guide
+# https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference
+# dato che lavoriamo con più repo (le varie GitHub actions), ho pensato di 
+# creare questo file di modo da analizzare periodicamente le potenziali falle
+# o vulnerabilità di questi repo oppure anche proprio di uv e npm.
+# Se esce una vulnerabilità in actions/checkout o se una Action viene deprecata, 
+# Dependabot se ne accorgerà.
+
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "16:00"
+
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "16:00"
+
+  - package-ecosystem: "uv"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "16:00"
