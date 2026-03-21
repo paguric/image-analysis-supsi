@@ -189,4 +189,4 @@ jobs:
       - name: Test EXE
         run: |
           cd backend/dist
-          SUPSI Image Analysis.exe --help
+          & ".\SUPSI Image Analysis.exe" --help
