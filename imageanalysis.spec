@@ -34,6 +34,6 @@ exe = EXE(
     a.datas,
     name='SUPSI Image Analysis',
     onefile=True,   
-    windowed=False,  
-    console=True,  
+    windowed=True,  
+    console=False,  
 )
