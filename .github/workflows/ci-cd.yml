@@ -183,7 +183,7 @@ jobs:
         with:
           name: Applicazione-Windows
           path: backend/dist/*.exe
-          retention-days: 30
+          retention-days: 3
 
           
       - name: Test EXE
