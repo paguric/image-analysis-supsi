@@ -6,6 +6,7 @@ import uvicorn
 import mimetypes
 import webview
 import numpy as np
+from PIL import Image
 
 from app import pipeline
 from app import cv2_utils
@@ -86,9 +87,17 @@ async def analyze(
     frames_prima = cv2_utils.video_bytes_to_frames(prima_bytes)
     frames_dopo = cv2_utils.video_bytes_to_frames(dopo_bytes)
 
-    pipeline.analyze(frames_prima, frames_dopo)
+    frames_diff = pipeline.analyze(frames_prima, frames_dopo)
 
     return {"TODO": "TODO"}
+
+
+@app.get("/diff/{frame}")
+def get_diff(frame: int) -> str:
+    im = Image.fromarray(frames_diff[frame])
+    path = f"out/diff_{frame}.jpeg"
+    im.save(path)
+    return path
 
 
 # fallback di sicurezza, se il file richiesto esiste (file statico di React)
