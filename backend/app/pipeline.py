@@ -243,27 +243,23 @@ def load_brightest_frame(video_path):
 
 
 # TODO
-# si potrebbe modificare analyze() per accettare bytes/numpy array oppure UploadFile
 def analyze(
-    video_prima_path: str,
-    video_dopo_path: str,
-    diff_path: str,
+    frames_prima: np.ndarray,
+    frames_dopo: np.ndarray,
     # qua andranno passati eventualmente i parametri!
-):
+) -> np.ndarray | None:
     """
     Questa funzione esegue l'intera pipeline
-    Prende come input i due video, salvati su disco al path passato come parametro e il path dove salvare il video differenziale
-    diff_path dev'essere nel formato "percorso/diff/nome_file.avi"
     """
 
-    # TODO aggiungere controllo/test per verificare che diff_path sia valido
+    # TODO aggiungere controllo/test per validare input
 
     # Caricamento frame più luminoso per ciascuna immagine
-    idx, _ = cv2_utils.brightest_frame(video_prima_path)
-    img_prima = cv2_utils.extract_frame(video_prima_path, idx)
+    idx, _ = cv2_utils.brightest_frame(frames_prima)
+    img_prima = frames_prima[idx]
 
-    idx, _ = cv2_utils.brightest_frame(video_dopo_path)
-    img_dopo = cv2_utils.extract_frame(video_dopo_path, idx)
+    idx, _ = cv2_utils.brightest_frame(frames_dopo)
+    img_dopo = frames_dopo[idx]
 
     # Calcolo dei contorni
     contour_map_prima, total_prima = find_valid_contours(
@@ -280,28 +276,13 @@ def analyze(
     )
 
     # Calcolo differenziale a partire dai contorni trovati sul frame più luminoso
-    metadati_prima = cv2_utils.get_video_info(video_prima_path)
-    metadati_dopo = cv2_utils.get_video_info(video_dopo_path)
+    total_frames = min(frames_prima.length, frames_dopo.length)
 
-    total_frames = min(metadati_prima["total_frames"], metadati_dopo["total_frames"])
-    fps = min(metadati_prima["fps"], metadati_dopo["fps"])
-    width = min(metadati_prima["width"], metadati_dopo["width"])
-    height = min(metadati_prima["height"], metadati_dopo["height"])
+    diff: np.ndarray | None = None
 
-    fourcc = cv2.VideoWriter_fourcc(*"XVID")
-    out = cv2.VideoWriter(diff_path, fourcc, fps, (width, height))
+    for i in range(total_frames):
+        diff[i] = compute_aligned_roi_diff(
+            frames_prima[i], frames_dopo[i], matched_prima, matched_dopo
+        )
 
-    with cv2_utils.VideoReader(video_prima_path) as cap1:
-        with cv2_utils.VideoReader(video_dopo_path) as cap2:
-            for i in range(total_frames):
-                ret1, frame1 = cap1.read()
-                ret2, frame2 = cap2.read()
-                if not ret1 or not ret2:
-                    break
-
-                diff = compute_aligned_roi_diff(
-                    frame1, frame2, matched_prima, matched_dopo
-                )
-                out.write(diff)
-
-    out.release()
+    return diff

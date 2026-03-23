@@ -5,21 +5,24 @@ import subprocess
 import uvicorn
 import mimetypes
 import webview
+import numpy as np
+
+from app import pipeline
+from app import cv2_utils
+
 from fastapi.responses import FileResponse
 from moviepy.editor import VideoFileClip
-from app import pipeline
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 
-
 # se il codice sta eseguendo dentro l'exe allora la cartella contenente i video
 # sarà creata di fianco a all'exe dell'applicazione (perché essendo tutto già compresso
 # non possiamo salvare in posizioni interne al programma). Se invece il codice sta eseguendo
-# "normalmente" (nel senso che lo avviamo tramite comando), la cartella con i video sarà 
-# creata di fianco al main. 
-if getattr(sys, 'frozen', False):
+# "normalmente" (nel senso che lo avviamo tramite comando), la cartella con i video sarà
+# creata di fianco al main.
+if getattr(sys, "frozen", False):
     output_dir = os.path.join(os.path.dirname(sys.executable), "out")
 else:
     output_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "out")
@@ -30,7 +33,7 @@ os.makedirs(output_dir, exist_ok=True)
 # usiamo WebM con codec video VP8, un formato apposta per il web
 # meglio non usare mp4, altrimenti su linux potrebbe causare problemi
 # in quanto mp4 è un formato proprietario.
-mimetypes.add_type('video/webm', '.webm')
+mimetypes.add_type("video/webm", ".webm")
 
 
 app = FastAPI()
@@ -49,27 +52,30 @@ app.add_middleware(
 
 
 # percorso base ai file statici del frontend
-# - dentro l'exe (frozen): PyInstaller ha copiato frontend/dist → static/
-# - in sviluppo: punta direttamente a frontend/dist
-if getattr(sys, 'frozen', False):
-    base_path = sys._MEIPASS
-    static_dir = os.path.join(base_path, "static")
-else:
-    static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "frontend", "dist")
-    # in sviluppo rebuilda automaticamente il frontend
-    frontend_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "frontend")
-    subprocess.run(["npm", "run", "build"], cwd=frontend_dir, check=True)
+base_path = os.path.dirname(os.path.abspath(__file__))
+# cartella che contiene le build dei file react. pyinstaller la copia dentro l'exe
+static_dir = os.path.join(base_path, "..", "..", "frontend", "dist")
 
 
+# aggiungendo queste due righe sto facendo in modo che automaticamente,
+# quando avvio il backend, venga lanciato anche un "npm run build", di modo
+# da sostituire il codice compilato "vecchio" presente in dist (che è
+# la cartella dove viene messo il codice compilato che il browser è
+# in grado di interpretare)
+frontend_dir = os.path.join(base_path, "..", "..", "frontend")
+subprocess.run(["npm", "run", "build"], cwd=frontend_dir, check=True)
 
-# NON AVEVI MESSO IL TIPE HINT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! tennis
+
 @app.get("/")
 async def root() -> FileResponse:
     return FileResponse(os.path.join(static_dir, "index.html"))
 
 
+frames_prima: np.ndarray | None = None
+frames_dopo: np.ndarray | None = None
+frames_diff: np.ndarray | None = None
 
-# NON AVEVI MESSO IL TIPE HINT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! pallina
+
 @app.post("/analyze")
 async def analyze(
     video_prima: UploadFile = File(...), video_dopo: UploadFile = File(...)
@@ -77,42 +83,12 @@ async def analyze(
     prima_bytes = await video_prima.read()
     dopo_bytes = await video_dopo.read()
 
-    prima_avi_path = os.path.join(output_dir, "prima.avi")
-    dopo_avi_path  = os.path.join(output_dir, "dopo.avi")
-    diff_avi_path  = os.path.join(output_dir, "diff.avi")
+    frames_prima = cv2_utils.video_bytes_to_frames(prima_bytes)
+    frames_dopo = cv2_utils.video_bytes_to_frames(dopo_bytes)
 
-    # Salva i file caricati
-    with open(prima_avi_path, "wb") as f:
-        f.write(prima_bytes)
-    with open(dopo_avi_path, "wb") as f:
-        f.write(dopo_bytes)
+    pipeline.analyze(frames_prima, frames_dopo)
 
-    pipeline.analyze(prima_avi_path, dopo_avi_path, diff_avi_path)
-
-    # È necessario convertire i video in WebM perchè i browser non supportano gli avi
-    prima_webm_path = os.path.join(output_dir, "prima.webm")
-    dopo_webm_path  = os.path.join(output_dir, "dopo.webm")
-    diff_webm_path  = os.path.join(output_dir, "diff.webm")
-
-    clip = VideoFileClip(prima_avi_path)
-    clip.write_videofile(prima_webm_path, codec="libvpx", audio=False)
-    clip.close()
-
-    clip = VideoFileClip(dopo_avi_path)
-    clip.write_videofile(dopo_webm_path, codec="libvpx", audio=False)
-    clip.close()
-
-    clip = VideoFileClip(diff_avi_path)
-    clip.write_videofile(diff_webm_path, codec="libvpx", audio=False)
-    clip.close()
-
-    return {
-        "video_prima_url": "/videos/prima.webm",
-        "video_dopo_url": "/videos/dopo.webm",
-        "video_diff_url": "/videos/diff.webm",
-    }
-
-
+    return {"TODO": "TODO"}
 
 
 # fallback di sicurezza, se il file richiesto esiste (file statico di React)
@@ -125,7 +101,6 @@ def serve_frontend(full_path: str) -> FileResponse:
     return FileResponse(os.path.join(static_dir, "index.html"))
 
 
-
 # avvia uvicorn che fa da intermediario tra la rete (locale) e FastAPI:
 # raccoglie le richieste HTTP da PyWebView, le passa a FastAPI,
 # e rimanda le risposte indietro.
@@ -135,9 +110,7 @@ def start_server() -> None:
     #                   la porta da ascoltare,
     #                   stampa solo gli errori.
     uvicorn.run(app, host="127.0.0.1", port=8000, log_level="error")
-    
-    
-    
+
 
 if __name__ == "__main__":
     # avvia il server in un thread separato (daemon).
@@ -154,4 +127,4 @@ if __name__ == "__main__":
         resizable=True,
     )
     # questo apre effettivamente la finestra e la mantiene aperta
-    webview.start()
+    webview.start(debug=True)
