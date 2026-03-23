@@ -244,10 +244,11 @@ def load_brightest_frame(video_path):
 
 # TODO
 def analyze(
-    frames_prima: np.ndarray,
-    frames_dopo: np.ndarray,
+    video_prima_path: str,
+    video_dopo_path: str,
+    video_diff_path: str,
     # qua andranno passati eventualmente i parametri!
-) -> np.ndarray | None:
+):
     """
     Questa funzione esegue l'intera pipeline
     """
@@ -255,11 +256,8 @@ def analyze(
     # TODO aggiungere controllo/test per validare input
 
     # Caricamento frame più luminoso per ciascuna immagine
-    idx, _ = cv2_utils.brightest_frame(frames_prima)
-    img_prima = frames_prima[idx]
-
-    idx, _ = cv2_utils.brightest_frame(frames_dopo)
-    img_dopo = frames_dopo[idx]
+    img_prima = cv2_utils.brightest_frame(frames_prima)
+    img_dopo = cv2_utils.brightest_frame(frames_dopo)
 
     # Calcolo dei contorni
     contour_map_prima, total_prima = find_valid_contours(

@@ -18,12 +18,12 @@ def video_bytes_to_frames(video_bytes: bytes) -> np.ndarray:
     return np.stack(frames, axis=0)
 
 
-def brightest_frame(video_frames: np.ndarray) -> tuple[int, float]:
+def brightest_frame(video_frames: np.ndarray) -> np.ndarray:
     """
-    Trova l'indice e la luminositò del frame più luminoso
+    Trova il frame più luminoso
     """
 
-    brightest_index = 0
+    brightest_frame = None
     max_brightness = -1
 
     for i, frame in enumerate(video_frames):
@@ -35,15 +35,12 @@ def brightest_frame(video_frames: np.ndarray) -> tuple[int, float]:
 
         if brightness > max_brightness:
             max_brightness = brightness
-            brightest_index = i
+            brightest_frame = img_gray
 
-    return brightest_index, max_brightness
+    return brightest_frame
 
 
 def get_video_info(video_path: str) -> dict[str, int | float]:
-    """
-    -> Attualmente inutilizzata
-    """
     container = av.open(video_path)
     stream = container.streams.video[0]
     frame_count = stream.frames
