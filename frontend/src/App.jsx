@@ -18,6 +18,8 @@ function App() {
   
   // @brief stati per contenere l'URL del frame differenziale richiesto
   const [urlDiff, setUrlDiff] = useState(null)
+  const [urlPrima, setUrlPrima] = useState(null)
+  const [urlDopo, setUrlDopo] = useState(null)
 
   /**
    * @brief esegue l'upload dei file video e attende i risultati
@@ -44,6 +46,9 @@ function App() {
           'Content-Type': 'multipart/form-data'
         }
       })
+
+      setUrlPrima(res.data.video_prima_url + '?t=' + Date.now())
+      setUrlDopo(res.data.video_dopo_url + '?t=' + Date.now())
 
       setResponse("Analisi completata con successo.")
     } catch (err) {
