@@ -2,6 +2,7 @@ from http.client import HTTPException
 import io
 import os
 import sys
+import cv2
 import threading
 import subprocess
 import uvicorn
@@ -75,11 +76,6 @@ async def root() -> FileResponse:
     return FileResponse(os.path.join(static_dir, "index.html"))
 
 
-frames_prima: np.ndarray | None = None
-frames_dopo: np.ndarray | None = None
-frames_diff: np.ndarray | None = None
-
-
 @app.post("/analyze")
 async def analyze(
     video_prima: UploadFile = File(...), video_dopo: UploadFile = File(...)
@@ -87,24 +83,38 @@ async def analyze(
     prima_bytes = await video_prima.read()
     dopo_bytes = await video_dopo.read()
 
-    frames_prima = cv2_utils.video_bytes_to_frames(prima_bytes)
-    frames_dopo = cv2_utils.video_bytes_to_frames(dopo_bytes)
+    prima_avi_path = os.path.join(output_dir, "prima.avi")
+    dopo_avi_path = os.path.join(output_dir, "dopo.avi")
+    diff_avi_path = os.path.join(output_dir, "diff.avi")
 
-    frames_diff = pipeline.analyze(frames_prima, frames_dopo)
+    # Salva i file caricati
+    with open(prima_avi_path, "wb") as f:
+        f.write(prima_bytes)
+    with open(dopo_avi_path, "wb") as f:
+        f.write(dopo_bytes)
+
+    pipeline.analyze(prima_avi_path, dopo_avi_path, diff_avi_path)
 
     return {"TODO": "TODO"}
 
 
 @app.get("/diff/{frame}")
 def get_diff(frame: int) -> str:
-    if frame < 0 or frame >= len(frames_diff):
+    diff_avi_path = os.path.join(output_dir, "diff.avi")
+
+    cap = cv2.VideoCapture(diff_avi_path)
+    cap.set(cv2.CAP_PROP_POS_FRAMES, frame)
+    ret, frame_data = cap.read()
+    cap.release()
+
+    if not ret:
         raise HTTPException(status_code=404, detail="Frame non trovato")
 
-    im = Image.fromarray(frames_diff[frame])
-    buf = io.BytesIO()
-    im.save(buf, format="JPEG")
-    buf.seek(0)
-    return StreamingResponse(buf, media_type="image/jpeg")
+    frame_rgb = cv2.cvtColor(frame_data, cv2.COLOR_BGR2RGB)
+    _, buffer = cv2.imencode(".jpg", frame_rgb)
+    io_buffer = io.BytesIO(buffer)
+
+    return StreamingResponse(io_buffer, media_type="image/jpeg")
 
 
 # fallback di sicurezza, se il file richiesto esiste (file statico di React)

@@ -26,20 +26,7 @@ class VideoReader:
         return self.cap.isOpened()
 
 
-def video_bytes_to_frames(video_bytes: bytes) -> np.ndarray:
-    """
-    Converte i bytes di un video in un array numpy di shape (N, H, W, 3)
-    dove N è il numero di frame, H l'altezza, W la larghezza, 3 i canali BGR.
-    """
-    buffer = io.BytesIO(video_bytes)
-    container = av.open(buffer, format="avi")
-
-    frames = [frame.to_ndarray(format="bgr24") for frame in container.decode(video=0)]
-
-    return np.stack(frames, axis=0)
-
-
-def brightest_frame(video_frames: np.ndarray) -> np.ndarray:
+def brightest_frame(video_path: str) -> np.ndarray:
     """
     Trova il frame più luminoso
     """
@@ -47,16 +34,21 @@ def brightest_frame(video_frames: np.ndarray) -> np.ndarray:
     brightest_frame = None
     max_brightness = -1
 
-    for i, frame in enumerate(video_frames):
-        # convert the image to grayscale format
-        img_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    with VideoReader(video_path) as cap1:
+        for i in range(get_video_info(video_path)["total_frames"]):
+            ret, frame = cap1.read()
+            if not ret:
+                break
 
-        # calculate mean brightness of the frame
-        brightness = img_gray.mean()
+            # convert the image to grayscale format
+            img_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        if brightness > max_brightness:
-            max_brightness = brightness
-            brightest_frame = img_gray
+            # calculate mean brightness of the frame
+            brightness = img_gray.mean()
+
+            if brightness > max_brightness:
+                max_brightness = brightness
+                brightest_frame = frame
 
     return brightest_frame
 

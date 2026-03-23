@@ -274,13 +274,28 @@ def analyze(
     )
 
     # Calcolo differenziale a partire dai contorni trovati sul frame più luminoso
-    total_frames = min(len(video_prima_path), len(video_dopo_path))
+    metadati_prima = cv2_utils.get_video_info(video_prima_path)
+    metadati_dopo = cv2_utils.get_video_info(video_dopo_path)
 
-    diff = np.empty((total_frames, *img_prima.shape), dtype=np.uint8)
+    total_frames = min(metadati_prima["total_frames"], metadati_dopo["total_frames"])
+    fps = min(metadati_prima["fps"], metadati_dopo["fps"])
+    width = min(metadati_prima["width"], metadati_dopo["width"])
+    height = min(metadati_prima["height"], metadati_dopo["height"])
 
-    for i in range(total_frames):
-        diff[i] = compute_aligned_roi_diff(
-            video_prima_path[i], video_dopo_path[i], matched_prima, matched_dopo
-        )
+    fourcc = cv2.VideoWriter_fourcc(*"XVID")
+    out = cv2.VideoWriter(video_diff_path, fourcc, fps, (width, height))
 
-    return diff
+    with cv2_utils.VideoReader(video_prima_path) as cap1:
+        with cv2_utils.VideoReader(video_dopo_path) as cap2:
+            for i in range(total_frames):
+                ret1, frame1 = cap1.read()
+                ret2, frame2 = cap2.read()
+                if not ret1 or not ret2:
+                    break
+
+                diff = compute_aligned_roi_diff(
+                    frame1, frame2, matched_prima, matched_dopo
+                )
+                out.write(diff)
+
+    out.release()
