@@ -256,8 +256,8 @@ def analyze(
     # TODO aggiungere controllo/test per validare input
 
     # Caricamento frame più luminoso per ciascuna immagine
-    img_prima = cv2_utils.brightest_frame(frames_prima)
-    img_dopo = cv2_utils.brightest_frame(frames_dopo)
+    img_prima = cv2_utils.brightest_frame(video_prima_path)
+    img_dopo = cv2_utils.brightest_frame(video_dopo_path)
 
     # Calcolo dei contorni
     contour_map_prima, total_prima = find_valid_contours(
@@ -274,13 +274,13 @@ def analyze(
     )
 
     # Calcolo differenziale a partire dai contorni trovati sul frame più luminoso
-    total_frames = min(len(frames_prima), len(frames_dopo))
+    total_frames = min(len(video_prima_path), len(video_dopo_path))
 
     diff = np.empty((total_frames, *img_prima.shape), dtype=np.uint8)
 
     for i in range(total_frames):
         diff[i] = compute_aligned_roi_diff(
-            frames_prima[i], frames_dopo[i], matched_prima, matched_dopo
+            video_prima_path[i], video_dopo_path[i], matched_prima, matched_dopo
         )
 
     return diff

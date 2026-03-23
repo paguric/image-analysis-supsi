@@ -5,6 +5,27 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
+class VideoReader:
+    """Context manager per lettura efficiente frame-by-frame."""
+
+    def __init__(self, path: str):
+        self.cap = cv2.VideoCapture(path)
+        self._opened = True
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        if self._opened:
+            self.cap.release()
+
+    def read(self) -> tuple[bool, np.ndarray | None]:
+        return self.cap.read()
+
+    def is_open(self) -> bool:
+        return self.cap.isOpened()
+
+
 def video_bytes_to_frames(video_bytes: bytes) -> np.ndarray:
     """
     Converte i bytes di un video in un array numpy di shape (N, H, W, 3)
