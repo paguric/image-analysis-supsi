@@ -1,3 +1,5 @@
+from http.client import HTTPException
+import io
 import os
 import sys
 import threading
@@ -16,6 +18,7 @@ from moviepy.editor import VideoFileClip
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import StreamingResponse
 
 
 # se il codice sta eseguendo dentro l'exe allora la cartella contenente i video
@@ -94,10 +97,14 @@ async def analyze(
 
 @app.get("/diff/{frame}")
 def get_diff(frame: int) -> str:
+    if frame < 0 or frame >= len(frames_diff):
+        raise HTTPException(status_code=404, detail="Frame non trovato")
+
     im = Image.fromarray(frames_diff[frame])
-    path = f"out/diff_{frame}.jpeg"
-    im.save(path)
-    return path
+    buf = io.BytesIO()
+    im.save(buf, format="JPEG")
+    buf.seek(0)
+    return StreamingResponse(buf, media_type="image/jpeg")
 
 
 # fallback di sicurezza, se il file richiesto esiste (file statico di React)

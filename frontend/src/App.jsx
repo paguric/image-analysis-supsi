@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import api from './api'
 import './css/App.css'
 import VideoSlot from './components/VideoSlot'
+import ImageSlot from './components/ImageSlot'
 
 /**
  * @class App 
@@ -15,16 +16,14 @@ function App() {
   const [videoPrima, setVideoPrima] = useState(null)
   const [videoDopo, setVideoDopo] = useState(null)
   
-  // @brief stati per contenere gli URL dei tre video restituiti dal backend
-  const [urlPrima, setUrlPrima] = useState(null)
-  const [urlDopo, setUrlDopo] = useState(null)
-  const [urlDifferenziale, setUrlDifferenziale] = useState(null)
+  // @brief stati per contenere l'URL del frame differenziale richiesto
+  const [urlDiff, setUrlDiff] = useState(null)
 
   /**
    * @brief esegue l'upload dei file video e attende i risultati
    * @details utilizza FormData per impacchettare i file binari in modo sicuro per il protocollo HTTP
    */
-  const callBackend = async () => {
+  const analyze = async () => {
     // @brief controlla che entrambi i video siano stati caricati prima di procedere
     if (!videoPrima || !videoDopo) {
       alert("Carica entrambi i video prima di chiamare il backend!");
@@ -45,13 +44,7 @@ function App() {
           'Content-Type': 'multipart/form-data'
         }
       })
-      
-      // @brief applicazione dei risultati restituiti
-      // Bisogna fare cos'
-      setUrlPrima(res.data.video_prima_url + '?t=' + Date.now())
-      setUrlDopo(res.data.video_dopo_url + '?t=' + Date.now())
-      setUrlDifferenziale(res.data.video_diff_url + '?t=' + Date.now())
-      
+
       setResponse("Analisi completata con successo.")
     } catch (err) {
       setResponse('Error: ' + err.message)
@@ -60,6 +53,20 @@ function App() {
       setLoading(false)
     }
   }
+
+  async function getFrame() {
+    const response = await api.get('/diff/100', { responseType: 'blob' })
+    const blob = response.data
+    const url = URL.createObjectURL(blob)
+    setUrlDiff(url)
+  }
+
+  // pulisce la memoria (il frame differenziale richiesto)
+  useEffect(() => {
+    return () => {
+      if (urlDiff) URL.revokeObjectURL(urlDiff)
+    }
+  }, [urlDiff])
 
   return (
     <>
@@ -82,22 +89,21 @@ function App() {
           videoUrl={urlDopo}
         />
 
-        {/* @brief slot di output disabilitato per l'inserimento manuale */}
-        <VideoSlot 
-          titolo="Video Differenziale" 
-          videoUrl={urlDifferenziale}
-          solaLettura={true}
-        />
+        <ImageSlot img_src={urlDiff} />
       </div>
 
       <div className="card">
         {/* @brief bottone per avviare il processo */}
         {/* @details il bottone ora controlla le due nuove variabili per abilitarsi solo se entrambe sono presenti */}
-        <button onClick={callBackend} disabled={loading || !videoPrima || !videoDopo}>
+        <button onClick={analyze} disabled={loading || !videoPrima || !videoDopo}>
           {loading ? 'Analisi in corso...' : 'Invia al Backend per l\'analisi'}
         </button>
         {/* @brief renderizza la risposta di errore o di successo se presente */}
         {response && <p>Response: <strong>{response}</strong></p>}
+      </div>
+
+      <div className='card'>
+        <button onClick={getFrame}>Mostra frame 100!</button>
       </div>
     </>
   )

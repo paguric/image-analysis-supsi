@@ -276,7 +276,7 @@ def analyze(
     )
 
     # Calcolo differenziale a partire dai contorni trovati sul frame più luminoso
-    total_frames = min(frames_prima.length, frames_dopo.length)
+    total_frames = min(len(frames_prima), len(frames_dopo))
 
     diff: np.ndarray | None = None
 
