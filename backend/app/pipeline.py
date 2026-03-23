@@ -278,7 +278,7 @@ def analyze(
     # Calcolo differenziale a partire dai contorni trovati sul frame più luminoso
     total_frames = min(len(frames_prima), len(frames_dopo))
 
-    diff: np.ndarray | None = None
+    diff = np.empty((total_frames, *img_prima.shape), dtype=np.uint8)
 
     for i in range(total_frames):
         diff[i] = compute_aligned_roi_diff(
