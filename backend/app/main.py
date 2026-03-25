@@ -13,6 +13,9 @@ from PIL import Image
 
 from app import pipeline
 from app import cv2_utils
+from app import roi_controller
+from app import pipeline_controller
+from app.roi_controller import ROI
 
 from fastapi.responses import FileResponse
 from moviepy.editor import VideoFileClip
@@ -76,16 +79,20 @@ async def root() -> FileResponse:
     return FileResponse(os.path.join(static_dir, "index.html"))
 
 
+roi_prima: list[ROI] | None = None
+roi_dopo: list[ROI] | None = None
+
 @app.post("/analyze")
 async def analyze(
     video_prima: UploadFile = File(...), video_dopo: UploadFile = File(...)
 ) -> dict[str, str]:
+    global roi_prima, roi_dopo
+
     prima_bytes = await video_prima.read()
     dopo_bytes = await video_dopo.read()
 
     prima_avi_path = os.path.join(output_dir, "prima.avi")
     dopo_avi_path = os.path.join(output_dir, "dopo.avi")
-    diff_avi_path = os.path.join(output_dir, "diff.avi")
 
     # Salva i file caricati
     with open(prima_avi_path, "wb") as f:
@@ -93,25 +100,23 @@ async def analyze(
     with open(dopo_avi_path, "wb") as f:
         f.write(dopo_bytes)
 
-    pipeline.analyze(prima_avi_path, dopo_avi_path, diff_avi_path)
+    roi_prima = pipeline_controller.extract_rois(prima_avi_path)
+    roi_dopo = pipeline_controller.extract_rois(dopo_avi_path)
+
+    # NON DIMENTICARLO
+    roi_controller.match_rois_by_center(roi_prima, roi_dopo)
 
     return {"TODO": "TODO"}
 
 
 @app.get("/diff/{frame}")
 def get_diff(frame: int) -> str:
-    diff_avi_path = os.path.join(output_dir, "diff.avi")
+    frame_prima = cv2_utils.extract_frame(video_path=os.path.join(output_dir, "prima.avi"), frame_idx=frame)
+    frame_dopo = cv2_utils.extract_frame(video_path=os.path.join(output_dir, "dopo.avi"), frame_idx=frame)
+    diff = roi_controller.compute_aligned_roi_diff(frame_prima, frame_dopo, roi_prima=roi_prima, roi_dopo=roi_dopo)
 
-    cap = cv2.VideoCapture(diff_avi_path)
-    cap.set(cv2.CAP_PROP_POS_FRAMES, frame)
-    ret, frame_data = cap.read()
-    cap.release()
-
-    if not ret:
-        raise HTTPException(status_code=404, detail="Frame non trovato")
-
-    frame_rgb = cv2.cvtColor(frame_data, cv2.COLOR_BGR2RGB)
-    _, buffer = cv2.imencode(".jpg", frame_rgb)
+    diff_rgb = cv2.cvtColor(diff, cv2.COLOR_BGR2RGB)
+    _, buffer = cv2.imencode(".jpg", diff_rgb)
     io_buffer = io.BytesIO(buffer)
 
     return StreamingResponse(io_buffer, media_type="image/jpeg")
@@ -138,7 +143,7 @@ def start_server() -> None:
     uvicorn.run(app, host="127.0.0.1", port=8000, log_level="error")
 
 
-if __name__ == "__main__":
+"""if __name__ == "__main__":
     # avvia il server in un thread separato (daemon).
     # Bisogna fare così perché uvicorn è bloccante, se girasse sul thread
     # principale bloccherebbe l'esecuzione e la finestra non si aprirebbe mai.
@@ -153,4 +158,4 @@ if __name__ == "__main__":
         resizable=True,
     )
     # questo apre effettivamente la finestra e la mantiene aperta
-    webview.start(debug=True)
+    webview.start(debug=True)"""

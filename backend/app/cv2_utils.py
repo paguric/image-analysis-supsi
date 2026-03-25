@@ -26,6 +26,31 @@ class VideoReader:
         return self.cap.isOpened()
 
 
+def extract_frame(video_path: str, frame_idx: int) -> np.ndarray | None:
+    # open video
+    container = av.open(video_path)
+    stream = container.streams.video[0]
+
+    if frame_idx >= stream.frames or frame_idx < 0:
+        return None
+
+    # Calcola il timestamp target (PTS) per il frame richiesto
+    target_pts = int((frame_idx / stream.frames) * stream.duration)
+
+    # Salta al keyframe precedente
+    container.seek(target_pts, stream=stream)
+
+    # Decodifica finché il timestamp del frame estratto non raggiunge il target
+    for av_frame in container.decode(stream):
+        if av_frame.pts >= target_pts:
+            frame = av_frame.to_ndarray(format="bgr24")
+            container.close()
+            return frame
+
+    container.close()
+    return None
+
+
 def brightest_frame(video_path: str) -> np.ndarray:
     """
     Trova il frame più luminoso
