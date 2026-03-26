@@ -23,6 +23,7 @@ from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import StreamingResponse
+from fastapi import FastAPI, UploadFile, File, HTTPException
 
 
 # se il codice sta eseguendo dentro l'exe allora la cartella contenente i video
@@ -111,9 +112,10 @@ async def analyze(
 
 @app.get("/diff/{frame}")
 def get_diff(frame: int) -> str:
-    frame_prima = cv2_utils.extract_frame(video_path=os.path.join(output_dir, "prima.avi"), frame_idx=frame)
-    frame_dopo = cv2_utils.extract_frame(video_path=os.path.join(output_dir, "dopo.avi"), frame_idx=frame)
-    diff = roi_controller.compute_aligned_roi_diff(frame_prima, frame_dopo, roi_prima=roi_prima, roi_dopo=roi_dopo)
+    if roi_prima is None or roi_dopo is None:
+        raise HTTPException(status_code=400, detail="No images uploaded yet")
+
+    diff = roi_controller.compute_aligned_roi_diff(roi_prima, roi_dopo, frame)
 
     diff_rgb = cv2.cvtColor(diff, cv2.COLOR_BGR2RGB)
     _, buffer = cv2.imencode(".jpg", diff_rgb)

@@ -75,7 +75,7 @@ def find_valid_contours(preprocessed_img: np.ndarray) -> list[np.ndarray]:
             cv2.contourArea(cnt) >= PARAMS["min_area"]
             and contour_circularity(cnt) >= PARAMS["min_circularity"]
         ):
-            contour_list.push(cnt)
+            contour_list.append(cnt)
 
     return contour_list
 
