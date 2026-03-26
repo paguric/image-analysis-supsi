@@ -3,27 +3,27 @@ import io
 import os
 import sys
 import cv2
-import threading
 import subprocess
 import uvicorn
 import mimetypes
-import webview
+from pydantic import BaseModel
 import numpy as np
-from PIL import Image
 
-from app import pipeline
-from app import cv2_utils
-from app import roi_controller
-from app import pipeline_controller
-from app.roi_controller import ROI
+from app.routers import roi_controller
+from app.routers import pipeline_controller
+from app.routers.roi_controller import ROI
 
 from fastapi.responses import FileResponse
-from moviepy.editor import VideoFileClip
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import StreamingResponse
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import HTTPException
+
+
+class RoiData(BaseModel):
+    index: int
+    frame: int
 
 
 # se il codice sta eseguendo dentro l'exe allora la cartella contenente i video
@@ -83,6 +83,7 @@ async def root() -> FileResponse:
 roi_prima: list[ROI] | None = None
 roi_dopo: list[ROI] | None = None
 
+
 @app.post("/analyze")
 async def analyze(
     video_prima: UploadFile = File(...), video_dopo: UploadFile = File(...)
@@ -117,8 +118,50 @@ def get_diff(frame: int) -> str:
 
     diff = roi_controller.compute_aligned_roi_diff(roi_prima, roi_dopo, frame)
 
-    diff_rgb = cv2.cvtColor(diff, cv2.COLOR_BGR2RGB)
-    _, buffer = cv2.imencode(".jpg", diff_rgb)
+    _, buffer = cv2.imencode(".jpg", diff)
+    io_buffer = io.BytesIO(buffer)
+
+    return StreamingResponse(io_buffer, media_type="image/jpeg")
+
+
+@app.post("/roi/prima/")
+async def get_roi_prima(body: RoiData):
+    patch_prima = roi_prima[body.index].get_pixels(body.frame)
+    patch_dopo = roi_dopo[body.index].get_pixels(body.frame)
+    canvas_size = roi_controller.get_common_size(patch_prima, patch_dopo)
+    roi = roi_controller.center_patch_on_canvas(patch_prima, canvas_size)
+
+    _, buffer = cv2.imencode(".jpg", roi)
+    io_buffer = io.BytesIO(buffer)
+
+    return StreamingResponse(io_buffer, media_type="image/jpeg")
+
+
+@app.post("/roi/dopo/")
+async def get_roi_dopo(body: RoiData):
+    patch_prima = roi_prima[body.index].get_pixels(body.frame)
+    patch_dopo = roi_dopo[body.index].get_pixels(body.frame)
+    canvas_size = roi_controller.get_common_size(patch_prima, patch_dopo)
+    roi = roi_controller.center_patch_on_canvas(patch_dopo, canvas_size)
+
+    _, buffer = cv2.imencode(".jpg", roi)
+    io_buffer = io.BytesIO(buffer)
+
+    return StreamingResponse(io_buffer, media_type="image/jpeg")
+
+
+@app.post("/roi/diff/")
+async def get_roi_diff(body: RoiData):
+    patch_prima = roi_prima[body.index].get_pixels(body.frame)
+    patch_dopo = roi_dopo[body.index].get_pixels(body.frame)
+    canvas_size = roi_controller.get_common_size(patch_prima, patch_dopo)
+    diff = roi_controller.center_patch_on_canvas(patch_dopo, canvas_size).astype(
+        np.float32
+    ) - roi_controller.center_patch_on_canvas(patch_prima, canvas_size).astype(
+        np.float32
+    )
+
+    _, buffer = cv2.imencode(".jpg", diff)
     io_buffer = io.BytesIO(buffer)
 
     return StreamingResponse(io_buffer, media_type="image/jpeg")

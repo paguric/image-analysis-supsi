@@ -1,7 +1,8 @@
+from app.helpers import cv2_utils
+from app.helpers import norm
+from app.routers.roi_controller import ROI
 import cv2
 import numpy as np
-from app import cv2_utils, norm
-from app.roi_controller import ROI
 
 PARAMS = {
     "bg_blur_size": 101,
@@ -32,7 +33,8 @@ def contour_circularity(contour: np.ndarray) -> float:
     return 4 * np.pi * area / (perimeter**2)
 
 
-#-------------------------------------
+# -------------------------------------
+
 
 def pipeline(img: np.ndarray) -> np.ndarray | None:
     """
@@ -84,13 +86,13 @@ def extract_rois(video_path: str) -> list[ROI] | None:
     """
     Estrae un array di ROI a partire da un video raw
     """
-    
+
     brightest = cv2_utils.brightest_frame(video_path)
     binary = pipeline(brightest)
     contour_list = find_valid_contours(binary)
 
     rois: list[ROI] = []
-    
+
     for idx, cnt in enumerate(contour_list):
         roi = ROI(video_path=video_path, idx=idx)
         roi.set_contours(cnt)

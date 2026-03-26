@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 from scipy.optimize import linear_sum_assignment
-from app import cv2_utils
+from app.helpers import cv2_utils
 
 
 class ROI:
