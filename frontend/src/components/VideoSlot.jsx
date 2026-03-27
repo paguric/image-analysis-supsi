@@ -1,28 +1,21 @@
 import VideoUploader from './VideoUploader'
 import VideoPlayer from './VideoPlayer'
-import styles from '../css/VideoSlot.module.css'
 
-/**
- * @class VideoSlot 
- * @brief rappresenta lo slot completo che combina uploader e player
- */
 function VideoSlot({ titolo, fileSelezionato, setFileSelezionato, videoUrl, solaLettura }) {
   return (
-    <div className={styles.finestraVideo}>
-      <h3 className={styles.titoloVideo}>{titolo}</h3>
+    <div className="bg-[#1a1a1a] p-4 rounded-xl w-80 shadow-lg flex flex-col gap-4">
+      <h3 className="m-0 text-xl text-white">{titolo}</h3>
       
-      {/* @brief rendering condizionale per slot di input o di output */}
-      {/* @details se c'è un url mostriamo il player. Se lo slot è di output (solaLettura), mostriamo un riquadro vuoto in attesa, altrimenti proseguiamo con le logiche di upload */}
       {videoUrl ? (
         <VideoPlayer src={videoUrl} />
       ) : solaLettura ? (
-        <div className={styles.areaAttesa}>
+        <div className="border-2 border-dashed border-[#444] rounded-lg p-5 text-center text-[#888] bg-white/[0.02] flex items-center justify-center flex-grow">
           <p>In attesa del video elaborato...</p>
         </div>
       ) : fileSelezionato ? (
-         <div className={styles.areaDrop}>
-           <p>File pronto: <strong>{fileSelezionato.name}</strong></p>
-         </div>
+        <div className="border-2 border-dashed border-[#666] rounded-lg p-5 text-center text-[#aaa] bg-white/5">
+          <p>File pronto: <strong>{fileSelezionato.name}</strong></p>
+        </div>
       ) : (
         <VideoUploader onVideoSelected={setFileSelezionato} />
       )}

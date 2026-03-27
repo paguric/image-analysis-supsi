@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../api'
-import '../css/App.css'
 import VideoSlot from '../components/VideoSlot'
 import ImageSlot from '../components/ImageSlot'
 
@@ -56,10 +55,10 @@ function Home() {
   }, [urlDiff])
 
   return (
-    <>
-      <h1>Analisi Video</h1>
+    <div className="max-w-5xl mx-auto px-8 py-8 min-h-screen flex flex-col justify-center items-center">
+      <h1 className="text-center text-2xl font-bold mb-8">Analisi Video</h1>
       
-      <div className="layout-tre-video">
+      <div className="flex justify-center gap-5 flex-wrap mb-8">
         <VideoSlot 
           titolo="Video Prima" 
           fileSelezionato={videoPrima}
@@ -75,25 +74,15 @@ function Home() {
         <ImageSlot img_src={urlDiff} />
       </div>
 
-    
-      {/* <div className="card">
-        <button onClick={analyze} disabled={loading || !videoPrima || !videoDopo}>
-          {loading ? 'Analisi in corso...' : "Invia al Backend per l'analisi"}
-        </button>
-        {response && <p>Response: <strong>{response}</strong></p>}
-      </div> 
-
-
-      <div className='card'>
-        <button onClick={getFrame}>Mostra view differenziale</button>
-      </div> */}
-
-      <div className='card'>
-        <button onClick={() => navigate('/differential-view')}>
+      <div className="p-8 flex flex-col items-center gap-4">
+        <button
+          onClick={() => navigate('/differential-view')}
+          className="px-6 py-2 bg-green-600 text-black rounded"
+        >
           Vai alla DifferentialView
         </button>
       </div>
-    </>
+    </div>
   )
 }
 

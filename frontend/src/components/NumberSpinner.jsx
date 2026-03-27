@@ -154,4 +154,4 @@ NumberSpinner.propTypes = {
   size: PropTypes.oneOf(['medium', 'small']),
 };
 
-export default NumberSpinner;
+  export default NumberSpinner;

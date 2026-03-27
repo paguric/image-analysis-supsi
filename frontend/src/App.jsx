@@ -1,12 +1,14 @@
 import { Routes, Route } from 'react-router-dom'
 import Home from './pages/Home'
-import DifferentialView from './components/DifferentialView'
+import SingleRoiView from './pages/SingleRoiView'
+import DifferentialView from './pages/DifferentialView'
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/differential-view" element={<DifferentialView />} />
+      <Route path="/" element={<Home/>}/>
+      <Route path="/differential-view" element={<DifferentialView/>}/>
+      <Route path="/single-roi-view/:roiNumber" element={<SingleRoiView />} />
     </Routes>
   )
 }
