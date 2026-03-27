@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from app.helpers import cv2_utils
+from app.services import cv2_service
 
 
 class Roi:
@@ -20,6 +20,6 @@ class Roi:
         Estrae il patch dal frame del video specificato.
         Per patch si intende la matrice quadrata (width = height) dove si trova il min enclosing circle.
         """
-        img = cv2_utils.extract_frame(self.video_path, frame)
+        img = cv2_service.extract_frame(self.video_path, frame)
         (cx, cy), radius = cv2.minEnclosingCircle(self.contours)
         return cv2.getRectSubPix(img, (int(2 * radius), int(2 * radius)), (cx, cy))

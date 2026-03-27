@@ -1,51 +1,14 @@
-from http.client import HTTPException
-import io
 import os
-import sys
-import cv2
 import subprocess
 import uvicorn
-import mimetypes
-import numpy as np
 
-from app.routers import roi_controller
-from app.routers import pipeline_controller
-from app.model.roi import Roi
-from app.schemas.roi import RoiData
+from app.routers import pipeline_controller, roi_controller
 
-from fastapi.responses import FileResponse
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import StreamingResponse
-from fastapi import HTTPException
-
-
-# se il codice sta eseguendo dentro l'exe allora la cartella contenente i video
-# sarà creata di fianco a all'exe dell'applicazione (perché essendo tutto già compresso
-# non possiamo salvare in posizioni interne al programma). Se invece il codice sta eseguendo
-# "normalmente" (nel senso che lo avviamo tramite comando), la cartella con i video sarà
-# creata di fianco al main.
-if getattr(sys, "frozen", False):
-    output_dir = os.path.join(os.path.dirname(sys.executable), "out")
-else:
-    output_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "out")
-
-os.makedirs(output_dir, exist_ok=True)
-
-
-# usiamo WebM con codec video VP8, un formato apposta per il web
-# meglio non usare mp4, altrimenti su linux potrebbe causare problemi
-# in quanto mp4 è un formato proprietario.
-mimetypes.add_type("video/webm", ".webm")
-
+from fastapi.responses import FileResponse
 
 app = FastAPI()
-
-
-# monta la cartella dei video sull'endpoint /videos, così il frontend
-# può accedere ai video generati tramite URL (es. http://localhost:8000/videos/prima.webm)
-app.mount("/videos", StaticFiles(directory=output_dir), name="videos")
 
 app.add_middleware(
     CORSMiddleware,
@@ -54,6 +17,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(pipeline_controller.router)
+app.include_router(roi_controller.router)
 
 # percorso base ai file statici del frontend
 base_path = os.path.dirname(os.path.abspath(__file__))
@@ -73,93 +38,6 @@ subprocess.run(["npm", "run", "build"], cwd=frontend_dir, check=True)
 @app.get("/")
 async def root() -> FileResponse:
     return FileResponse(os.path.join(static_dir, "index.html"))
-
-
-roi_prima: list[Roi] | None = None
-roi_dopo: list[Roi] | None = None
-
-
-@app.post("/analyze")
-async def analyze(
-    video_prima: UploadFile = File(...), video_dopo: UploadFile = File(...)
-) -> dict[str, str]:
-    global roi_prima, roi_dopo
-
-    prima_bytes = await video_prima.read()
-    dopo_bytes = await video_dopo.read()
-
-    prima_avi_path = os.path.join(output_dir, "prima.avi")
-    dopo_avi_path = os.path.join(output_dir, "dopo.avi")
-
-    # Salva i file caricati
-    with open(prima_avi_path, "wb") as f:
-        f.write(prima_bytes)
-    with open(dopo_avi_path, "wb") as f:
-        f.write(dopo_bytes)
-
-    roi_prima = pipeline_controller.extract_rois(prima_avi_path)
-    roi_dopo = pipeline_controller.extract_rois(dopo_avi_path)
-
-    # NON DIMENTICARLO
-    roi_controller.match_rois_by_center(roi_prima, roi_dopo)
-
-    return {"TODO": "TODO"}
-
-
-@app.get("/diff/{frame}")
-def get_diff(frame: int) -> str:
-    if roi_prima is None or roi_dopo is None:
-        raise HTTPException(status_code=400, detail="No images uploaded yet")
-
-    diff = roi_controller.compute_aligned_roi_diff(roi_prima, roi_dopo, frame)
-
-    _, buffer = cv2.imencode(".jpg", diff)
-    io_buffer = io.BytesIO(buffer)
-
-    return StreamingResponse(io_buffer, media_type="image/jpeg")
-
-
-@app.post("/roi/prima/")
-async def get_roi_prima(body: RoiData):
-    patch_prima = roi_prima[body.index].get_pixels(body.frame)
-    patch_dopo = roi_dopo[body.index].get_pixels(body.frame)
-    canvas_size = roi_controller.get_common_size(patch_prima, patch_dopo)
-    roi = roi_controller.center_patch_on_canvas(patch_prima, canvas_size)
-
-    _, buffer = cv2.imencode(".jpg", roi)
-    io_buffer = io.BytesIO(buffer)
-
-    return StreamingResponse(io_buffer, media_type="image/jpeg")
-
-
-@app.post("/roi/dopo/")
-async def get_roi_dopo(body: RoiData):
-    patch_prima = roi_prima[body.index].get_pixels(body.frame)
-    patch_dopo = roi_dopo[body.index].get_pixels(body.frame)
-    canvas_size = roi_controller.get_common_size(patch_prima, patch_dopo)
-    roi = roi_controller.center_patch_on_canvas(patch_dopo, canvas_size)
-
-    _, buffer = cv2.imencode(".jpg", roi)
-    io_buffer = io.BytesIO(buffer)
-
-    return StreamingResponse(io_buffer, media_type="image/jpeg")
-
-
-@app.post("/roi/diff/")
-async def get_roi_diff(body: RoiData):
-    patch_prima = roi_prima[body.index].get_pixels(body.frame)
-    patch_dopo = roi_dopo[body.index].get_pixels(body.frame)
-    canvas_size = roi_controller.get_common_size(patch_prima, patch_dopo)
-    diff = roi_controller.center_patch_on_canvas(patch_dopo, canvas_size).astype(
-        np.float32
-    ) - roi_controller.center_patch_on_canvas(patch_prima, canvas_size).astype(
-        np.float32
-    )
-
-    _, buffer = cv2.imencode(".jpg", diff)
-    io_buffer = io.BytesIO(buffer)
-
-    return StreamingResponse(io_buffer, media_type="image/jpeg")
 
 
 # fallback di sicurezza, se il file richiesto esiste (file statico di React)
