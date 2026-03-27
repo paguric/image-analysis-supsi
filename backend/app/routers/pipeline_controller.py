@@ -1,6 +1,6 @@
 from app.helpers import cv2_utils
 from app.helpers import norm
-from app.routers.roi_controller import ROI
+from app.model.roi import Roi
 import cv2
 import numpy as np
 
@@ -82,7 +82,7 @@ def find_valid_contours(preprocessed_img: np.ndarray) -> list[np.ndarray]:
     return contour_list
 
 
-def extract_rois(video_path: str) -> list[ROI] | None:
+def extract_rois(video_path: str) -> list[Roi] | None:
     """
     Estrae un array di ROI a partire da un video raw
     """
@@ -91,10 +91,10 @@ def extract_rois(video_path: str) -> list[ROI] | None:
     binary = pipeline(brightest)
     contour_list = find_valid_contours(binary)
 
-    rois: list[ROI] = []
+    rois: list[Roi] = []
 
     for idx, cnt in enumerate(contour_list):
-        roi = ROI(video_path=video_path, idx=idx)
+        roi = Roi(video_path=video_path, idx=idx)
         roi.set_contours(cnt)
         rois.append(roi)
 

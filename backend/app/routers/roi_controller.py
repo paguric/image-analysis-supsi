@@ -2,35 +2,14 @@ import cv2
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 from app.helpers import cv2_utils
+from app.model.roi import Roi
 
 
-class ROI:
-    def __init__(self, video_path: str, idx: int):
-        self.video_path = video_path
-        self.idx = idx
-
-    def set_contours(self, contours: np.ndarray):
-        self.contours = contours
-
-    def get_center(self) -> tuple[int, int]:
-        (cx, cy), _ = cv2.minEnclosingCircle(self.contours)
-        return (int(cx), int(cy))
-
-    def get_pixels(self, frame: int) -> np.ndarray:
-        """
-        Estrae il patch dal frame del video specificato.
-        Per patch si intende la matrice quadrata (width = height) dove si trova il min enclosing circle.
-        """
-        img = cv2_utils.extract_frame(self.video_path, frame)
-        (cx, cy), radius = cv2.minEnclosingCircle(self.contours)
-        return cv2.getRectSubPix(img, (int(2 * radius), int(2 * radius)), (cx, cy))
-
-
-def match_rois_by_center(roi_1: list[ROI], roi_2: list[ROI]):
+def match_rois_by_center(roi_1: list[Roi], roi_2: list[Roi]):
     """
-    Abbina le ROI in base alla distanza dei loro centri.
-    Se il numero di ROI è diverso, tiene solo le min(n1, n2) ROI più vicine
-    e elimina le ROI in eccesso dalle liste originali.
+    Abbina le Roi in base alla distanza dei loro centri.
+    Se il numero di Roi è diverso, tiene solo le min(n1, n2) Roi più vicine
+    e elimina le Roi in eccesso dalle liste originali.
 
     ATTENZIONE: MODIFICA IN PLACE le liste roi_1 e roi_2!
     """
@@ -47,11 +26,11 @@ def match_rois_by_center(roi_1: list[ROI], roi_2: list[ROI]):
     matched_roi1 = [roi_1[r] for r in rows]
     matched_roi2 = [roi_2[c] for c in cols]
 
-    # ROI dalla prima lista prende l'indice della seconda
+    # Roi dalla prima lista prende l'indice della seconda
     for roi_a, roi_b in zip(matched_roi1, matched_roi2):
         roi_a.idx = roi_b.idx
 
-    # Eliminazione ROI in eccesso
+    # Eliminazione Roi in eccesso
     roi_1[:] = matched_roi1
     roi_2[:] = matched_roi2
 
@@ -105,10 +84,10 @@ def center_patch_on_canvas(patch: np.ndarray, canvas_size: int) -> np.ndarray:
 
 
 def compute_aligned_roi_diff(
-    roi_prima: list[ROI], roi_dopo: list[ROI], frame: int
+    roi_prima: list[Roi], roi_dopo: list[Roi], frame: int
 ) -> np.ndarray:
     """
-    Calcola il differenziale tra le ROI corrispondenti di img_prima e img_dopo.
+    Calcola il differenziale tra le Roi corrispondenti di img_prima e img_dopo.
     I patch vengono estratti tramite cerchio minimo circoscritto, centrati
     sui rispettivi contorni, e sottratti pixel per pixel dentro una maschera circolare.
 
@@ -117,7 +96,7 @@ def compute_aligned_roi_diff(
     """
     if len(roi_prima) != len(roi_dopo):
         raise ValueError(
-            "Le due liste di ROI devono avere la stessa lunghezza dopo il matching"
+            "Le due liste di Roi devono avere la stessa lunghezza dopo il matching"
         )
 
     output = np.zeros_like(

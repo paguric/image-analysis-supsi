@@ -10,7 +10,7 @@ import numpy as np
 
 from app.routers import roi_controller
 from app.routers import pipeline_controller
-from app.routers.roi_controller import ROI
+from app.model.roi import Roi
 from app.schemas.roi import RoiData
 
 from fastapi.responses import FileResponse
@@ -75,8 +75,8 @@ async def root() -> FileResponse:
     return FileResponse(os.path.join(static_dir, "index.html"))
 
 
-roi_prima: list[ROI] | None = None
-roi_dopo: list[ROI] | None = None
+roi_prima: list[Roi] | None = None
+roi_dopo: list[Roi] | None = None
 
 
 @app.post("/analyze")
