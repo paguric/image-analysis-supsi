@@ -6,12 +6,12 @@ import cv2
 import subprocess
 import uvicorn
 import mimetypes
-from pydantic import BaseModel
 import numpy as np
 
 from app.routers import roi_controller
 from app.routers import pipeline_controller
 from app.routers.roi_controller import ROI
+from app.schemas.roi import RoiData
 
 from fastapi.responses import FileResponse
 from fastapi import FastAPI, UploadFile, File
@@ -19,11 +19,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import StreamingResponse
 from fastapi import HTTPException
-
-
-class RoiData(BaseModel):
-    index: int
-    frame: int
 
 
 # se il codice sta eseguendo dentro l'exe allora la cartella contenente i video
