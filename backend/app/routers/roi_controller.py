@@ -6,18 +6,20 @@ from app.models.roi import Roi
 from app.schemas.roi import RoiData
 from app.services import roi_service
 
-from fastapi import APIRouter
+from app.routers.pipeline_controller import roi_prima
+from app.routers.pipeline_controller import roi_dopo
+
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 
 router = APIRouter(prefix="/roi")
 
 
-roi_prima: list[Roi] | None = None
-roi_dopo: list[Roi] | None = None
-
-
 @router.post("/prima/")
 async def get_roi_prima(body: RoiData):
+    if roi_prima is None or roi_dopo is None:
+        raise HTTPException(status_code=400, detail="No images uploaded yet")
+
     patch_prima = roi_prima[body.index].get_pixels(body.frame)
     patch_dopo = roi_dopo[body.index].get_pixels(body.frame)
     canvas_size = roi_service.get_common_size(patch_prima, patch_dopo)
@@ -31,6 +33,9 @@ async def get_roi_prima(body: RoiData):
 
 @router.post("/dopo/")
 async def get_roi_dopo(body: RoiData):
+    if roi_prima is None or roi_dopo is None:
+        raise HTTPException(status_code=400, detail="No images uploaded yet")
+
     patch_prima = roi_prima[body.index].get_pixels(body.frame)
     patch_dopo = roi_dopo[body.index].get_pixels(body.frame)
     canvas_size = roi_service.get_common_size(patch_prima, patch_dopo)
@@ -44,6 +49,9 @@ async def get_roi_dopo(body: RoiData):
 
 @router.post("/diff/")
 async def get_roi_diff(body: RoiData):
+    if roi_prima is None or roi_dopo is None:
+        raise HTTPException(status_code=400, detail="No images uploaded yet")
+
     patch_prima = roi_prima[body.index].get_pixels(body.frame)
     patch_dopo = roi_dopo[body.index].get_pixels(body.frame)
     canvas_size = roi_service.get_common_size(patch_prima, patch_dopo)

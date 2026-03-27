@@ -40,13 +40,15 @@ async def analyze(
     roi_dopo = pipeline_service.extract_rois(dopo_avi_path)
 
     # NON DIMENTICARLO
-    roi_service.match_rois_by_center(roi_prima, roi_dopo)
+    roi_prima, roi_dopo = roi_service.match_rois_by_center(roi_prima, roi_dopo)
 
     return {"TODO": "TODO"}
 
 
 @router.get("/diff/{frame}/")
-def get_diff(frame: int) -> str:
+def get_diff(frame: int) -> StreamingResponse:
+    global roi_prima, roi_dopo
+
     if roi_prima is None or roi_dopo is None:
         raise HTTPException(status_code=400, detail="No images uploaded yet")
 

@@ -97,7 +97,7 @@ def extract_rois(video_path: str) -> list[Roi] | None:
     rois: list[Roi] = []
 
     for idx, cnt in enumerate(contour_list):
-        roi = Roi(video_path=video_path, idx=idx)
+        roi = Roi(video_path, idx)
         roi.set_contours(cnt)
         rois.append(roi)
 

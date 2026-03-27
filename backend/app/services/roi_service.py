@@ -6,13 +6,14 @@ from app.services import cv2_service
 from app.models.roi import Roi
 
 
-def match_rois_by_center(roi_1: list[Roi], roi_2: list[Roi]):
+def match_rois_by_center(
+    roi_1: list[Roi], roi_2: list[Roi]
+) -> tuple[list[Roi], list[Roi]]:
     """
     Abbina le Roi in base alla distanza dei loro centri.
-    Se il numero di Roi è diverso, tiene solo le min(n1, n2) Roi più vicine
-    e elimina le Roi in eccesso dalle liste originali.
+    Se il numero di Roi è diverso, tiene solo le min(n1, n2) Roi più vicine.
 
-    ATTENZIONE: MODIFICA IN PLACE le liste roi_1 e roi_2!
+    Restituisce due nuove liste di Roi abbinate, senza modificare le liste originali.
     """
 
     centers1 = [roi.get_center() for roi in roi_1]
@@ -27,13 +28,11 @@ def match_rois_by_center(roi_1: list[Roi], roi_2: list[Roi]):
     matched_roi1 = [roi_1[r] for r in rows]
     matched_roi2 = [roi_2[c] for c in cols]
 
-    # Roi dalla prima lista prende l'indice della seconda
+    # Le roi della prima lista prendono l'indice di quelle della 2a
     for roi_a, roi_b in zip(matched_roi1, matched_roi2):
         roi_a.idx = roi_b.idx
 
-    # Eliminazione Roi in eccesso
-    roi_1[:] = matched_roi1
-    roi_2[:] = matched_roi2
+    return matched_roi1, matched_roi2
 
 
 def get_common_size(patch1: np.ndarray, patch2: np.ndarray) -> int:
