@@ -11,7 +11,7 @@ function NumberSpinnerBox({name, min, max, defaultValue}) {
         justifyContent: 'center',
       }}
     >
-      <NumberSpinner label={name} min={min} max={max} defaultValue={defaultValue}/>
+      <NumberSpinner label={name} min={min} max={max} defaultValue={defaultValue} size='small'/>
       
     </Box>
   );

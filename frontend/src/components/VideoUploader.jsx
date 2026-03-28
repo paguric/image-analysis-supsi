@@ -1,27 +1,15 @@
 import { useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
-import styles from '../css/VideoSlot.module.css'
 
-/**
- * @class VideoUploader 
- * @brief gestisce l'area di drag & drop per caricare il video da analizzare
- */
 function VideoUploader({ onVideoSelected }) {
   
-  /**
-   * @brief gestisce i file rilasciati
-   * @details invece di creare un URL locale, passiamo direttamente l'oggetto File al genitore per l'invio al backend
-   */
   const onDrop = useCallback((acceptedFiles) => {
     const file = acceptedFiles[0]
     if (file) {
-      // @brief propaga l'oggetto File nativo verso il genitore
       onVideoSelected(file)
     }
   }, [onVideoSelected])
 
-  // @brief configurazione della dropzone
-  // @details abilitiamo specificamente le estensioni .avi e i formati video generici
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { 
@@ -34,13 +22,17 @@ function VideoUploader({ onVideoSelected }) {
   return (
     <div 
       {...getRootProps()} 
-      className={`${styles.areaDrop} ${isDragActive ? styles.areaDropAttiva : ''}`}
+      className={`border-2 border-dashed rounded-lg p-5 text-center cursor-pointer transition-all duration-200 bg-white/5
+        ${isDragActive 
+          ? 'border-green-500 bg-green-500/10 text-white' 
+          : 'border-[#666] text-[#aaa] hover:border-[#888] hover:bg-white/10'
+        }`}
     >
       <input {...getInputProps()} />
       {isDragActive ? (
-        <p>Rilascia il video qui...</p>
+        <p className="m-0 text-sm">Rilascia il video qui...</p>
       ) : (
-        <p>Trascina il video da analizzare (.avi), o clicca</p>
+        <p className="m-0 text-sm">Trascina il video da analizzare (.avi), o clicca</p>
       )}
     </div>
   )
