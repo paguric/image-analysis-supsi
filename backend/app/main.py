@@ -3,6 +3,7 @@ import subprocess
 import uvicorn
 
 from app.routers import pipeline_controller, roi_controller
+from app.db import database
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -32,7 +33,16 @@ static_dir = os.path.join(base_path, "..", "..", "frontend", "dist")
 # la cartella dove viene messo il codice compilato che il browser è
 # in grado di interpretare)
 frontend_dir = os.path.join(base_path, "..", "..", "frontend")
-subprocess.run(["npm", "run", "build"], cwd=frontend_dir, check=True)
+#subprocess.run(["npm", "run", "build"], cwd=frontend_dir, check=True)
+
+@app.on_event("startup")
+def on_startup():
+    database.create_db_and_tables()
+
+
+@app.on_event("shutdown")
+def on_shutdown():
+    os.remove("database.db")
 
 
 @app.get("/")

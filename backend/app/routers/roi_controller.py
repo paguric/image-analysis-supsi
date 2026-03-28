@@ -3,20 +3,30 @@ import numpy as np
 import io
 
 from app.models.roi import Roi
+from app.models.roi import Analisi
 from app.schemas.roi import RoiData
 from app.services import roi_service
-
-from app.routers.pipeline_controller import roi_prima
-from app.routers.pipeline_controller import roi_dopo
+from app.db.database import SessionDep
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 
+from sqlmodel import Session, select
+
+
 router = APIRouter(prefix="/roi")
 
 
+def get_roi_list(session: Session, analisi: Analisi) -> list[Roi]:
+    statement = select(Roi).where(Roi.fase == analisi)
+    return session.exec(statement).all()
+
+
 @router.post("/prima/")
-async def get_roi_prima(body: RoiData):
+async def get_roi_prima(session: SessionDep, body: RoiData):
+    roi_prima: list[Roi] = get_roi_list(session, Analisi.PRIMA)
+    roi_dopo: list[Roi] = get_roi_list(session, Analisi.DOPO)
+
     if roi_prima is None or roi_dopo is None:
         raise HTTPException(status_code=400, detail="No images uploaded yet")
 
@@ -32,7 +42,10 @@ async def get_roi_prima(body: RoiData):
 
 
 @router.post("/dopo/")
-async def get_roi_dopo(body: RoiData):
+async def get_roi_dopo(session: SessionDep, body: RoiData):
+    roi_prima: list[Roi] = get_roi_list(session, Analisi.PRIMA)
+    roi_dopo: list[Roi] = get_roi_list(session, Analisi.DOPO)
+
     if roi_prima is None or roi_dopo is None:
         raise HTTPException(status_code=400, detail="No images uploaded yet")
 
@@ -48,7 +61,10 @@ async def get_roi_dopo(body: RoiData):
 
 
 @router.post("/diff/")
-async def get_roi_diff(body: RoiData):
+async def get_roi_diff(session: SessionDep, body: RoiData):
+    roi_prima: list[Roi] = get_roi_list(session, Analisi.PRIMA)
+    roi_dopo: list[Roi] = get_roi_list(session, Analisi.DOPO)
+
     if roi_prima is None or roi_dopo is None:
         raise HTTPException(status_code=400, detail="No images uploaded yet")
 

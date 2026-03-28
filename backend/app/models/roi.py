@@ -1,25 +1,51 @@
+import io
+import enum
 import cv2
 import numpy as np
+
 from app.services import cv2_service
 
+from sqlmodel import Field, SQLModel, Column, Enum as SAEnum
+from pydantic import ConfigDict
+from sqlalchemy import Column, LargeBinary
 
-class Roi:
-    def __init__(self, video_path: str, idx: int):
-        self.video_path = video_path
-        self.idx = idx
+class Analisi(str, enum.Enum):
+    PRIMA = "prima"
+    DOPO = "dopo"
 
-    def set_contours(self, contours: np.ndarray):
-        self.contours = contours
+
+class Roi(SQLModel, table=True):
+    __tablename__ = "roi"
+
+    id: int | None = Field(default=None, primary_key=True)
+    video_path: str
+    fase: Analisi = Field(default=None, sa_column=Column(SAEnum(Analisi)))
+    idx: int
+
+    # Colonna binaria grezza sul DB
+    contours_data: bytes | None = Field(default=None, sa_column=Column(LargeBinary))
+
+    # Attributo non mappato, calcolato on-demand
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    @property
+    def contours(self) -> np.ndarray | None:
+        if self.contours_data is None:
+            return None
+        buffer = io.BytesIO(self.contours_data)
+        return np.load(buffer, allow_pickle=False)
+
+    @contours.setter
+    def contours(self, value: np.ndarray):
+        buffer = io.BytesIO()
+        np.save(buffer, value)
+        self.contours_data = buffer.getvalue()
 
     def get_center(self) -> tuple[int, int]:
         (cx, cy), _ = cv2.minEnclosingCircle(self.contours)
         return (int(cx), int(cy))
 
     def get_pixels(self, frame: int) -> np.ndarray:
-        """
-        Estrae il patch dal frame del video specificato.
-        Per patch si intende la matrice quadrata (width = height) dove si trova il min enclosing circle.
-        """
         img = cv2_service.extract_frame(self.video_path, frame)
         (cx, cy), radius = cv2.minEnclosingCircle(self.contours)
         return cv2.getRectSubPix(img, (int(2 * radius), int(2 * radius)), (cx, cy))
