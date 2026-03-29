@@ -87,4 +87,9 @@ def get_diff(session: SessionDep, frame: int) -> StreamingResponse:
 
 @router.post("/roi/{n}")
 async def analyze(session: SessionDep, body: PipelineParams) -> StreamingResponse:
+    """
+    Nota: dati i valori di default del modello, se una richiesta avesse valori mancanti
+    vengono presi dalla definizione del modello
+    """
+
     return None
