@@ -7,6 +7,7 @@ from app.services import pipeline_service
 from app.services import roi_service
 from app.models.roi import Roi
 from app.models.roi import Analisi
+from app.schemas.pipeline_params import PipelineParams
 from app.db.database import SessionDep
 
 from fastapi import APIRouter, File, UploadFile, HTTPException
@@ -82,3 +83,8 @@ def get_diff(session: SessionDep, frame: int) -> StreamingResponse:
     io_buffer = io.BytesIO(buffer)
 
     return StreamingResponse(io_buffer, media_type="image/jpeg")
+
+
+@router.post("/roi/{n}")
+async def analyze(session: SessionDep, body: PipelineParams) -> StreamingResponse:
+    return None
