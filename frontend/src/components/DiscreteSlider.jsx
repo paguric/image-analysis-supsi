@@ -10,10 +10,10 @@ export default function DiscreteSlider({numberOfFrames, onChange}) {
     <Box sx={{ width: '100%' }}>
       <Slider
         aria-label="Frame"
-        defaultValue={30}
+        defaultValue={0}
         getAriaValueText={valuetext}
         valueLabelDisplay="auto"
-        shiftStep={30}
+        shiftStep={0}
         step={1}
         marks={true}
         min={0}

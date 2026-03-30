@@ -6,6 +6,7 @@ import numpy as np
 from app.routers import roi_controller
 from app.services import pipeline_service
 from app.services import roi_service
+from app.services import cv2_service
 from app.models.roi import Roi
 from app.models.roi import Analisi
 from app.schemas.pipeline_params import PipelineParams
@@ -102,3 +103,18 @@ async def analyze(session: SessionDep, body: PipelineParams) -> StreamingRespons
     # TODO restituire roi': al posto di salvarla in un'altra tabella, gliela facciamo gestire al FE
 
     return None
+
+
+
+
+@router.get("/get-number-of-frames")
+async def get_number_of_frames()-> dict[str, int | float]:
+    output_dir = "../out"
+
+    # se i due video hanno lo stesso numero di frame dovrebbe
+    # essere uguale utilizziamo per il conteggio
+    prima_avi_path = os.path.join(output_dir, "prima.avi")
+    video_info = cv2_service.get_video_info(prima_avi_path)
+    frame_count = video_info["total_frames"]
+    return {"total_frames": frame_count}
+

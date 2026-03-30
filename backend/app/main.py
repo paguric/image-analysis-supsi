@@ -2,6 +2,14 @@ import os
 import subprocess
 import uvicorn
 
+# NON RIMUOVERE QUESTI IMPORT
+# ------------------------------
+
+import threading
+import webview
+
+# ------------------------------
+
 from app.routers import pipeline_controller, roi_controller
 from app.db import database
 
@@ -25,6 +33,16 @@ app.include_router(roi_controller.router)
 base_path = os.path.dirname(os.path.abspath(__file__))
 # cartella che contiene le build dei file react. pyinstaller la copia dentro l'exe
 static_dir = os.path.join(base_path, "..", "..", "frontend", "dist")
+
+
+# ripulisco il database roi
+file_path = os.path.join(base_path, "..", "..", "backend", "database.db")
+
+if os.path.isfile(file_path):
+    os.remove(file_path)
+    print(f"{file_path} è stato eliminato con successo")
+else:
+    print(f"Errore: Il file {file_path} non esiste")
 
 
 # aggiungendo queste due righe sto facendo in modo che automaticamente,
@@ -71,7 +89,7 @@ def start_server() -> None:
     uvicorn.run(app, host="127.0.0.1", port=8000, log_level="error")
 
 
-"""if __name__ == "__main__":
+if __name__ == "__main__":
     # avvia il server in un thread separato (daemon).
     # Bisogna fare così perché uvicorn è bloccante, se girasse sul thread
     # principale bloccherebbe l'esecuzione e la finestra non si aprirebbe mai.
@@ -86,4 +104,4 @@ def start_server() -> None:
         resizable=True,
     )
     # questo apre effettivamente la finestra e la mantiene aperta
-    webview.start(debug=True)"""
+    webview.start()
