@@ -79,3 +79,8 @@ async def get_roi_diff(session: SessionDep, body: RoiData):
     io_buffer = io.BytesIO(buffer)
 
     return StreamingResponse(io_buffer, media_type="image/jpeg")
+
+
+@router.get("/number-of-rois")
+async def get_number_of_rois(session: SessionDep) -> int: 
+    return len(get_roi_list(session, Analisi.PRIMA))

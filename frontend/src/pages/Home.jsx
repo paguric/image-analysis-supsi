@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import api from '../services/api'
+import api, { sleep } from '../services/api'
 import Button from '@mui/material/Button';
 import VideoSlot from '../components/VideoSlot'
 import ImageSlot from '../components/ImageSlot'
 import { getDifferentialFrame } from '../services/pipelineApi'
+import { selectClasses } from '@mui/material/Select';
 
 function Home() {
   const navigate = useNavigate()
@@ -33,6 +34,7 @@ function Home() {
       await api.post('/pipeline/', formData)
       setAnalysisReady(true)
       setResponse("Analisi completata con successo.")
+      await sleep(1000);
       navigate('/differential-view')
     } catch (err) {
       setResponse('Errore: ' + err.message)

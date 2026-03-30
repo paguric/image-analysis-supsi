@@ -13,4 +13,6 @@ export async function fetchImage(url, options = {}) {
   return URL.createObjectURL(blob);
 }
 
+export const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 export default api;

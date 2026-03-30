@@ -1,42 +1,61 @@
 import { useNavigate } from 'react-router-dom'
-import { useEffect, useState, useRef } from 'react'; 
+import { useEffect, useState, useRef } from 'react';
 import Button from '@mui/material/Button';
 import { ImgBox } from '../components/ImgBox';
 import DifferentialViewButtonGroup from '../components/DifferentialViewButtonGroup'
 import DiscreteSlider from '../components/DiscreteSlider';
-import { getDifferentialFrame } from "../services/pipelineApi";
+import { getDifferentialFrame, getNumberOfFrames } from "../services/pipelineApi";
+import { getRoiCount } from '../services/roiApi';
+import CircularIndeterminate from '../components/CircularIndeterminate';
 
 
 function DifferentialView() {
 
-    const numberOfRois = 10;
     const navigate = useNavigate()
 
+    const [numberOfRois, setNumberOfRois] = useState(0);
+    const [frameCount, setFrameCount] = useState(100);
     const [urlDiff, setUrlDiff] = useState(null);
-    const [currentFrame, setCurrentFrame] = useState(0);  
+    const [currentFrame, setCurrentFrame] = useState(0);
     const prevDiffUrl = useRef(null);
+    const debounceTimer = useRef(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     async function loadDiffFrame(frame) {
-        const url = await getDifferentialFrame(frame);
-        if (prevDiffUrl.current) 
-            URL.revokeObjectURL(prevDiffUrl.current);
-        
-        prevDiffUrl.current = url;
-        setUrlDiff(url);
+        setIsLoading(true);
+        try {
+            const url = await getDifferentialFrame(frame);
+            if (prevDiffUrl.current)
+                URL.revokeObjectURL(prevDiffUrl.current);
+            prevDiffUrl.current = url;
+            setUrlDiff(url);
+        } finally {
+            setIsLoading(false);
+        }
     }
 
-    
     useEffect(() => {
         loadDiffFrame(currentFrame);
     }, [currentFrame]);
 
     useEffect(() => {
+        getNumberOfFrames()
+            .then(data => setFrameCount(data.total_frames))
+            .catch(err => console.error(err));
+    }, []);
+
+    useEffect(() => {
+        getRoiCount()
+            .then(data => setNumberOfRois(data))
+            .catch(err => console.error(err));
+    }, []);
+
+    useEffect(() => {
         return () => {
-            if (prevDiffUrl.current) 
+            if (prevDiffUrl.current)
                 URL.revokeObjectURL(prevDiffUrl.current);
         }
     }, []);
-
 
     return (
         <div className="flex h-screen w-full">
@@ -54,13 +73,14 @@ function DifferentialView() {
                 </div>
             </div>
 
-
-
             {/* Colonna destra */}
             <div className="w-4/5 p-4 h-full">
                 <div className="grid grid-cols-1 grid-rows-7 h-full gap-2">
-                    <div className="row-span-4">
-                        {urlDiff && <ImgBox src={urlDiff} fill />}
+                    <div className="row-span-4 flex items-center justify-center">
+                        {isLoading
+                            ? <CircularIndeterminate />
+                            : urlDiff && <ImgBox src={urlDiff} />
+                        }
                     </div>
 
                     <div className="row-span-1 flex w-full justify-center">
@@ -75,7 +95,13 @@ function DifferentialView() {
                     </div>
 
                     <div>
-                        <DiscreteSlider numberOfFrames={100} onChange={(value) => setCurrentFrame(value)} />
+                        <DiscreteSlider numberOfFrames={frameCount} onChange={(value) => {
+                            if (debounceTimer.current)
+                                clearTimeout(debounceTimer.current);
+                            debounceTimer.current = setTimeout(() => {
+                                setCurrentFrame(value);
+                            }, 150);
+                        }} />
                         <p>Frame corrente: {currentFrame}</p>
                     </div>
                 </div>
