@@ -1,6 +1,8 @@
 import os
 import subprocess
 import uvicorn
+import threading
+import webview
 
 from app.routers import pipeline_controller, roi_controller
 from app.db import database
@@ -71,7 +73,7 @@ def start_server() -> None:
     uvicorn.run(app, host="127.0.0.1", port=8000, log_level="error")
 
 
-"""if __name__ == "__main__":
+if __name__ == "__main__":
     # avvia il server in un thread separato (daemon).
     # Bisogna fare così perché uvicorn è bloccante, se girasse sul thread
     # principale bloccherebbe l'esecuzione e la finestra non si aprirebbe mai.
@@ -86,4 +88,4 @@ def start_server() -> None:
         resizable=True,
     )
     # questo apre effettivamente la finestra e la mantiene aperta
-    webview.start(debug=True)"""
+    webview.start(debug=True)
