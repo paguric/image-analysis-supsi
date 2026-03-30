@@ -39,11 +39,14 @@ def contour_circularity(contour: np.ndarray) -> float:
 # -------------------------------------
 
 
-def pipeline(img: np.ndarray) -> np.ndarray | None:
+def pipeline(img: np.ndarray) -> list[np.ndarray] | None:
     """
-    HPF → CLAHE → Canny → closing
-    restituisce l'immgaine binaria da cui estrarre i contorni
+    HPF → CLAHE → Canny → Closing
+    Restituisce una lista di immagini con il risultato di ciascun step.
+    All'ultimo indice si trova l'immgaine binaria da cui estrarre i contorni.
     """
+    out : list[np.ndarray] = []
+
     bg_blur = ensure_odd(PARAMS["bg_blur_size"])
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -62,7 +65,13 @@ def pipeline(img: np.ndarray) -> np.ndarray | None:
     edges_closed = cv2.morphologyEx(
         edges, cv2.MORPH_CLOSE, kernel, iterations=int(PARAMS["morph_iterations"])
     )
-    return edges_closed
+
+    out.append(background)
+    out.append(enhanced)
+    out.append(edges)
+    out.append(edges_closed)
+
+    return out
 
 
 def find_valid_contours(preprocessed_img: np.ndarray) -> list[np.ndarray]:
@@ -91,7 +100,7 @@ def extract_rois(video_path: str) -> list[Roi] | None:
     """
 
     brightest = cv2_service.brightest_frame(video_path)
-    binary = pipeline(brightest)
+    binary = pipeline(brightest)[-1]
     contour_list = find_valid_contours(binary)
 
     rois: list[Roi] = []

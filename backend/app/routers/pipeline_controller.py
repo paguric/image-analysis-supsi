@@ -1,6 +1,7 @@
 import io
 import os
 import cv2
+import numpy as np
 
 from app.routers import roi_controller
 from app.services import pipeline_service
@@ -85,6 +86,19 @@ def get_diff(session: SessionDep, frame: int) -> StreamingResponse:
     return StreamingResponse(io_buffer, media_type="image/jpeg")
 
 
-@router.post("/roi/{n}")
+@router.post("/roi/prima/{n}")
 async def analyze(session: SessionDep, body: PipelineParams) -> StreamingResponse:
+    """
+    Nota: dati i valori di default del modello, se una richiesta avesse valori mancanti
+    vengono presi dalla definizione del modello
+    """
+    roi = roi_controller.get_roi_list(session, Analisi.PRIMA)[n]
+    
+    # TODO prendere il frame luminoso per l'analisi prima (roi.video_path)
+    # TODO estrarre da quel frame il patch della ROI con roi.patch
+    # TODO applicare la pipeline al patch con pipeline_service.pipeline()
+    # TODO creare l'oggetto roi' (la nuova roi) con pipeline_service.find_valid_contours(pipeline[-1])
+    # TODO salvare i singoli step della pipeline nel db, in modo però poi da fare una join sull'id della roi e la sua pipeline associata
+    # TODO restituire roi': al posto di salvarla in un'altra tabella, gliela facciamo gestire al FE
+
     return None
