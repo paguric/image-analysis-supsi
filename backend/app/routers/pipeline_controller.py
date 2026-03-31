@@ -80,9 +80,6 @@ def get_diff(session: SessionDep, frame: int) -> StreamingResponse:
     roi_prima: list[Roi] = roi_controller.get_roi_list(session, Analisi.PRIMA)
     roi_dopo: list[Roi] = roi_controller.get_roi_list(session, Analisi.DOPO)
 
-    print(len(roi_prima))
-    print(len(roi_dopo))
-
     if roi_prima is None or roi_dopo is None:
         raise HTTPException(status_code=400, detail="No images uploaded yet")
 
