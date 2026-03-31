@@ -82,5 +82,5 @@ async def get_roi_diff(session: SessionDep, body: RoiData):
 
 
 @router.get("/number-of-rois")
-async def get_number_of_rois(session: SessionDep) -> int: 
+async def get_number_of_rois(session: SessionDep) -> int:
     return len(get_roi_list(session, Analisi.PRIMA))

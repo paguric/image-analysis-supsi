@@ -25,7 +25,7 @@ async def analyze(
     video_prima: UploadFile = File(...),
     video_dopo: UploadFile = File(...),
 ) -> dict[str, str]:
-    
+
     prima_bytes = await video_prima.read()
     dopo_bytes = await video_dopo.read()
 
@@ -94,7 +94,7 @@ async def analyze(session: SessionDep, body: PipelineParams) -> StreamingRespons
     vengono presi dalla definizione del modello
     """
     roi = roi_controller.get_roi_list(session, Analisi.PRIMA)[n]
-    
+
     # TODO prendere il frame luminoso per l'analisi prima (roi.video_path)
     # TODO estrarre da quel frame il patch della ROI con roi.patch
     # TODO applicare la pipeline al patch con pipeline_service.pipeline()
@@ -105,16 +105,14 @@ async def analyze(session: SessionDep, body: PipelineParams) -> StreamingRespons
     return None
 
 
-
-
 @router.get("/get-number-of-frames")
-async def get_number_of_frames()-> dict[str, int | float]:
-    output_dir = "../out"
+async def get_number_of_frames(session: SessionDep) -> dict[str, int | float]:
+    """
+    Restituisce il numero di frame del video prima
+    """
+    roi_prima: list[Roi] = roi_controller.get_roi_list(session, Analisi.PRIMA)
+    video_path = roi_prima[0].video_path
 
-    # se i due video hanno lo stesso numero di frame dovrebbe
-    # essere uguale utilizziamo per il conteggio
-    prima_avi_path = os.path.join(output_dir, "prima.avi")
-    video_info = cv2_service.get_video_info(prima_avi_path)
+    video_info = cv2_service.get_video_info(video_path)
     frame_count = video_info["total_frames"]
     return {"total_frames": frame_count}
-
