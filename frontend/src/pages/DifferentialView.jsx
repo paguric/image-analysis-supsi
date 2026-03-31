@@ -1,61 +1,24 @@
-import { useNavigate } from 'react-router-dom'
-import { useEffect, useState, useRef } from 'react';
 import Button from '@mui/material/Button';
 import { ImgBox } from '../components/ImgBox';
 import DifferentialViewButtonGroup from '../components/DifferentialViewButtonGroup'
 import DiscreteSlider from '../components/DiscreteSlider';
-import { getDifferentialFrame, getNumberOfFrames } from "../services/pipelineApi";
-import { getRoiCount } from '../services/roiApi';
 import CircularIndeterminate from '../components/CircularIndeterminate';
 
+import { useDifferentialView } from '../hooks/DifferentialViewSetup'
 
 function DifferentialView() {
 
-    const navigate = useNavigate()
 
-    const [numberOfRois, setNumberOfRois] = useState(0);
-    const [frameCount, setFrameCount] = useState(100);
-    const [urlDiff, setUrlDiff] = useState(null);
-    const [currentFrame, setCurrentFrame] = useState(0);
-    const prevDiffUrl = useRef(null);
-    const debounceTimer = useRef(null);
-    const [isLoading, setIsLoading] = useState(true);
-
-    async function loadDiffFrame(frame) {
-        setIsLoading(true);
-        try {
-            const url = await getDifferentialFrame(frame);
-            if (prevDiffUrl.current)
-                URL.revokeObjectURL(prevDiffUrl.current);
-            prevDiffUrl.current = url;
-            setUrlDiff(url);
-        } finally {
-            setIsLoading(false);
-        }
-    }
-
-    useEffect(() => {
-        loadDiffFrame(currentFrame);
-    }, [currentFrame]);
-
-    useEffect(() => {
-        getNumberOfFrames()
-            .then(data => setFrameCount(data.total_frames))
-            .catch(err => console.error(err));
-    }, []);
-
-    useEffect(() => {
-        getRoiCount()
-            .then(data => setNumberOfRois(data))
-            .catch(err => console.error(err));
-    }, []);
-
-    useEffect(() => {
-        return () => {
-            if (prevDiffUrl.current)
-                URL.revokeObjectURL(prevDiffUrl.current);
-        }
-    }, []);
+    const {
+        navigate,
+        numberOfRois,
+        frameCount,
+        currentFrame, setCurrentFrame,
+        urlDiff,
+        debounceTimer,
+        isLoading,
+    } = useDifferentialView();
+    
 
     return (
         <div className="flex h-screen w-full">

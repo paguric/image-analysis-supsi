@@ -4,7 +4,6 @@ import { useParams } from 'react-router-dom'
 
 
 
-
 function SingleRoiView() {
 
     const {roiNumber} = useParams()
