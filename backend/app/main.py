@@ -1,14 +1,8 @@
 import os
 import subprocess
-import uvicorn
-
-# NON RIMUOVERE QUESTI IMPORT
-# ------------------------------
-
 import threading
+import uvicorn
 import webview
-
-# ------------------------------
 
 from app.routers import pipeline_controller, roi_controller
 from app.db import database
@@ -16,6 +10,7 @@ from app.db import database
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+
 
 app = FastAPI()
 
@@ -29,20 +24,26 @@ app.add_middleware(
 app.include_router(pipeline_controller.router)
 app.include_router(roi_controller.router)
 
-# percorso base ai file statici del frontend
+
+# Percorso base ai file statici del frontend
 base_path = os.path.dirname(os.path.abspath(__file__))
-# cartella che contiene le build dei file react. pyinstaller la copia dentro l'exe
+# Cartella che contiene le build dei file React - Pyinstaller la copia dentro l'exe
 static_dir = os.path.join(base_path, "..", "..", "frontend", "dist")
 
 
-# ripulisco il database roi
-file_path = os.path.join(base_path, "..", "..", "backend", "database.db")
+# Creazione db all'avvio dell'app
+@app.on_event("startup")
+def on_startup():
+    # Rimozione db vecchio
+    file_path = os.path.join(base_path, "..", "..", "backend", "database.db")
 
-if os.path.isfile(file_path):
-    os.remove(file_path)
-    print(f"{file_path} è stato eliminato con successo")
-else:
-    print(f"Errore: Il file {file_path} non esiste")
+    if os.path.isfile(file_path):
+        os.remove(file_path)
+        print(f"{file_path} è stato eliminato con successo")
+    else:
+        print(f"Errore: Il file {file_path} non esiste")
+
+    database.create_db_and_tables()
 
 
 # aggiungendo queste due righe sto facendo in modo che automaticamente,
@@ -51,16 +52,7 @@ else:
 # la cartella dove viene messo il codice compilato che il browser è
 # in grado di interpretare)
 frontend_dir = os.path.join(base_path, "..", "..", "frontend")
-#subprocess.run(["npm", "run", "build"], cwd=frontend_dir, check=True)
-
-@app.on_event("startup")
-def on_startup():
-    database.create_db_and_tables()
-
-
-@app.on_event("shutdown")
-def on_shutdown():
-    os.remove("database.db")
+# subprocess.run(["npm", "run", "build"], cwd=frontend_dir, check=True)
 
 
 @app.get("/")
