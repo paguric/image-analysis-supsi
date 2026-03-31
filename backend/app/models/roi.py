@@ -2,12 +2,14 @@ import io
 import enum
 import cv2
 import numpy as np
+from typing import List, Optional
 
 from app.services import cv2_service
 
-from sqlmodel import Field, SQLModel, Column, Enum as SAEnum
+from sqlmodel import Field, SQLModel, Column, Relationship, Enum as SAEnum
 from pydantic import ConfigDict
 from sqlalchemy import LargeBinary
+from sqlalchemy.orm import relationship
 
 
 class Analisi(str, enum.Enum):
@@ -19,6 +21,9 @@ class Roi(SQLModel, table=True):
     __tablename__ = "roi"
 
     id: int | None = Field(default=None, primary_key=True)
+    # pipeline = relationship(back_populates="roi")
+    pipelines: List["Pipeline"] = Relationship(back_populates="roi")
+
     idx: int
     video_path: str
     fase: Analisi = Field(default=None, sa_column=Column(SAEnum(Analisi)))
