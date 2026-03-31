@@ -45,7 +45,7 @@ def pipeline(img: np.ndarray) -> list[np.ndarray] | None:
     Restituisce una lista di immagini con il risultato di ciascun step.
     All'ultimo indice si trova l'immgaine binaria da cui estrarre i contorni.
     """
-    out : list[np.ndarray] = []
+    out: list[np.ndarray] = []
 
     bg_blur = ensure_odd(PARAMS["bg_blur_size"])
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -94,19 +94,18 @@ def find_valid_contours(preprocessed_img: np.ndarray) -> list[np.ndarray]:
     return contour_list
 
 
-def extract_rois(video_path: str) -> list[Roi] | None:
+def extract_rois(frame: np.ndarray) -> list[Roi] | None:
     """
-    Estrae un array di ROI a partire da un video raw
+    Estrae un array di ROI a partire da un frame del video
     """
 
-    brightest = cv2_service.brightest_frame(video_path)
-    binary = pipeline(brightest)[-1]
+    binary = pipeline(frame)[-1]
     contour_list = find_valid_contours(binary)
 
     rois: list[Roi] = []
 
     for idx, cnt in enumerate(contour_list):
-        roi = Roi(video_path=video_path, idx=idx)
+        roi = Roi(idx=idx)
         roi.contours = cnt
         rois.append(roi)
 

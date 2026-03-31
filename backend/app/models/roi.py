@@ -7,7 +7,8 @@ from app.services import cv2_service
 
 from sqlmodel import Field, SQLModel, Column, Enum as SAEnum
 from pydantic import ConfigDict
-from sqlalchemy import Column, LargeBinary
+from sqlalchemy import LargeBinary
+
 
 class Analisi(str, enum.Enum):
     PRIMA = "prima"
@@ -18,9 +19,9 @@ class Roi(SQLModel, table=True):
     __tablename__ = "roi"
 
     id: int | None = Field(default=None, primary_key=True)
+    idx: int
     video_path: str
     fase: Analisi = Field(default=None, sa_column=Column(SAEnum(Analisi)))
-    idx: int
 
     # Colonna binaria grezza sul DB
     contours_data: bytes | None = Field(default=None, sa_column=Column(LargeBinary))

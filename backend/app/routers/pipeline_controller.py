@@ -24,7 +24,7 @@ async def analyze(
     session: SessionDep,
     video_prima: UploadFile = File(...),
     video_dopo: UploadFile = File(...),
-) -> dict[str, str]:
+):
 
     prima_bytes = await video_prima.read()
     dopo_bytes = await video_dopo.read()
@@ -40,24 +40,26 @@ async def analyze(
     with open(dopo_avi_path, "wb") as f:
         f.write(dopo_bytes)
 
-    roi_prima: list[Roi] = pipeline_service.extract_rois(prima_avi_path)
+    # Trova il frame più luminoso per le due analisi
+    brightest_prima = cv2_service.brightest_frame(prima_avi_path)
+    brightest_dopo = cv2_service.brightest_frame(dopo_avi_path)
+
+    # Estrai le ROI e aggiungi i metadati necessari
+    roi_prima: list[Roi] = pipeline_service.extract_rois(brightest_prima)
     for roi in roi_prima:
+        roi.video_path = prima_avi_path
         roi.fase = Analisi.PRIMA
 
-    roi_dopo: list[Roi] = pipeline_service.extract_rois(dopo_avi_path)
+    roi_dopo: list[Roi] = pipeline_service.extract_rois(brightest_dopo)
     for roi in roi_dopo:
+        roi.video_path = dopo_avi_path
         roi.fase = Analisi.DOPO
 
-    # NON DIMENTICARLO
+    # Dopo aver calcolato le ROI, assegna lo stesso indice
     roi_prima, roi_dopo = roi_service.match_rois_by_center(roi_prima, roi_dopo)
 
     # Salva ROI nel db
-    for roi in roi_prima:
-        session.add(roi)
-        session.commit()
-        session.refresh(roi)
-
-    for roi in roi_dopo:
+    for roi in roi_prima + roi_dopo:
         session.add(roi)
         session.commit()
         session.refresh(roi)
