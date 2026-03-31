@@ -102,7 +102,7 @@ def get_diff(session: SessionDep, frame: int) -> StreamingResponse:
 @router.post("/roi/prima/{n}/")
 async def analyze_roi_prima(
     session: SessionDep, body: PipelineParams, n: int
-) -> StreamingResponse:
+) -> tuple[Roi, list[StreamingResponse]]:
     """
     Nota: se una richiesta avesse valori mancanti vengono presi quelli di default definiti nello schema della richiesta PipelineParams
     """
@@ -112,18 +112,24 @@ async def analyze_roi_prima(
     # TODO spostare questa logica in un VideoController o simili
     statement = select(VideoMetadata).where(VideoMetadata.fase == Analisi.PRIMA)
     video_metadata = session.exec(statement).all()[0]
-    brightest_frame: np.ndarray = video_metadata.brightest_frame
 
-    # TODO estrarre da quel frame il patch della ROI con roi.patch
-    # TODO applicare la pipeline al patch con pipeline_service.pipeline()
-    # TODO creare l'oggetto roi' (la nuova roi) con pipeline_service.find_valid_contours(pipeline[-1])
-    # TODO salvare i singoli step della pipeline nel db, in modo però poi da fare una join sull'id della roi e la sua pipeline associata
-    # TODO restituire roi': al posto di salvarla in un'altra tabella, gliela facciamo gestire al FE
+    patch = roi.get_pixels(video_metadata.brightest_idx)
 
-    _, buffer = cv2.imencode(".jpg", brightest_frame)
-    io_buffer = io.BytesIO(buffer)
+    # Applica la pipeline al patch
+    pipeline: list[np.ndarray] = pipeline_service.pipeline(patch, body)
+    roi_new = pipeline_service.find_valid_contours(pipeline[-1], body)
 
-    return StreamingResponse(io_buffer, media_type="image/jpeg")
+    # TODO - OPZIONALE: salvare i singoli step della pipeline nel db, in modo però poi da fare una join sull'id della roi e la sua pipeline associata
+    # Questo step è opzionale perchè servirebbe semplicemente come metodo di caching, per non dover ricalcolare un analisi se già è stata fatta
+
+    # Restituisce la nuova ROI e gli step intermedi della pipeline come lista di immagini
+    pipeline_jpg: list[StreamingResponse] = []
+    for step in pipeline:
+        _, buffer = cv2.imencode(".jpg", step)
+        io_buffer = io.BytesIO(buffer)
+        pipeline_jpg.append(StreamingResponse(io_buffer, media_type="image/jpeg"))
+
+    return roi_new, pipeline_jpg
 
 
 @router.get("/get-number-of-frames")
