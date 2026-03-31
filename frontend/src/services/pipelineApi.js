@@ -1,4 +1,4 @@
-import { BASE_URL } from './baseUrl';
+import { BASE_URL } from './constants';
 import { fetchImage } from './api';
 
 export async function getDifferentialFrame(frame) {
@@ -13,4 +13,16 @@ export async function getNumberOfFrames() {
   }
   const data = await response.json();
   return data;
+}
+
+
+export async function refreshRoiParametrization(roiNumber) {
+  return fetchImage(`${BASE_URL}/pipeline/roi/prima/${roiNumber}/`, {
+    method: "POST",
+  });
+}
+
+
+export async function getStepOfARoi(roiNumber, stepNumber) {
+  return await fetchImage(`${BASE_URL}/pipeline/roi/prima/${roiNumber}/step/${stepNumber}`);
 }

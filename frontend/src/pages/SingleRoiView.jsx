@@ -1,12 +1,22 @@
 import ControlPanel from '../components/ControlPanel'
 import { ImgBox } from '../components/ImgBox';
 import { useParams } from 'react-router-dom'
+import { useSingleRoiView } from '../hooks/SingleRoiViewSetup';
 
 
 
 function SingleRoiView() {
 
     const {roiNumber} = useParams()
+
+    const {
+        urlBefore, setUrlBefore,
+        urlAfter, setUrlAfter,
+        urlDiff, setUrlDiff,
+        stepList, setStepList,
+        stepsForeachRoi
+    } = useSingleRoiView();
+
 
     return (
         <div className="flex h-screen w-full">

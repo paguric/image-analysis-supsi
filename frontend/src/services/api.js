@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BASE_URL } from './baseUrl';
+import { BASE_URL } from './constants';
 
 const api = axios.create({ baseURL: BASE_URL });
 
@@ -16,3 +16,8 @@ export async function fetchImage(url, options = {}) {
 export const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 export default api;
+
+export async function retrieveImage(url, params = []) {
+
+  
+}

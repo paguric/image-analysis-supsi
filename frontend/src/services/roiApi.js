@@ -20,6 +20,6 @@ export async function getRoiCount() {
   if(!response.ok) {
     throw new Error(`HTTP error: ${response.status}`);
   }
-  const data = await response.json();
-  return data;
+
+  return await response.json();
 }
