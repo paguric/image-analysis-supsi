@@ -40,13 +40,11 @@ async def analyze(
     with open(dopo_avi_path, "wb") as f:
         f.write(dopo_bytes)
 
-    roi_prima: list[Roi] | None = None
-    roi_dopo: list[Roi] | None = None
-
-    roi_prima = pipeline_service.extract_rois(prima_avi_path)
+    roi_prima: list[Roi] = pipeline_service.extract_rois(prima_avi_path)
     for roi in roi_prima:
         roi.fase = Analisi.PRIMA
-    roi_dopo = pipeline_service.extract_rois(dopo_avi_path)
+
+    roi_dopo: list[Roi] = pipeline_service.extract_rois(dopo_avi_path)
     for roi in roi_dopo:
         roi.fase = Analisi.DOPO
 
@@ -63,8 +61,6 @@ async def analyze(
         session.add(roi)
         session.commit()
         session.refresh(roi)
-
-    return {"TODO": "TODO"}
 
 
 @router.get("/diff/{frame}/")
