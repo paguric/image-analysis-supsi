@@ -16,6 +16,8 @@ from app.db.database import SessionDep
 from fastapi import APIRouter, File, UploadFile, HTTPException
 from fastapi.responses import StreamingResponse
 
+from sqlmodel import select
+
 
 router = APIRouter(prefix="/pipeline")
 
@@ -42,24 +44,30 @@ async def analyze(
         f.write(dopo_bytes)
 
     # Trova il frame più luminoso per le due analisi
-    metadata_prima = VideoMetadata(video_path=prima_avi_path, fase=Analisi.PRIMA)
-    metadata_prima.brightest = cv2_service.brightest_frame(prima_avi_path)
+    brightest_idx, brightest_frame = cv2_service.brightest_frame(prima_avi_path)
+    metadata_prima = VideoMetadata(
+        video_path=prima_avi_path, fase=Analisi.PRIMA, brightest_idx=brightest_idx
+    )
+    metadata_prima.brightest_frame = brightest_frame
 
-    metadata_dopo = VideoMetadata(video_path=dopo_avi_path, fase=Analisi.PRIMA)
-    metadata_dopo.brightest = cv2_service.brightest_frame(dopo_avi_path)
+    brightest_idx, brightest_frame = cv2_service.brightest_frame(dopo_avi_path)
+    metadata_dopo = VideoMetadata(
+        video_path=dopo_avi_path, fase=Analisi.PRIMA, brightest_idx=brightest_idx
+    )
+    metadata_dopo.brightest_frame = brightest_frame
 
-    # TODO Salva frame più luminoso nel db
+    # Salva frame più luminoso nel db
     session.add(metadata_prima)
     session.add(metadata_dopo)
     session.commit()
 
     # Estrai le ROI e aggiungi i metadati necessari
-    roi_prima: list[Roi] = pipeline_service.extract_rois(metadata_prima.brightest)
+    roi_prima: list[Roi] = pipeline_service.extract_rois(metadata_prima.brightest_frame)
     for roi in roi_prima:
         roi.video_path = prima_avi_path
         roi.fase = Analisi.PRIMA
 
-    roi_dopo: list[Roi] = pipeline_service.extract_rois(metadata_dopo.brightest)
+    roi_dopo: list[Roi] = pipeline_service.extract_rois(metadata_dopo.brightest_frame)
     for roi in roi_dopo:
         roi.video_path = dopo_avi_path
         roi.fase = Analisi.DOPO
@@ -91,21 +99,31 @@ def get_diff(session: SessionDep, frame: int) -> StreamingResponse:
     return StreamingResponse(io_buffer, media_type="image/jpeg")
 
 
-@router.post("/roi/prima/{n}")
-async def analyze(session: SessionDep, body: PipelineParams) -> StreamingResponse:
+@router.post("/roi/prima/{n}/")
+async def analyze_roi_prima(
+    session: SessionDep, body: PipelineParams, n: int
+) -> StreamingResponse:
     """
     Nota: se una richiesta avesse valori mancanti vengono presi quelli di default definiti nello schema della richiesta PipelineParams
     """
     roi = roi_controller.get_roi_list(session, Analisi.PRIMA)[n]
 
-    # TODO prendere il frame luminoso per l'analisi prima (roi.video_path)
+    # Estrae il frame più luminoso dall'analisi prima
+    # TODO spostare questa logica in un VideoController o simili
+    statement = select(VideoMetadata).where(VideoMetadata.fase == Analisi.PRIMA)
+    video_metadata = session.exec(statement).all()[0]
+    brightest_frame: np.ndarray = video_metadata.brightest_frame
+
     # TODO estrarre da quel frame il patch della ROI con roi.patch
     # TODO applicare la pipeline al patch con pipeline_service.pipeline()
     # TODO creare l'oggetto roi' (la nuova roi) con pipeline_service.find_valid_contours(pipeline[-1])
     # TODO salvare i singoli step della pipeline nel db, in modo però poi da fare una join sull'id della roi e la sua pipeline associata
     # TODO restituire roi': al posto di salvarla in un'altra tabella, gliela facciamo gestire al FE
 
-    return None
+    _, buffer = cv2.imencode(".jpg", brightest_frame)
+    io_buffer = io.BytesIO(buffer)
+
+    return StreamingResponse(io_buffer, media_type="image/jpeg")
 
 
 @router.get("/get-number-of-frames")

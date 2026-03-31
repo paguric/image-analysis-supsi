@@ -51,12 +51,13 @@ def extract_frame(video_path: str, frame_idx: int) -> np.ndarray | None:
     return None
 
 
-def brightest_frame(video_path: str) -> np.ndarray:
+def brightest_frame(video_path: str) -> tuple[int, np.ndarray]:
     """
     Trova il frame più luminoso
     """
 
     brightest_frame = None
+    brightest_idx = -1
     max_brightness = -1
 
     with VideoReader(video_path) as cap1:
@@ -72,10 +73,11 @@ def brightest_frame(video_path: str) -> np.ndarray:
             brightness = img_gray.mean()
 
             if brightness > max_brightness:
-                max_brightness = brightness
+                brightest_idx = i
                 brightest_frame = frame
+                max_brightness = brightness
 
-    return brightest_frame
+    return brightest_idx, brightest_frame
 
 
 def get_video_info(video_path: str) -> dict[str, int | float]:
