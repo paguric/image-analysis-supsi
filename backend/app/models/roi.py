@@ -26,7 +26,7 @@ class Roi(SQLModel, table=True):
     # Colonna binaria grezza sul DB
     contours_data: bytes | None = Field(default=None, sa_column=Column(LargeBinary))
 
-    # Attributo non mappato, calcolato on-demand
+    # Abilitazione tipi arbitrari calcolati on-demand
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @property

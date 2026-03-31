@@ -9,6 +9,7 @@ from app.services import roi_service
 from app.services import cv2_service
 from app.models.roi import Roi
 from app.models.roi import Analisi
+from app.models.video_metadata import VideoMetadata
 from app.schemas.pipeline_params import PipelineParams
 from app.db.database import SessionDep
 
@@ -41,16 +42,24 @@ async def analyze(
         f.write(dopo_bytes)
 
     # Trova il frame più luminoso per le due analisi
-    brightest_prima = cv2_service.brightest_frame(prima_avi_path)
-    brightest_dopo = cv2_service.brightest_frame(dopo_avi_path)
+    metadata_prima = VideoMetadata(video_path=prima_avi_path, fase=Analisi.PRIMA)
+    metadata_prima.brightest = cv2_service.brightest_frame(prima_avi_path)
+
+    metadata_dopo = VideoMetadata(video_path=dopo_avi_path, fase=Analisi.PRIMA)
+    metadata_dopo.brightest = cv2_service.brightest_frame(dopo_avi_path)
+
+    # TODO Salva frame più luminoso nel db
+    session.add(metadata_prima)
+    session.add(metadata_dopo)
+    session.commit()
 
     # Estrai le ROI e aggiungi i metadati necessari
-    roi_prima: list[Roi] = pipeline_service.extract_rois(brightest_prima)
+    roi_prima: list[Roi] = pipeline_service.extract_rois(metadata_prima.brightest)
     for roi in roi_prima:
         roi.video_path = prima_avi_path
         roi.fase = Analisi.PRIMA
 
-    roi_dopo: list[Roi] = pipeline_service.extract_rois(brightest_dopo)
+    roi_dopo: list[Roi] = pipeline_service.extract_rois(metadata_dopo.brightest)
     for roi in roi_dopo:
         roi.video_path = dopo_avi_path
         roi.fase = Analisi.DOPO
