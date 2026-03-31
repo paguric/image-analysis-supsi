@@ -18,7 +18,7 @@ function DifferentialView() {
         debounceTimer,
         isLoading,
     } = useDifferentialView();
-    
+
 
     return (
         <div className="flex h-screen w-full">
@@ -27,8 +27,10 @@ function DifferentialView() {
             <div className="w-1/5 p-4 border-r">
                 <div className="flex flex-col gap-2">
                     {Array.from({ length: numberOfRois }, (_, i) => (
-                        <div key={i} className="flex border p-2 rounded items-center justify-center">
-                            <Button onClick={() => navigate(`/single-roi-view/${i + 1}`)}>
+                        <div key={i} className="flex border  rounded">
+                            <Button 
+                                fullWidth
+                                onClick={() => navigate(`/single-roi-view/${i + 1}`)}>
                                 ROI {i + 1}
                             </Button>
                         </div>
