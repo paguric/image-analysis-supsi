@@ -1,38 +1,53 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PIPELINE_STEPS_NUMBER } from '../services/constants';
 import { getStepOfARoi } from '../services/pipelineApi';
-import { getRoiCount } from '../services/roiApi'
 
 
-function getAllSteps(stepsForeachRoi) {
-
-    for (let i = 0; i <= getRoiCount(); i++) {
-
-        for(let j = 0; j <= PIPELINE_STEPS_NUMBER; j++) {
-
-            stepsForeachRoi.set((i+1), getStepOfARoi(i, j));
-
-        }
-    }
-}
+export function useSingleRoiView(roiNumber) {
 
 
-export function useSingleRoiView() {
-
-
-    const [urlBefore, setUrlBefore] = useState(null);
-    const [urlAfter, setUrlAfter] = useState(null);
-    const [urlDiff, setUrlDiff] = useState(null);
-    const [stepList, setStepList] = useState(null);
+    const [stepUrls, setStepUrls] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
-    const debounceTimer = useRef(null);
+    const [error, setError] = useState(null);
 
-    const stepsForeachRoi = new Map();
+    useEffect(() => {
 
-    getAllSteps(stepsForeachRoi);
+        async function loadAllSteps() {
+
+            setIsLoading(true);
+            setError(false);
+
+            try {
+                const promises = [];
+
+                for (let i = 0; i <= PIPELINE_STEPS_NUMBER; i++) {
+                    promises.push(getStepOfARoi(roiNumber, j));
+                }
+
+                const urls = await Promise.all(promises);
+                setStepUrls(urls);
+
+            } catch (err) {
+
+            } finally {
+
+                setIsLoading(false);
+            }
+        }
+
+        loadAllSteps();
+
+        
+        useEffect(() => {
+            stepUrls.forEach(url => URL.revokeObjectURL(url));
+        });
+
+    }, [roiNumber]);
 
 
-
-    
-
+    return {
+        stepUrls,
+        isLoading,
+        error
+    }
 }

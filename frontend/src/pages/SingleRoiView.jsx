@@ -10,13 +10,12 @@ function SingleRoiView() {
     const {roiNumber} = useParams()
 
     const {
-        urlBefore, setUrlBefore,
-        urlAfter, setUrlAfter,
-        urlDiff, setUrlDiff,
-        stepList, setStepList,
-        stepsForeachRoi
+        stepUrls,
+        isLoading,
+        error
     } = useSingleRoiView();
 
+    
 
     return (
         <div className="flex h-screen w-full">
