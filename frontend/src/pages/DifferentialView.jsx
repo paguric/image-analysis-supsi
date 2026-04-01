@@ -30,13 +30,16 @@ function DifferentialView() {
                         <div key={i} className="flex border  rounded">
                             <Button 
                                 fullWidth
-                                onClick={() => navigate(`/single-roi-view/${i + 1}`)}>
+                                onClick={() => navigate(`/single-roi-view/${i + 1}/${currentFrame}`)}>
                                 ROI {i + 1}
                             </Button>
                         </div>
                     ))}
                 </div>
             </div>
+
+
+
 
             {/* Colonna destra */}
             <div className="w-4/5 p-4 h-full">

@@ -16,10 +16,16 @@ export async function getNumberOfFrames() {
 }
 
 
-export async function refreshRoiParametrization(roiNumber) {
-  return fetchImage(`${BASE_URL}/pipeline/roi/prima/${roiNumber}/`, {
+
+export async function runPipeline(roiNumber) {
+  const response = await fetch(`${BASE_URL}/pipeline/roi/prima/${roiNumber}/`, {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({}),
   });
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
 }
 
 
