@@ -131,11 +131,11 @@ def compute_aligned_roi_diff(
         patch_prima = roi_l.get_pixels(frame)
         patch_dopo = roi_r.get_pixels(frame)
 
-        # OLD - Padding se i due patch non sono della stessa dimensione - prende raggio comune (il più grande dei due)
+        # OLD - Padding se i due patch non sono della stessa dimensione - prende raggio comune, cioè il più grande dei due
         # common_size = get_common_size(patch_prima, patch_dopo)
         common_size = get_min_size(patch_prima, patch_dopo)
 
-        # La conversione a float32 non dovrebbe essere necessaria, ma permette di aumentare la precisione della differenza
+        # La conversione a float32 permette di aumentare la precisione della differenza (altrimenti glitcha)
         p1_centered = center_patch_on_canvas(patch_prima, common_size).astype(
             np.float32
         )
