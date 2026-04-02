@@ -12,7 +12,6 @@ class Pipeline(SQLModel, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
     roi_id: int | None = Field(default=None, foreign_key="roi.id")
-    # roi = relationship(back_populates="pipeline")
     roi: Optional["Roi"] = Relationship(back_populates="pipelines")
 
     hpf_data: bytes | None = Field(default=None, sa_column=Column(LargeBinary))
