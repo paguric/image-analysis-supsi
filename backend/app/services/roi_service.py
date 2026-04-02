@@ -54,6 +54,24 @@ def get_common_size(patch1: np.ndarray, patch2: np.ndarray) -> int:
     return common_size
 
 
+def get_min_size(patch1: np.ndarray, patch2: np.ndarray) -> int:
+    """
+    Calcola la dimensione minima fra le due patch.
+    """
+
+    # Nota: le patch sono quadrate: h1 == w1
+    h1, w1 = patch1.shape[:2]
+    h2, w2 = patch2.shape[:2]
+
+    min_size = min(w1, w2)
+
+    # Forza dimensioni dispari: garantisce un centro esatto (pixel centrale unico)
+    if min_size % 2 == 0:
+        min_size += 1
+
+    return min_size
+
+
 def center_patch_on_canvas(patch: np.ndarray, canvas_size: int) -> np.ndarray:
     """
     Posiziona la patch al centro di un canvas nero della dimensione target.
@@ -66,14 +84,20 @@ def center_patch_on_canvas(patch: np.ndarray, canvas_size: int) -> np.ndarray:
     Returns:
         canvas con la patch centrata
     """
+    ph, pw = patch.shape[:2]
+
+    # Se la patch è più grande del canvas, ritaglia dal centro
+    if ph > canvas_size or pw > canvas_size:
+        cy, cx = ph // 2, pw // 2
+        half = canvas_size // 2
+        patch = patch[cy - half : cy + half + 1, cx - half : cx + half + 1]
+        ph, pw = patch.shape[:2]
 
     # Crea canvas nero con gli stessi canali della patch
     if patch.ndim == 3:
         canvas = np.zeros((canvas_size, canvas_size, patch.shape[2]), dtype=patch.dtype)
     else:
         canvas = np.zeros((canvas_size, canvas_size), dtype=patch.dtype)
-
-    ph, pw = patch.shape[:2]
 
     # Offset per centrare: quanto spazio lasciare attorno alla patch
     offset = (canvas_size - pw) // 2
@@ -107,10 +131,11 @@ def compute_aligned_roi_diff(
         patch_prima = roi_l.get_pixels(frame)
         patch_dopo = roi_r.get_pixels(frame)
 
-        # Padding se i due patch non sono della stessa dimensione -prende raggio comune (il più grande dei due)
-        common_size = get_common_size(patch_prima, patch_dopo)
+        # OLD - Padding se i due patch non sono della stessa dimensione - prende raggio comune, cioè il più grande dei due
+        # common_size = get_common_size(patch_prima, patch_dopo)
+        common_size = get_min_size(patch_prima, patch_dopo)
 
-        # La conversione a float32 non dovrebbe essere necessaria, ma permette di aumentare la precisione della differenza
+        # La conversione a float32 permette di aumentare la precisione della differenza (altrimenti glitcha)
         p1_centered = center_patch_on_canvas(patch_prima, common_size).astype(
             np.float32
         )

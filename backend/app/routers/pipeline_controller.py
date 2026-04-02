@@ -7,8 +7,10 @@ from app.routers import roi_controller
 from app.services import pipeline_service
 from app.services import roi_service
 from app.services import cv2_service
+from app.services import draw_service
 from app.models.roi import Roi
 from app.models.roi import Analisi
+from app.models.diff import Diff
 from app.models.pipeline import Pipeline
 from app.models.video_metadata import VideoMetadata
 from app.schemas.pipeline_params import PipelineParams
@@ -29,6 +31,9 @@ async def analyze(
     video_prima: UploadFile = File(...),
     video_dopo: UploadFile = File(...),
 ):
+    """
+    Estrae le ROI dai video delle due analisi e le salva nel db.
+    """
 
     prima_bytes = await video_prima.read()
     dopo_bytes = await video_dopo.read()
@@ -83,18 +88,78 @@ async def analyze(
         session.refresh(roi)
 
 
+
 @router.get("/diff/{frame}/")
 def get_diff(session: SessionDep, frame: int) -> StreamingResponse:
+    """
+    Calcola il frame differenziale fra le due analisi e lo salva nel db.
+    """
+    
+    # Se il differenziale è già stato calcolato ed è nel db, lo possiamo restituire subito
+    # TODO spostare questa query (come quella in analyze_roi_prima) in un metodo a parte
+    result: Diff | None = session.exec(
+        select(Diff).where(Diff.frame == frame)
+    ).all()
+
+    if len(result) != 0:
+        diff : Diff = result[0]
+        # TODO impacchettare queste tre righe per creare l'output in un metodo a parte
+        _, buffer = cv2.imencode(".jpg", diff.diff_frame)
+        io_buffer = io.BytesIO(buffer)
+
+        return StreamingResponse(io_buffer, media_type="image/jpeg")
 
     roi_prima: list[Roi] = roi_controller.get_roi_list(session, Analisi.PRIMA)
     roi_dopo: list[Roi] = roi_controller.get_roi_list(session, Analisi.DOPO)
 
     if roi_prima is None or roi_dopo is None:
         raise HTTPException(status_code=400, detail="No images uploaded yet")
+    
+    diff_frame : np.ndarray = roi_service.compute_aligned_roi_diff(roi_prima, roi_dopo, frame)
 
-    diff = roi_service.compute_aligned_roi_diff(roi_prima, roi_dopo, frame)
+    # Calcola e salva il differenziale
+    diff = Diff(frame=frame)
+    diff.diff_frame = diff_frame
+    session.add(diff)
+    session.commit()
+    session.refresh(diff)
 
-    _, buffer = cv2.imencode(".jpg", diff)
+    _, buffer = cv2.imencode(".jpg", diff.diff_frame)
+    io_buffer = io.BytesIO(buffer)
+
+    return StreamingResponse(io_buffer, media_type="image/jpeg")
+
+
+@router.get("/diff/{frame}/contours/")
+def get_diff(session: SessionDep, frame: int) -> StreamingResponse:
+    """
+    Applica un overlay verde che permette di identificare le ROI sul differenziale fra le due analisi.
+    L'overlay è calcolato come il minEnclosingCircle di raggio minimo fra le due patch.
+    """
+    
+    roi_prima: list[Roi] = roi_controller.get_roi_list(session, Analisi.PRIMA)
+    roi_dopo: list[Roi] = roi_controller.get_roi_list(session, Analisi.DOPO)
+
+    # Prende differenziale dal db se già calcolato
+    result: Diff | None = session.exec(
+        select(Diff).where(Diff.frame == frame)
+    ).all()
+
+    if len(result) != 0:
+        diff : Diff = result[0]
+        diff_frame : np.ndarray = diff.diff_frame
+
+    # TODO calcola differenziale e salvalo nel db se non esiste
+
+    # Prende come riferimento per il centro le ROI del prima, coerentemente con roi_service.compute_aligned_roi_diff che ricompone il differenziale sui centri delle ROI del prima
+    for i, roi in enumerate(roi_prima):
+        # Raggio minimo, coerente con calcolo differenziale sempre in roi_service.compute_aligned_roi_diff
+        radius = roi_service.get_min_size(roi.get_pixels(frame), roi_dopo[i].get_pixels(frame)) // 2
+        
+        # Disegna il minEnclosingCircle sul frame differenziale
+        draw_service.draw_circle(diff_frame, roi.get_center(), radius=radius, color=(255, 0, 0), filled=False)
+
+    _, buffer = cv2.imencode(".jpg", diff_frame)
     io_buffer = io.BytesIO(buffer)
 
     return StreamingResponse(io_buffer, media_type="image/jpeg")
@@ -103,9 +168,8 @@ def get_diff(session: SessionDep, frame: int) -> StreamingResponse:
 @router.post("/roi/prima/{n}/")
 async def analyze_roi_prima(session: SessionDep, body: PipelineParams, n: int):
     """
-    Restituisce la nuova ROI identificati dall'applicazione della pipeline.
-    Per visualizzare invece gli step intermedi, usare l'endpoint GET /roi/prima/{n}/steps/
-    Nota: se nel body della richiesta ci fossero valori mancanti vengono presi quelli di default definiti nello schema della richiesta PipelineParams
+    Restituisce la nuova ROI identificati dall'applicazione della pipeline sulla singola patch.
+    Nota: se nel body della richiesta ci fossero valori mancanti vengono presi quelli di default definiti nello schema della richiesta PipelineParams.
     """
     roi = roi_controller.get_roi_list(session, Analisi.PRIMA)[n]
 
@@ -143,10 +207,11 @@ async def get_step_pipeline_roi_prima(
     j: int,
 ) -> StreamingResponse:
     """
-    Permette di leggere step intermedi.
+    Restituisce gli step intermedi dell'applicazione della pipeline su una singola ROI.
     """
     roi = roi_controller.get_roi_list(session, Analisi.PRIMA)[i]
 
+    # TODO spostare questa query (e tutte le altre) in un metodo a parte
     pipeline: Pipeline | None = session.exec(
         select(Pipeline).where(Pipeline.roi_id == roi.id)
     ).all()[0]
@@ -171,7 +236,7 @@ async def get_step_pipeline_roi_prima(
 @router.get("/get-number-of-frames")
 async def get_number_of_frames(session: SessionDep) -> dict[str, int | float]:
     """
-    Restituisce il numero di frame del video prima
+    Restituisce il numero di frame del video prima.
     """
     roi_prima: list[Roi] = roi_controller.get_roi_list(session, Analisi.PRIMA)
     video_path = roi_prima[0].video_path
