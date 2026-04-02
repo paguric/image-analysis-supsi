@@ -36,7 +36,7 @@ function SingleRoiView() {
 
             {/* Colonna destra */}
             <div className="w-3/4 p-4 h-full">
-                <div className="grid grid-cols-6 grid-rows-2 h-full gap-2">
+                <div className="grid grid-cols-6 grid-rows-[1fr_2fr] h-full gap-2">
 
                     {
                         isBeforeLoading ? <CircularIndeterminate /> :
