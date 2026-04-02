@@ -7,7 +7,10 @@ export async function fetchImage(url, options = {}) {
   const res = await fetch(url, options);
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail ?? `HTTP ${res.status}`);
+    const detail = Array.isArray(err.detail)
+      ? err.detail.map(e => `${e.loc?.join(".")} — ${e.msg}`).join(", ")
+      : (err.detail ?? `HTTP ${res.status}`);
+    throw new Error(detail); 
   }
   const blob = await res.blob();
   return URL.createObjectURL(blob);
@@ -16,8 +19,3 @@ export async function fetchImage(url, options = {}) {
 export const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 export default api;
-
-export async function retrieveImage(url, params = []) {
-
-  
-}

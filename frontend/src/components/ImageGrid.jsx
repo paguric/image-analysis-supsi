@@ -1,5 +1,6 @@
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
+import ImageListItemBar from '@mui/material/ImageListItemBar';
 
 export default function ImageGrid({ items }) {
   return (
@@ -13,6 +14,7 @@ export default function ImageGrid({ items }) {
             loading="lazy"
             style={{ width: '100%', height: '100%', objectFit: 'contain' }}
           />
+
         </ImageListItem>
       ))}
     </ImageList>

@@ -1,9 +1,15 @@
 import Button from '@mui/material/Button';
 import VideoSlot from '../components/VideoSlot'
 import { useHome } from '../hooks/HomeSetup'
+import MaterialNumberField from '../components/ColorTextField';
+import { useState } from 'react'
 
 
 function Home() {
+
+
+  const [minWave, setMinWave] = useState(0);
+  const [maxWave, saxMaxWave] = useState(0);
 
   const {
     loading,
@@ -11,7 +17,7 @@ function Home() {
     videoPrima, setVideoPrima,
     videoDopo, setVideoDopo,
     analyze
-  } = useHome();
+  } = useHome(minWave, maxWave);
 
   return (
     <div className="max-w-5xl mx-auto px-8 py-8 min-h-screen flex flex-col justify-center items-center">
@@ -31,6 +37,11 @@ function Home() {
       </div>
 
       {response && <p className="mb-4 text-sm">{response}</p>}
+
+      <div className="flex">
+        <MaterialNumberField label={"Min Wavelength"} color={"info"}/>
+        <MaterialNumberField label={"Max Wavelength"} color={"info"}/>
+      </div>
 
       <div className="p-8 flex flex-col items-center gap-4">
         <Button

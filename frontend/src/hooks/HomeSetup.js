@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import api, { sleep } from '../services/api'
 
 
-export function useHome() {
+export function useHome( {minWavelength, maxWavelength} ) {
     const navigate = useNavigate()
 
     const [loading, setLoading] = useState(false)

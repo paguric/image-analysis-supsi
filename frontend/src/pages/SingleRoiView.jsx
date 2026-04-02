@@ -4,10 +4,11 @@ import { useParams } from 'react-router-dom'
 import { useSingleRoiView } from '../hooks/SingleRoiViewSetup';
 import ImageGrid from '../components/ImageGrid';
 import CircularIndeterminate from '../components/CircularIndeterminate';
+import NumberSpinner from '../components/NumberSpinner';
 
 function SingleRoiView() {
 
-    const { roiNumber } = useParams()
+    const { roiNumber, frameNumber } = useParams()
 
     const {
         stepUrls,
@@ -18,7 +19,7 @@ function SingleRoiView() {
         beforeImgUrl,
         afterImgUrl,
         diffImgUrl
-    } = useSingleRoiView(roiNumber);
+    } = useSingleRoiView(roiNumber, frameNumber);
 
     const items = stepUrls.map((url, i) => ({ img: url, title: `Step ${i}` }));
 
@@ -30,7 +31,7 @@ function SingleRoiView() {
 
                 <p className="text-center font-bold text-2xl">ROI #{roiNumber}</p>
 
-                <ControlPanel />
+                <ControlPanel minWaveLength={0} maxWaveLength={1000} actualFrame={frameNumber}/>
             </div>
 
 
@@ -40,19 +41,20 @@ function SingleRoiView() {
 
                     {
                         isBeforeLoading ? <CircularIndeterminate /> :
-                            <ImgBox src={beforeImgUrl} fill />
+                        <ImgBox src={beforeImgUrl} stepName={"Before"} />
                     }
+
 
 
                     {
                         isAfterLoading ? <CircularIndeterminate /> :
-                            <ImgBox src={afterImgUrl} fill />
+                            <ImgBox src={afterImgUrl} stepName={"After"}/>
                     }
 
 
                     {
                         isDiffLoading ? <CircularIndeterminate /> :
-                            <ImgBox src={diffImgUrl} fill />
+                            <ImgBox src={diffImgUrl} stepName={"Differential"}/>
                     }
 
 

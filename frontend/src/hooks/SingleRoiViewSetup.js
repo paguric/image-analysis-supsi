@@ -85,7 +85,7 @@ export function useSingleRoiView(roiNumber, frameNumber) {
 
         async function loadAllSteps() {
             setIsLoading(true);
-            setError(null);
+            setError(false);
             try {
                 await runPipeline(roiNumber);
 
@@ -117,7 +117,7 @@ export function useSingleRoiView(roiNumber, frameNumber) {
             objectUrlRevoker(diffImgUrl);
         }
 
-    }, [roiNumber]);
+    }, [roiNumber, frameNumber]);
 
 
     return {
