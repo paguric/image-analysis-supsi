@@ -29,6 +29,9 @@ async def analyze(
     video_prima: UploadFile = File(...),
     video_dopo: UploadFile = File(...),
 ):
+    """
+    Estrae le ROI dai video delle due analisi e le salva nel db.
+    """
 
     prima_bytes = await video_prima.read()
     dopo_bytes = await video_dopo.read()
@@ -85,7 +88,10 @@ async def analyze(
 
 @router.get("/diff/{frame}/")
 def get_diff(session: SessionDep, frame: int) -> StreamingResponse:
-
+    """
+    Calcola il frame differenziale fra le due analisi.
+    """
+    
     roi_prima: list[Roi] = roi_controller.get_roi_list(session, Analisi.PRIMA)
     roi_dopo: list[Roi] = roi_controller.get_roi_list(session, Analisi.DOPO)
 
@@ -103,9 +109,8 @@ def get_diff(session: SessionDep, frame: int) -> StreamingResponse:
 @router.post("/roi/prima/{n}/")
 async def analyze_roi_prima(session: SessionDep, body: PipelineParams, n: int):
     """
-    Restituisce la nuova ROI identificati dall'applicazione della pipeline.
-    Per visualizzare invece gli step intermedi, usare l'endpoint GET /roi/prima/{n}/steps/
-    Nota: se nel body della richiesta ci fossero valori mancanti vengono presi quelli di default definiti nello schema della richiesta PipelineParams
+    Restituisce la nuova ROI identificati dall'applicazione della pipeline sulla singola patch.
+    Nota: se nel body della richiesta ci fossero valori mancanti vengono presi quelli di default definiti nello schema della richiesta PipelineParams.
     """
     roi = roi_controller.get_roi_list(session, Analisi.PRIMA)[n]
 
@@ -143,7 +148,7 @@ async def get_step_pipeline_roi_prima(
     j: int,
 ) -> StreamingResponse:
     """
-    Permette di leggere step intermedi.
+    Restituisce gli step intermedi dell'applicazione della pipeline su una singola ROI.
     """
     roi = roi_controller.get_roi_list(session, Analisi.PRIMA)[i]
 
@@ -171,7 +176,7 @@ async def get_step_pipeline_roi_prima(
 @router.get("/get-number-of-frames")
 async def get_number_of_frames(session: SessionDep) -> dict[str, int | float]:
     """
-    Restituisce il numero di frame del video prima
+    Restituisce il numero di frame del video prima.
     """
     roi_prima: list[Roi] = roi_controller.get_roi_list(session, Analisi.PRIMA)
     video_path = roi_prima[0].video_path
