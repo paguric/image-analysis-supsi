@@ -32,7 +32,8 @@ async def get_roi_prima(session: SessionDep, body: RoiData):
 
     patch_prima = roi_prima[body.index].get_pixels(body.frame)
     patch_dopo = roi_dopo[body.index].get_pixels(body.frame)
-    canvas_size = roi_service.get_common_size(patch_prima, patch_dopo)
+    #canvas_size = roi_service.get_common_size(patch_prima, patch_dopo)
+    canvas_size = roi_service.get_min_size(patch_prima, patch_dopo)
     roi = roi_service.center_patch_on_canvas(patch_prima, canvas_size)
 
     _, buffer = cv2.imencode(".jpg", roi)
@@ -51,7 +52,8 @@ async def get_roi_dopo(session: SessionDep, body: RoiData):
 
     patch_prima = roi_prima[body.index].get_pixels(body.frame)
     patch_dopo = roi_dopo[body.index].get_pixels(body.frame)
-    canvas_size = roi_service.get_common_size(patch_prima, patch_dopo)
+    #canvas_size = roi_service.get_common_size(patch_prima, patch_dopo)
+    canvas_size = roi_service.get_min_size(patch_prima, patch_dopo)
     roi = roi_service.center_patch_on_canvas(patch_dopo, canvas_size)
 
     _, buffer = cv2.imencode(".jpg", roi)
@@ -70,7 +72,8 @@ async def get_roi_diff(session: SessionDep, body: RoiData):
 
     patch_prima = roi_prima[body.index].get_pixels(body.frame)
     patch_dopo = roi_dopo[body.index].get_pixels(body.frame)
-    canvas_size = roi_service.get_common_size(patch_prima, patch_dopo)
+    #canvas_size = roi_service.get_common_size(patch_prima, patch_dopo)
+    canvas_size = roi_service.get_min_size(patch_prima, patch_dopo)
     diff = roi_service.center_patch_on_canvas(patch_dopo, canvas_size).astype(
         np.float32
     ) - roi_service.center_patch_on_canvas(patch_prima, canvas_size).astype(np.float32)
