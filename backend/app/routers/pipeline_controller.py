@@ -7,6 +7,7 @@ from app.routers import roi_controller
 from app.services import pipeline_service
 from app.services import roi_service
 from app.services import cv2_service
+from app.services import draw_service
 from app.models.roi import Roi
 from app.models.roi import Analisi
 from app.models.diff import Diff
@@ -132,11 +133,36 @@ def get_diff(session: SessionDep, frame: int) -> StreamingResponse:
 @router.get("/diff/{frame}/contours/")
 def get_diff(session: SessionDep, frame: int) -> StreamingResponse:
     """
-    Applica un overlay che permette di identificare le ROI sul differenziale fra le due analisi.
+    Applica un overlay verde che permette di identificare le ROI sul differenziale fra le due analisi.
     L'overlay è calcolato come il minEnclosingCircle di raggio minimo fra le due patch.
     """
     
-    # TODO
+    roi_prima: list[Roi] = roi_controller.get_roi_list(session, Analisi.PRIMA)
+    roi_dopo: list[Roi] = roi_controller.get_roi_list(session, Analisi.DOPO)
+
+    # Prende differenziale dal db se già calcolato
+    result: Diff | None = session.exec(
+        select(Diff).where(Diff.frame == frame)
+    ).all()
+
+    if len(result) != 0:
+        diff : Diff = result[0]
+        diff_frame : np.ndarray = diff.diff_frame
+
+    # TODO calcola differenziale e salvalo nel db se non esiste
+
+    # Prende come riferimento per il centro le ROI del prima, coerentemente con roi_service.compute_aligned_roi_diff che ricompone il differenziale sui centri delle ROI del prima
+    for i, roi in enumerate(roi_prima):
+        # Raggio minimo, coerente con calcolo differenziale sempre in roi_service.compute_aligned_roi_diff
+        radius = roi_service.get_min_size(roi.get_pixels(frame), roi_dopo[i].get_pixels(frame)) // 2
+        
+        # Disegna il minEnclosingCircle sul frame differenziale
+        draw_service.draw_circle(diff_frame, roi.get_center(), radius=radius, color=(255, 0, 0), filled=False)
+
+    _, buffer = cv2.imencode(".jpg", diff_frame)
+    io_buffer = io.BytesIO(buffer)
+
+    return StreamingResponse(io_buffer, media_type="image/jpeg")
 
 
 @router.post("/roi/prima/{n}/")
