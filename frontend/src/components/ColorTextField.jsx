@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 
-export default function ColorTextField({ label, color, onChange }) {
+export default function MaterialNumberField({ label, color, onChange }) {
   const [value, setValue] = useState('');
 
   const handleKeyDown = (e) => {
@@ -14,7 +14,9 @@ export default function ColorTextField({ label, color, onChange }) {
 
   const handleChange = (e) => {
     let newValue = e.target.value;
-    if (newValue < 0) newValue = 0;
+    if (newValue < 0) 
+        newValue = 0;
+
     setValue(newValue);
     onChange?.(Number(newValue));
   };

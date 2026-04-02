@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import api, { sleep } from '../services/api'
 
 
-export function useHome( {minWavelength, maxWavelength} ) {
+export function useHome( {startingWaveLenght} ) {
     const navigate = useNavigate()
 
     const [loading, setLoading] = useState(false)
@@ -32,7 +32,7 @@ export function useHome( {minWavelength, maxWavelength} ) {
             setAnalysisReady(true)
             setResponse("Analisi completata con successo.")
             await sleep(1000);
-            navigate('/differential-view')
+            navigate(`/differential-view/${startingWaveLenght}/`)
         } catch (err) {
             setResponse('Errore: ' + err.message)
         } finally {

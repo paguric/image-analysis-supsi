@@ -4,11 +4,10 @@ import { useParams } from 'react-router-dom'
 import { useSingleRoiView } from '../hooks/SingleRoiViewSetup';
 import ImageGrid from '../components/ImageGrid';
 import CircularIndeterminate from '../components/CircularIndeterminate';
-import NumberSpinner from '../components/NumberSpinner';
 
 function SingleRoiView() {
 
-    const { roiNumber, frameNumber } = useParams()
+    const { roiNumber, frameNumber, startingWaveLenght } = useParams()
 
     const {
         stepUrls,
@@ -30,47 +29,46 @@ function SingleRoiView() {
             <div className="w-1/4 p-4 border-r">
 
                 <p className="text-center font-bold text-2xl">ROI #{roiNumber}</p>
-
-                <ControlPanel minWaveLength={0} maxWaveLength={1000} actualFrame={frameNumber}/>
+                <p>Current Wavelengh: {Number(startingWaveLenght) + Number(frameNumber)}</p>
+                <ControlPanel startingWavelength={startingWaveLenght} actualFrame={frameNumber} />
             </div>
 
 
             {/* Colonna destra */}
             <div className="w-3/4 p-4 h-full">
-                <div className="grid grid-cols-6 grid-rows-3 h-full gap-2">
+                <div className="grid grid-cols-6 grid-rows-2 h-full gap-2">
 
                     {
                         isBeforeLoading ? <CircularIndeterminate /> :
-                        <ImgBox src={beforeImgUrl} stepName={"Before"} />
+                            <ImgBox src={beforeImgUrl} stepName={"Before"} />
                     }
 
 
 
                     {
                         isAfterLoading ? <CircularIndeterminate /> :
-                            <ImgBox src={afterImgUrl} stepName={"After"}/>
+                            <ImgBox src={afterImgUrl} stepName={"After"} />
                     }
 
 
                     {
                         isDiffLoading ? <CircularIndeterminate /> :
-                            <ImgBox src={diffImgUrl} stepName={"Differential"}/>
+                            <ImgBox src={diffImgUrl} stepName={"Differential"} />
                     }
 
 
-                    <div className="col-span-3 row-span-3 h-full">
-
+                    <div className="col-span-3" >
                         {
                             isLoading ? <CircularIndeterminate /> :
                                 <ImageGrid items={items} />
                         }
-
                     </div>
 
-
-                    <div className="col-span-3 row-span-3">
-                        <ImgBox src="../../img/placeholder.png" />
-                    </div >
+                    <div className="col-span-3">
+                        {
+                            <ImgBox src="../../img/placeholder.png" />
+                        }
+                    </div>
 
                 </div>
             </div>

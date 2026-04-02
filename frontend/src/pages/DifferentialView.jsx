@@ -5,8 +5,11 @@ import DiscreteSlider from '../components/DiscreteSlider';
 import CircularIndeterminate from '../components/CircularIndeterminate';
 
 import { useDifferentialView } from '../hooks/DifferentialViewSetup'
+import { useParams } from 'react-router-dom';
 
 function DifferentialView() {
+
+    const { startingWaveLenght } = useParams();
 
 
     const {
@@ -30,14 +33,13 @@ function DifferentialView() {
                         <div key={i} className="flex border  rounded">
                             <Button 
                                 fullWidth
-                                onClick={() => navigate(`/single-roi-view/${i + 1}/${currentFrame}`)}>
+                                onClick={() => navigate(`/single-roi-view/${i + 1}/${currentFrame}/${startingWaveLenght}`)}>
                                 ROI {i + 1}
                             </Button>
                         </div>
                     ))}
                 </div>
             </div>
-
 
 
 
@@ -63,14 +65,18 @@ function DifferentialView() {
                     </div>
 
                     <div>
-                        <DiscreteSlider numberOfFrames={frameCount} onChange={(value) => {
+                        <DiscreteSlider
+                        numberOfFrames={frameCount} 
+                        onChange={(value) => {
                             if (debounceTimer.current)
                                 clearTimeout(debounceTimer.current);
                             debounceTimer.current = setTimeout(() => {
                                 setCurrentFrame(value);
                             }, 150);
                         }} />
-                        <p>Frame corrente: {currentFrame}</p>
+
+                        <p>Current Frame: {currentFrame}</p>
+                        <p>Current Wavelength: { Number(currentFrame) + Number(startingWaveLenght) }</p>
                     </div>
                 </div>
             </div>

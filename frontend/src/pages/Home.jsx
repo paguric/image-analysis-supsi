@@ -8,8 +8,7 @@ import { useState } from 'react'
 function Home() {
 
 
-  const [minWave, setMinWave] = useState(0);
-  const [maxWave, saxMaxWave] = useState(0);
+  const [startingWaveLenght, setStartingWaveLenght] = useState(0);
 
   const {
     loading,
@@ -17,7 +16,7 @@ function Home() {
     videoPrima, setVideoPrima,
     videoDopo, setVideoDopo,
     analyze
-  } = useHome(minWave, maxWave);
+  } = useHome({ startingWaveLenght: startingWaveLenght });
 
   return (
     <div className="max-w-5xl mx-auto px-8 py-8 min-h-screen flex flex-col justify-center items-center">
@@ -39,8 +38,11 @@ function Home() {
       {response && <p className="mb-4 text-sm">{response}</p>}
 
       <div className="flex">
-        <MaterialNumberField label={"Min Wavelength"} color={"info"}/>
-        <MaterialNumberField label={"Max Wavelength"} color={"info"}/>
+        <MaterialNumberField
+          label={"Starting Wavelength"}
+          color={"info"}
+          onChange={setStartingWaveLenght}
+        />
       </div>
 
       <div className="p-8 flex flex-col items-center gap-4">

@@ -5,9 +5,14 @@ function valuetext(value) {
   return `${value} Frame`;
 }
 
+function computeSum(first, second) {
+  return first + second;
+}
+
 export default function DiscreteSlider({numberOfFrames, onChange}) {
   return (
     <Box sx={{ width: '100%' }}>
+      
       <Slider
         aria-label="Frame"
         defaultValue={0}

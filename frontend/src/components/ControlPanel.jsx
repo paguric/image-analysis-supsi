@@ -1,12 +1,12 @@
 import NumberSpinnerBox from './NumberSpinnerBox';
 import ButtonGroupBox from './ControlPanelButtonGroup';
 
-function ControlPanel({ minWaveLength = 0, maxWaveLength = 0, actualFrame = 0 }) {
+function ControlPanel({ startingWavelength, actualFrame = 0 }) {
 
     return (
         <> 
-        <div className="grid grid-cols-1 gap-7">
-            <NumberSpinnerBox name={"Actual Frame"} min={minWaveLength} max={maxWaveLength} defaultValue={actualFrame}></NumberSpinnerBox>
+        <div className="grid grid-cols-1 gap-3">
+            <NumberSpinnerBox name={"Actual Frame"} min={0} defaultValue={actualFrame}></NumberSpinnerBox>
             <NumberSpinnerBox name={"High Pass Filter Window Size"} min={0} defaultValue={101}></NumberSpinnerBox>
             <NumberSpinnerBox name={"Morph Transformation Window Size"} min={0} defaultValue={3}></NumberSpinnerBox>
             <NumberSpinnerBox name={"Morph Transformation Number of Iterations"} min={0} defaultValue={2}></NumberSpinnerBox>
@@ -16,8 +16,8 @@ function ControlPanel({ minWaveLength = 0, maxWaveLength = 0, actualFrame = 0 })
             <NumberSpinnerBox name={"Minimum Area"} min={0} defaultValue={5000}></NumberSpinnerBox>
 
             <ButtonGroupBox
-            abortAndNavigateTo={"/differential-view"}
-            saveAndNavigateTo={"/differential-view"}
+            abortAndNavigateTo={`/differential-view/${startingWavelength}`}
+            saveAndNavigateTo={`/differential-view/${startingWavelength}`}
             ></ButtonGroupBox>
         </div>
         </>
