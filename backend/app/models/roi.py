@@ -2,7 +2,7 @@ import io
 import enum
 import cv2
 import numpy as np
-from typing import List, Optional
+from typing import List
 
 from app.services import cv2_service
 
