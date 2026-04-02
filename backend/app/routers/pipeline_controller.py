@@ -106,6 +106,16 @@ def get_diff(session: SessionDep, frame: int) -> StreamingResponse:
     return StreamingResponse(io_buffer, media_type="image/jpeg")
 
 
+@router.get("/diff/{frame}/contours/")
+def get_diff(session: SessionDep, frame: int) -> StreamingResponse:
+    """
+    Applica un overlay che permette di identificare le ROI sul differenziale fra le due analisi.
+    L'overlay è calcolato come il minEnclosingCircle di raggio minimo fra le due patch.
+    """
+    
+    # TODO
+
+
 @router.post("/roi/prima/{n}/")
 async def analyze_roi_prima(session: SessionDep, body: PipelineParams, n: int):
     """
