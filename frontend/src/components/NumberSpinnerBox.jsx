@@ -1,20 +1,31 @@
 import Box from '@mui/material/Box';
 import NumberSpinner from './NumberSpinner';
 
-function NumberSpinnerBox({name, min, max, defaultValue}) {
+function NumberSpinnerBox({ 
+  name, 
+  min, 
+  defaultValue, 
+  step = 1, 
+  onChange 
+}) {
   return (
     <Box
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        gap: 4,
-        justifyContent: 'center',
+        gap: 1,
       }}
     >
-      <NumberSpinner label={name} min={min} max={max} defaultValue={defaultValue} size='small'/>
-      
+      <NumberSpinner 
+        label={name} 
+        min={min} 
+        defaultValue={defaultValue} 
+        step={step} 
+        size="small"
+        onValueChange={onChange}    
+      />
     </Box>
   );
 }
 
-    export default NumberSpinnerBox
+export default NumberSpinnerBox;

@@ -7,8 +7,8 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Home/>}/>
-      <Route path="/differential-view" element={<DifferentialView/>}/>
-      <Route path="/single-roi-view/:roiNumber" element={<SingleRoiView />} />
+      <Route path="/differential-view/:startingWaveLenght/:actualFrame" element={<DifferentialView/>}/>
+      <Route path="/single-roi-view/:roiNumber/:frameNumber/:startingWaveLenght" element={<SingleRoiView />} />
     </Routes>
   )
 }
