@@ -7,7 +7,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Home/>}/>
-      <Route path="/differential-view/:startingWaveLenght" element={<DifferentialView/>}/>
+      <Route path="/differential-view/:startingWaveLenght/:actualFrame" element={<DifferentialView/>}/>
       <Route path="/single-roi-view/:roiNumber/:frameNumber/:startingWaveLenght" element={<SingleRoiView />} />
     </Routes>
   )

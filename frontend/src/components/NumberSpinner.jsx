@@ -10,7 +10,7 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 
-function NumberSpinner({ id: idProp, label, error, size = 'medium', ...other }) {
+function NumberSpinner({ id: idProp, label, error, size = 'medium', step = 1, ...other }) {
   let id = React.useId();
   if (idProp) {
     id = idProp;
@@ -18,6 +18,7 @@ function NumberSpinner({ id: idProp, label, error, size = 'medium', ...other }) 
   return (
     <BaseNumberField.Root
       {...other}
+      step={step}
       render={(props, state) => (
         <FormControl
           size={size}
@@ -142,16 +143,12 @@ function NumberSpinner({ id: idProp, label, error, size = 'medium', ...other }) 
 
 NumberSpinner.propTypes = {
   error: PropTypes.bool,
-  /**
-   * The id of the input element.
-   */
   id: PropTypes.string,
   label: PropTypes.node,
-  /**
-   * The minimum value of the input element.
-   */
   min: PropTypes.number,
   size: PropTypes.oneOf(['medium', 'small']),
+  /** Quanto incrementa/decrementa ogni click o pressione tasto. Supporta decimali (es. 0.1, 0.5) */
+  step: PropTypes.number,
 };
 
-  export default NumberSpinner;
+export default NumberSpinner;

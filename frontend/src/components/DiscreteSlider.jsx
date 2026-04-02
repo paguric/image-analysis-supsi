@@ -9,13 +9,13 @@ function computeSum(first, second) {
   return first + second;
 }
 
-export default function DiscreteSlider({numberOfFrames, onChange}) {
+export default function DiscreteSlider({startingValue, numberOfFrames, onChange}) {
   return (
     <Box sx={{ width: '100%' }}>
       
       <Slider
         aria-label="Frame"
-        defaultValue={0}
+        defaultValue={startingValue}
         getAriaValueText={valuetext}
         valueLabelDisplay="auto"
         shiftStep={0}
