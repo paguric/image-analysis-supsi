@@ -17,6 +17,7 @@ from sqlmodel import Session, select
 router = APIRouter(prefix="/roi")
 
 
+# TODO da cambiare/spostare
 def get_roi_list(session: Session, analisi: Analisi) -> list[Roi]:
     statement = select(Roi).where(Roi.fase == analisi)
     return session.exec(statement).all()

@@ -9,6 +9,7 @@ from app.services import roi_service
 from app.services import cv2_service
 from app.models.roi import Roi
 from app.models.roi import Analisi
+from app.models.diff import Diff
 from app.models.pipeline import Pipeline
 from app.models.video_metadata import VideoMetadata
 from app.schemas.pipeline_params import PipelineParams
@@ -86,21 +87,43 @@ async def analyze(
         session.refresh(roi)
 
 
+
 @router.get("/diff/{frame}/")
 def get_diff(session: SessionDep, frame: int) -> StreamingResponse:
     """
-    Calcola il frame differenziale fra le due analisi.
+    Calcola il frame differenziale fra le due analisi e lo salva nel db.
     """
     
+    # Se il differenziale è già stato calcolato ed è nel db, lo possiamo restituire subito
+    # TODO spostare questa query (come quella in analyze_roi_prima) in un metodo a parte
+    result: Diff | None = session.exec(
+        select(Diff).where(Diff.frame == frame)
+    ).all()
+
+    if len(result) != 0:
+        diff : Diff = result[0]
+        # TODO impacchettare queste tre righe per creare l'output in un metodo a parte
+        _, buffer = cv2.imencode(".jpg", diff.diff_frame)
+        io_buffer = io.BytesIO(buffer)
+
+        return StreamingResponse(io_buffer, media_type="image/jpeg")
+
     roi_prima: list[Roi] = roi_controller.get_roi_list(session, Analisi.PRIMA)
     roi_dopo: list[Roi] = roi_controller.get_roi_list(session, Analisi.DOPO)
 
     if roi_prima is None or roi_dopo is None:
         raise HTTPException(status_code=400, detail="No images uploaded yet")
+    
+    diff_frame : np.ndarray = roi_service.compute_aligned_roi_diff(roi_prima, roi_dopo, frame)
 
-    diff = roi_service.compute_aligned_roi_diff(roi_prima, roi_dopo, frame)
+    # Calcola e salva il differenziale
+    diff = Diff(frame=frame)
+    diff.diff_frame = diff_frame
+    session.add(diff)
+    session.commit()
+    session.refresh(diff)
 
-    _, buffer = cv2.imencode(".jpg", diff)
+    _, buffer = cv2.imencode(".jpg", diff.diff_frame)
     io_buffer = io.BytesIO(buffer)
 
     return StreamingResponse(io_buffer, media_type="image/jpeg")
@@ -162,6 +185,7 @@ async def get_step_pipeline_roi_prima(
     """
     roi = roi_controller.get_roi_list(session, Analisi.PRIMA)[i]
 
+    # TODO spostare questa query (e tutte le altre) in un metodo a parte
     pipeline: Pipeline | None = session.exec(
         select(Pipeline).where(Pipeline.roi_id == roi.id)
     ).all()[0]
