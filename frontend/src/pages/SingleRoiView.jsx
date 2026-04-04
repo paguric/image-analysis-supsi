@@ -10,7 +10,7 @@ import { useHandleFrameChange } from '../hooks/useHandleFrameChange';
 function SingleRoiView() {
 
     const { roiNumber, frameNumber, startingWaveLenght } = useParams();
-    
+
 
     const {
         stepUrls,
@@ -60,47 +60,31 @@ function SingleRoiView() {
             </div>
 
             {/* Colonna destra */}
-            <div className="w-3/4 p-4 h-full overflow-hidden">
-                <div className="grid grid-cols-6 grid-rows-[1fr_2fr] h-full gap-3">
+            <div className="w-3/4 p-4 h-full overflow-hidden flex flex-col gap-3">
 
-                    <div className="col-span-2">
-                        {isBeforeLoading ? (
-                            <CircularIndeterminate />
-                        ) : (
-                            <ImgBox src={beforeImgUrl} stepName="Before" />
-                        )}
+                {/* Riga superiore - occupa lo spazio rimanente e si rimpicciolisce */}
+                <div className="flex gap-3 flex-1 min-h-0 overflow-hidden">
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                        {isBeforeLoading ? <CircularIndeterminate /> : <ImgBox src={beforeImgUrl} stepName="Before" />}
                     </div>
-
-                    <div className="col-span-2">
-                        {isAfterLoading ? (
-                            <CircularIndeterminate />
-                        ) : (
-                            <ImgBox src={afterImgUrl} stepName="After" />
-                        )}
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                        {isAfterLoading ? <CircularIndeterminate /> : <ImgBox src={afterImgUrl} stepName="After" />}
                     </div>
-
-                    <div className="col-span-2">
-                        {isDiffLoading ? (
-                            <CircularIndeterminate />
-                        ) : (
-                            <ImgBox src={diffImgUrl} stepName="Differential" />
-                        )}
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                        {isDiffLoading ? <CircularIndeterminate /> : <ImgBox src={diffImgUrl} stepName="Differential" />}
                     </div>
+                </div>
 
-
-                    <div className="col-span-3 row-span-1">
-                        {isLoading ? (
-                            <CircularIndeterminate />
-                        ) : (
-                            <ImageGrid items={items} />
-                        )}
+                {/* Riga inferiore - sempre visibile per intero, non si schiaccia mai */}
+                <div className="flex gap-3 shrink-0">
+                    <div className="flex-1 min-w-0">
+                        {isLoading ? <CircularIndeterminate /> : <ImageGrid items={items} />}
                     </div>
-
-                    <div className="col-span-3 row-span-1">
+                    <div className="flex-1 min-w-0">
                         <ImgBox src="../../img/placeholder.png" stepName="Other View" />
                     </div>
-
                 </div>
+
             </div>
         </div>
     );

@@ -36,7 +36,7 @@ function DifferentialView() {
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                    
+
                     {Array.from({ length: numberOfRois }, (_, i) => (
                         <div key={i} className="flex">
                             <Button
@@ -56,55 +56,53 @@ function DifferentialView() {
 
 
             {/*colonna destra */}
-            <div className="w-4/5 flex flex-col h-full">
+            <div className="w-4/5 flex flex-col h-full p-4 gap-3 overflow-hidden">
 
-                <div className="flex-1 p-4 overflow-hidden">
-                    <div className="grid grid-cols-1 grid-rows-7 h-full gap-3">
+                {/* Immagine - occupa la maggior parte dello spazio */}
+                <div className="flex-1 min-h-0 flex items-center justify-center bg-black rounded-lg overflow-hidden">
+                    {isLoading ? (
+                        <CircularIndeterminate />
+                    ) : urlDiff && <ImgBox src={urlDiff} />}
+                </div>
 
-                        <div className="row-span-4 flex items-center justify-center bg-black rounded-lg overflow-hidden">
-                            {isLoading ? (
-                                <CircularIndeterminate />
-                            ) : urlDiff && <ImgBox src={urlDiff} />}
-                        </div>
+                {/* Parte inferiore - dimensione naturale, non si schiaccia */}
+                <div className="shrink-0 flex flex-col gap-3">
 
-                        <div className="row-span-1 flex items-center justify-center">
-                            <DifferentialViewButtonGroup className="w-full max-w-2xl" />
-                        </div>
-
-                        <div>
-                            <Button
-                                className="w-full"
-                                variant="outlined"
-                                onClick={() => navigate('/')}
-                            >
-                                Take another Analysis
-                            </Button>
-                        </div>
-
-                        <div className="space-y-2">
-                            <DiscreteSlider
-                                startingValue={actualFrame}
-                                numberOfFrames={frameCount}
-                                onChange={(value) => {
-                                    if (debounceTimer.current) clearTimeout(debounceTimer.current);
-                                    debounceTimer.current = setTimeout(() => {
-                                        setCurrentFrame(value);
-                                    }, 150);
-                                }}
-                            />
-                            <div className="text-center text-sm text-gray-600 dark:text-gray-400">
-                                <p>Current Frame: <strong>{currentFrame}</strong></p>
-                                <p>Current Wavelength: <strong>{Number(currentFrame) + Number(startingWaveLenght)}</strong></p>
-                            </div>
-
-                            <div className="flex justify-center mt-4">
-                                <InfoPopupWindow title={"differential_view_title"} description={"differential_description"} />
-                            </div>
-
-
-                        </div>
-
+                    <div className="flex items-center justify-center">
+                        <DifferentialViewButtonGroup className="w-full max-w-2xl" />
                     </div>
+
+                    <div>
+                        <Button
+                            className="w-full"
+                            variant="outlined"
+                            onClick={() => navigate('/')}
+                        >
+                            Take another Analysis
+                        </Button>
+                    </div>
+
+                    <div className="space-y-2">
+                        <DiscreteSlider
+                            startingValue={actualFrame}
+                            numberOfFrames={frameCount}
+                            onChange={(value) => {
+                                if (debounceTimer.current) clearTimeout(debounceTimer.current);
+                                debounceTimer.current = setTimeout(() => {
+                                    setCurrentFrame(value);
+                                }, 150);
+                            }}
+                        />
+                        <div className="text-center text-sm text-gray-600 dark:text-gray-400">
+                            <p>Current Frame: <strong>{currentFrame}</strong></p>
+                            <p>Current Wavelength: <strong>{Number(currentFrame) + Number(startingWaveLenght)}</strong></p>
+                        </div>
+
+                        <div className="flex justify-center">
+                            <InfoPopupWindow title={"differential_view_title"} description={"differential_description"} />
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
