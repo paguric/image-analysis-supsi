@@ -3,14 +3,14 @@ import { useEffect, useState, useRef } from 'react';
 import { getDifferentialFrame, getNumberOfFrames } from "../services/pipelineApi";
 import { getRoiCount } from '../services/roiApi';
 
-export function useDifferentialView() {
+export function useDifferentialView(actualFrame) {
 
     const navigate = useNavigate()
 
     const [numberOfRois, setNumberOfRois] = useState(0);
     const [frameCount, setFrameCount] = useState(100);
     const [urlDiff, setUrlDiff] = useState(null);
-    const [currentFrame, setCurrentFrame] = useState(0);
+    const [currentFrame, setCurrentFrame] = useState(Number(actualFrame) || 0);
     const prevDiffUrl = useRef(null);
     const debounceTimer = useRef(null);
     const [isLoading, setIsLoading] = useState(true);

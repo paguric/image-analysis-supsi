@@ -21,7 +21,7 @@ function DifferentialView() {
         urlDiff,
         debounceTimer,
         isLoading,
-    } = useDifferentialView();
+    } = useDifferentialView(actualFrame);
 
     return (
         <div className="flex h-screen w-full overflow-hidden">
@@ -87,7 +87,8 @@ function DifferentialView() {
                             startingValue={actualFrame}
                             numberOfFrames={frameCount}
                             onChange={(value) => {
-                                if (debounceTimer.current) clearTimeout(debounceTimer.current);
+                                if (debounceTimer.current) 
+                                    clearTimeout(debounceTimer.current);
                                 debounceTimer.current = setTimeout(() => {
                                     setCurrentFrame(value);
                                 }, 150);
