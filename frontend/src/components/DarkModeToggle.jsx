@@ -9,7 +9,7 @@ export default function DarkModeToggle() {
         <Tooltip title={dark ? 'Light mode' : 'Dark mode'}>
             <IconButton
                 onClick={toggle}
-                sx={{ position: 'fixed', top: 12, right: 12, zIndex: 9999 }}
+                sx={{ position: 'fixed', top: 0, left: 6, zIndex: 9999 }}
             >
                 {dark ? '☀️' : '🌙'}
             </IconButton>

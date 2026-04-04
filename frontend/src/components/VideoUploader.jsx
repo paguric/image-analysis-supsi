@@ -30,9 +30,9 @@ function VideoUploader({ onVideoSelected }) {
     >
       <input {...getInputProps()} />
       {isDragActive ? (
-        <p className="m-0 text-sm">Rilascia il video qui...</p>
+        <p className="m-0 text-sm">Drop the video here...</p>
       ) : (
-        <p className="m-0 text-sm">Trascina il video da analizzare (.avi), o clicca</p>
+        <p className="m-0 text-sm">Drag the video you want to analyze (.avi) here, or click</p>
       )}
     </div>
   )

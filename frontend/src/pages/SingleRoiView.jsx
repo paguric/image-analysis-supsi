@@ -1,4 +1,3 @@
-// SingleRoiView.jsx
 import ControlPanel from '../components/ControlPanel';
 import { ImgBox } from '../components/ImgBox';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -32,7 +31,7 @@ function SingleRoiView() {
 
         debounceTimer.current = setTimeout(() => {
             navigate(`/single-roi-view/${roiNumber}/${newFrame}/${startingWaveLenght}`, { replace: true });
-        }, 180); 
+        }, 180);
     };
 
     const items = stepUrls.map((url, i) => ({ img: url, title: `Step ${i}` }));
@@ -43,17 +42,18 @@ function SingleRoiView() {
         <div className="flex h-screen w-full overflow-hidden">
 
             {/* Colonna sinistra  */}
-            <div className="w-1/4 p-6 border-r bg-gray-50 overflow-y-auto">
+            {/* Colonna sinistra */}
+            <div className="w-1/4 p-6 border-r dark:border-gray-700 overflow-y-auto">
                 <div className="mb-6">
-                    <p className="text-center font-bold text-3xl mb-1">ROI #{roiNumber}</p>
-                    <p className="text-center text-gray-600">
+                    <p className="text-center font-bold text-3xl mb-1 dark:text-gray-100">ROI #{roiNumber}</p>
+                    <p className="text-center text-gray-600 dark:text-gray-400">
                         Current Wavelength: <strong>{currentWavelength}</strong>
                     </p>
                 </div>
 
-                <ControlPanel 
-                    startingWavelength={startingWaveLenght} 
-                    actualFrame={frameNumber} 
+                <ControlPanel
+                    startingWavelength={startingWaveLenght}
+                    actualFrame={frameNumber}
                     onFrameChange={handleFrameChange}
                 />
             </div>
@@ -86,7 +86,7 @@ function SingleRoiView() {
                         )}
                     </div>
 
-  
+
                     <div className="col-span-3 row-span-1">
                         {isLoading ? (
                             <CircularIndeterminate />

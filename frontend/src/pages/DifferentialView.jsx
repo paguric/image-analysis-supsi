@@ -15,7 +15,7 @@ function DifferentialView() {
         navigate,
         numberOfRois,
         frameCount,
-        currentFrame, 
+        currentFrame,
         setCurrentFrame,
         urlDiff,
         debounceTimer,
@@ -23,20 +23,21 @@ function DifferentialView() {
     } = useDifferentialView();
 
     return (
-        <div className="flex h-screen w-full overflow-hidden">  
+        <div className="flex h-screen w-full overflow-hidden">
 
-            { /* colonna sinistra */}
-            <div className="w-1/5 border-r bg-gray-50 flex flex-col">   
-                
-                <div className="p-4 border-b font-medium text-gray-700">
-                    ROIs List
+            {/* colonna sinistra */}
+            <div className="w-1/5 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+
+                <div className="p-4 border-b dark:border-gray-700 font-medium text-gray-700 dark:text-gray-200">
+                    <div className="flex justify-center">
+                        ROIs List
+                    </div>
                 </div>
 
-            
                 <div className="flex-1 overflow-y-auto p-4 space-y-2">
                     {Array.from({ length: numberOfRois }, (_, i) => (
                         <div key={i} className="flex">
-                            <Button 
+                            <Button
                                 fullWidth
                                 variant="outlined"
                                 onClick={() => navigate(`/single-roi-view/${i + 1}/${currentFrame}/${startingWaveLenght}`)}
@@ -55,7 +56,7 @@ function DifferentialView() {
 
                 <div className="flex-1 p-4 overflow-hidden">
                     <div className="grid grid-cols-1 grid-rows-7 h-full gap-3">
-                        
+
                         <div className="row-span-4 flex items-center justify-center bg-black rounded-lg overflow-hidden">
                             {isLoading ? (
                                 <CircularIndeterminate />
@@ -67,8 +68,8 @@ function DifferentialView() {
                         </div>
 
                         <div>
-                            <Button 
-                                className="w-full" 
+                            <Button
+                                className="w-full"
                                 variant="outlined"
                                 onClick={() => navigate('/')}
                             >
@@ -79,15 +80,15 @@ function DifferentialView() {
                         <div className="space-y-2">
                             <DiscreteSlider
                                 startingValue={actualFrame}
-                                numberOfFrames={frameCount} 
+                                numberOfFrames={frameCount}
                                 onChange={(value) => {
                                     if (debounceTimer.current) clearTimeout(debounceTimer.current);
                                     debounceTimer.current = setTimeout(() => {
                                         setCurrentFrame(value);
                                     }, 150);
-                                }} 
+                                }}
                             />
-                            <div className="text-center text-sm text-gray-600">
+                            <div className="text-center text-sm text-gray-600 dark:text-gray-400">
                                 <p>Current Frame: <strong>{currentFrame}</strong></p>
                                 <p>Current Wavelength: <strong>{Number(currentFrame) + Number(startingWaveLenght)}</strong></p>
                             </div>

@@ -14,8 +14,8 @@ export default function MaterialNumberField({ label, color, onChange }) {
 
   const handleChange = (e) => {
     let newValue = e.target.value;
-    if (newValue < 0) 
-        newValue = 0;
+    if (newValue < 0)
+      newValue = 0;
 
     setValue(newValue);
     onChange?.(Number(newValue));
@@ -24,10 +24,11 @@ export default function MaterialNumberField({ label, color, onChange }) {
   return (
     <Box
       component="form"
-      sx={{ '& > :not(style)': { m: 1, width: '15ch' } }}
+      sx={{ '& > :not(style)': { m: 1, width: '16ch' } }}
       noValidate
       autoComplete="off"
     >
+
       <TextField
         label={label}
         color={color}
@@ -37,6 +38,8 @@ export default function MaterialNumberField({ label, color, onChange }) {
         onKeyDown={handleKeyDown}
         onChange={handleChange}
       />
+
+
     </Box>
   );
 }

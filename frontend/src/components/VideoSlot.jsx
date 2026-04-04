@@ -4,7 +4,10 @@ import VideoPlayer from './VideoPlayer'
 function VideoSlot({ titolo, fileSelezionato, setFileSelezionato, videoUrl, solaLettura }) {
   return (
     <div className="bg-[#1a1a1a] p-4 rounded-xl w-80 shadow-lg flex flex-col gap-4">
-      <h3 className="m-0 text-xl text-white">{titolo}</h3>
+      <div className="flex justify-center">
+        <h3 className="m-0 text-xl text-white">{titolo}</h3>
+      </div>
+      
       
       {videoUrl ? (
         <VideoPlayer src={videoUrl} />
@@ -14,7 +17,7 @@ function VideoSlot({ titolo, fileSelezionato, setFileSelezionato, videoUrl, sola
         </div>
       ) : fileSelezionato ? (
         <div className="border-2 border-dashed border-[#666] rounded-lg p-5 text-center text-[#aaa] bg-white/5">
-          <p>File pronto: <strong>{fileSelezionato.name}</strong></p>
+          <p>File: <strong>{fileSelezionato.name}</strong></p>
         </div>
       ) : (
         <VideoUploader onVideoSelected={setFileSelezionato} />

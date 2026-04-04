@@ -269,3 +269,4 @@ backend/app/out/*
 
 
 backend/database.db
+out/*

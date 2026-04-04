@@ -20,16 +20,16 @@ function Home() {
 
   return (
     <div className="max-w-5xl mx-auto px-8 py-8 min-h-screen flex flex-col justify-center items-center">
-      <h1 className="text-center text-2xl font-bold mb-8">Analisi Video</h1>
+      <h1 className="text-center text-2xl font-bold mb-8">Image Analysis</h1>
 
       <div className="flex justify-center gap-5 flex-wrap mb-8">
         <VideoSlot
-          titolo="Video Prima"
+          titolo="Video Before"
           fileSelezionato={videoPrima}
           setFileSelezionato={setVideoPrima}
         />
         <VideoSlot
-          titolo="Video Dopo"
+          titolo="Video After"
           fileSelezionato={videoDopo}
           setFileSelezionato={setVideoDopo}
         />
@@ -51,7 +51,7 @@ function Home() {
           disabled={loading}
           variant="outlined" aria-label="Basic button group"
         >
-          {loading ? "Analisi in corso..." : "Analizza"}
+          {loading ? "Analyzing..." : "Analyze"}
         </Button>
       </div>
     </div>
