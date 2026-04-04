@@ -43,7 +43,7 @@ function DifferentialView() {
                                 fullWidth
                                 variant="outlined"
                                 onClick={() => navigate(
-                                    `/single-roi-view/${i + 1}/${currentFrame}/${startingWaveLenght}`
+                                    `/single-roi-view/${i}/${currentFrame}/${startingWaveLenght}`
                                 )}
                             >
                                 ROI {i + 1}

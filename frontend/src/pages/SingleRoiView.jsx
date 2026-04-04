@@ -41,7 +41,9 @@ function SingleRoiView() {
             {/* Colonna sinistra */}
             <div className="w-1/4 p-6 border-r dark:border-gray-700 overflow-y-auto">
                 <div className="mb-6">
-                    <p className="text-center font-bold text-3xl mb-1 dark:text-gray-100">ROI #{roiNumber}</p>
+                    <p className="text-center font-bold text-3xl mb-1 dark:text-gray-100">
+                        ROI #{Number(roiNumber) + Number(1)}
+                        </p>
                     <p className="text-center text-gray-600 dark:text-gray-400">
                         Current Wavelength: <strong>{isNaN(currentWavelength) ? '-' : currentWavelength}</strong>
                     </p>
@@ -81,7 +83,7 @@ function SingleRoiView() {
                         {isLoading ? <CircularIndeterminate /> : <ImageGrid items={items} />}
                     </div>
                     <div className="flex-1 min-w-0">
-                        <ImgBox src="../../img/placeholder.png" stepName="Other View" />
+                        <ImgBox src="../../img/placeholder.png" />
                     </div>
                 </div>
 

@@ -2,6 +2,9 @@ import { BASE_URL } from '../constants/BaseUrl';
 import { fetchImage } from './api';
 
 export async function getDifferentialFrame(frame) {
+  console.log("Frame Number Required: " + frame);
+  if(frame < 0)
+    return null;
   return fetchImage(`${BASE_URL}/pipeline/diff/${frame}/`);
 }
 
