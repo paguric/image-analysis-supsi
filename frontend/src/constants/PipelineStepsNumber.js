@@ -1,0 +1,1 @@
+export const PIPELINE_STEPS_NUMBER = 4;

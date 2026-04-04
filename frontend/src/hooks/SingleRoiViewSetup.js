@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
-import { PIPELINE_STEPS_NUMBER } from '../services/constants';
+import { PIPELINE_STEPS_NUMBER } from '../constants/PipelineStepsNumber'
 import { getStepOfARoi, runPipeline } from '../services/pipelineApi';
 import { getPreprocessedROI, getPostprocessedROI, getDifferentialROI } from '../services/roiApi';
-
-
+import { getNumberOfFrames } from '../services/pipelineApi';
 
 export function useSingleRoiView(roiNumber, frameNumber) {
 
@@ -18,6 +17,13 @@ export function useSingleRoiView(roiNumber, frameNumber) {
     const [beforeImgUrl, setBeforeImgUrl] = useState(null);
     const [afterImgUrl, setAfterImgUrl] = useState(null);
     const [diffImgUrl, setDiffImgUrl] = useState(null);
+    const [frameCount, setFrameCount] = useState(0);
+
+    useEffect(() => {
+        getNumberOfFrames()
+            .then(data => setFrameCount(data.total_frames))
+            .catch(err => console.error(err));
+    }, []);
 
 
 
@@ -128,7 +134,8 @@ export function useSingleRoiView(roiNumber, frameNumber) {
         isDiffLoading,
         beforeImgUrl,
         afterImgUrl,
-        diffImgUrl
+        diffImgUrl,
+        frameCount
     }
 }
 

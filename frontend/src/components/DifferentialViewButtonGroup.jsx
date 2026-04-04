@@ -6,8 +6,7 @@ function DifferentialViewButtonGroup() {
         <ButtonGroup fullWidth>
             <Button>Show Contours</Button>
             <Button>Export CSV</Button>
-            <Button>Import Settings</Button>
-            <Button>Export Settings</Button>
+
         </ButtonGroup>
     )
 }

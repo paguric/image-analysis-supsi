@@ -1,10 +1,9 @@
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import InfoIcon from '@mui/icons-material/Info'
 import VideoSlot from '../components/VideoSlot'
 import { useHome } from '../hooks/HomeSetup'
 import MaterialNumberField from '../components/ColorTextField';
 import { useState } from 'react'
+import InfoPopupWindow from '../components/InfoPopupWindow';
 
 
 function Home() {
@@ -58,9 +57,7 @@ function Home() {
       </div>
 
       <div>
-        <IconButton color={"info"}>
-          <InfoIcon fontSize="small" />
-        </IconButton>
+        <InfoPopupWindow title={"home_title"} description={"home_description"} />
       </div>
 
     </div>

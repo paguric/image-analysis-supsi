@@ -1,4 +1,4 @@
-import { BASE_URL } from  '../services/constants'
+import { BASE_URL } from  '../constants/BaseUrl'
 import { fetchImage } from './api';
 
 async function getGeneralRoi(index, frame, stadium) {

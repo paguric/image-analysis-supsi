@@ -3,6 +3,7 @@ import { ImgBox } from '../components/ImgBox';
 import DifferentialViewButtonGroup from '../components/DifferentialViewButtonGroup'
 import DiscreteSlider from '../components/DiscreteSlider';
 import CircularIndeterminate from '../components/CircularIndeterminate';
+import InfoPopupWindow from '../components/InfoPopupWindow';
 
 import { useDifferentialView } from '../hooks/DifferentialViewSetup'
 import { useParams } from 'react-router-dom';
@@ -35,12 +36,15 @@ function DifferentialView() {
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                    
                     {Array.from({ length: numberOfRois }, (_, i) => (
                         <div key={i} className="flex">
                             <Button
                                 fullWidth
                                 variant="outlined"
-                                onClick={() => navigate(`/single-roi-view/${i + 1}/${currentFrame}/${startingWaveLenght}`)}
+                                onClick={() => navigate(
+                                    `/single-roi-view/${i + 1}/${currentFrame}/${startingWaveLenght}`
+                                )}
                             >
                                 ROI {i + 1}
                             </Button>
@@ -92,6 +96,12 @@ function DifferentialView() {
                                 <p>Current Frame: <strong>{currentFrame}</strong></p>
                                 <p>Current Wavelength: <strong>{Number(currentFrame) + Number(startingWaveLenght)}</strong></p>
                             </div>
+
+                            <div className="flex justify-center mt-4">
+                                <InfoPopupWindow title={"differential_view_title"} description={"differential_description"} />
+                            </div>
+
+
                         </div>
 
                     </div>

@@ -6,7 +6,8 @@ function NumberSpinnerBox({
   min, 
   defaultValue, 
   step = 1, 
-  onChange 
+  onChange,
+  error = false,
 }) {
   return (
     <Box
@@ -22,7 +23,8 @@ function NumberSpinnerBox({
         defaultValue={defaultValue} 
         step={step} 
         size="small"
-        onValueChange={onChange}    
+        onValueChange={onChange}
+        error={error}
       />
     </Box>
   );

@@ -21,11 +21,13 @@ export default function ControlPanelButtonGroup({abortAndNavigateTo, saveAndNavi
     >
       <ButtonGroup variant="outlined" aria-label="Basic button group">
         <Button color="error" onClick={() => navigate(abortAndNavigateTo)}>Abort</Button>
-        <Button>Import Settings</Button>
-        <Button>Export Settings</Button>
-      </ButtonGroup>
+        
+        <Button variant="outlined" 
+                color="success" 
+                onClick={() => navigate(saveAndNavigateTo)}
+        >Save</Button>
 
-      <Button variant="outlined" color="success" onClick={() => navigate(saveAndNavigateTo)}>Save</Button>
+      </ButtonGroup>
     </Box>
   );
 }

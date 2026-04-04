@@ -1,4 +1,4 @@
-import { BASE_URL } from './constants';
+import { BASE_URL } from '../constants/BaseUrl';
 import { fetchImage } from './api';
 
 export async function getDifferentialFrame(frame) {

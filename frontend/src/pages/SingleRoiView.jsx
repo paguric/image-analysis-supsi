@@ -4,14 +4,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useSingleRoiView } from '../hooks/SingleRoiViewSetup';
 import ImageGrid from '../components/ImageGrid';
 import CircularIndeterminate from '../components/CircularIndeterminate';
-import { useRef } from 'react';
+import InfoPopupWindow from '../components/InfoPopupWindow';
+import { useHandleFrameChange } from '../hooks/useHandleFrameChange';
 
 function SingleRoiView() {
 
     const { roiNumber, frameNumber, startingWaveLenght } = useParams();
-    const navigate = useNavigate();
-
-    const debounceTimer = useRef(null);
+    
 
     const {
         stepUrls,
@@ -22,17 +21,15 @@ function SingleRoiView() {
         beforeImgUrl,
         afterImgUrl,
         diffImgUrl,
+        frameCount
     } = useSingleRoiView(roiNumber, frameNumber);
 
-    const handleFrameChange = (newFrame) => {
-        if (debounceTimer.current) {
-            clearTimeout(debounceTimer.current);
-        }
 
-        debounceTimer.current = setTimeout(() => {
-            navigate(`/single-roi-view/${roiNumber}/${newFrame}/${startingWaveLenght}`, { replace: true });
-        }, 180);
-    };
+    const { handleFrameChange } = useHandleFrameChange({
+        roiNumber,
+        startingWaveLenght,
+        frameCount
+    });
 
     const items = stepUrls.map((url, i) => ({ img: url, title: `Step ${i}` }));
 
@@ -41,13 +38,12 @@ function SingleRoiView() {
     return (
         <div className="flex h-screen w-full overflow-hidden">
 
-            {/* Colonna sinistra  */}
             {/* Colonna sinistra */}
             <div className="w-1/4 p-6 border-r dark:border-gray-700 overflow-y-auto">
                 <div className="mb-6">
                     <p className="text-center font-bold text-3xl mb-1 dark:text-gray-100">ROI #{roiNumber}</p>
                     <p className="text-center text-gray-600 dark:text-gray-400">
-                        Current Wavelength: <strong>{currentWavelength}</strong>
+                        Current Wavelength: <strong>{isNaN(currentWavelength) ? '-' : currentWavelength}</strong>
                     </p>
                 </div>
 
@@ -55,7 +51,12 @@ function SingleRoiView() {
                     startingWavelength={startingWaveLenght}
                     actualFrame={frameNumber}
                     onFrameChange={handleFrameChange}
+                    frameCount={frameCount}
                 />
+
+                <div className="flex justify-center mt-4">
+                    <InfoPopupWindow title={"single_roi_view_title"} description={"single_roi_view_description"} />
+                </div>
             </div>
 
             {/* Colonna destra */}

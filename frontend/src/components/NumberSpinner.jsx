@@ -113,7 +113,19 @@ function NumberSpinner({ id: idProp, label, error, size = 'medium', step = 1, ..
                   },
                 },
               }}
-              sx={{ pr: 0, borderRadius: 0, flex: 1 }}
+              sx={{
+                pr: 0,
+                borderRadius: 0,
+                flex: 1,
+                ...(error && {
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'error.main',
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'error.main',
+                  },
+                })
+              }}
             />
           )}
         />

@@ -18,7 +18,7 @@ export function useHome( {startingWaveLenght} ) {
 
     const analyze = async () => {
         if (!videoPrima || !videoDopo) {
-            alert("Carica entrambi i video prima di analizzare!")
+            alert("Upload both videos before analyzing them!")
             return
         }
 
@@ -30,11 +30,11 @@ export function useHome( {startingWaveLenght} ) {
         try {
             await api.post('/pipeline/', formData)
             setAnalysisReady(true)
-            setResponse("Analisi completata con successo.")
+            setResponse("Analysis completed successfully.")
             await sleep(1000);
             navigate(`/differential-view/${startingWaveLenght}/0`)
         } catch (err) {
-            setResponse('Errore: ' + err.message)
+            setResponse('Error: ' + err.message)
         } finally {
             setLoading(false)
         }

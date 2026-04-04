@@ -1,19 +1,19 @@
-// ControlPanel.jsx
 import NumberSpinnerBox from './NumberSpinnerBox';
 import ButtonGroupBox from './ControlPanelButtonGroup';
 
 function ControlPanel({
     startingWavelength,
     actualFrame = 0,
-    onFrameChange
+    onFrameChange,
+    frameCount
 }) {
 
     return (
-        <div className="grid grid-cols-1 gap-4 mt-4">
+        <div className="grid grid-cols-1 gap-4 mt-4 ">
             <NumberSpinnerBox
-                name="Actual Frame"
+                name={`Actual Frame (max allowed: ${frameCount})`}
                 min={0}
-                defaultValue={Number(actualFrame)}
+                defaultValue={isNaN(Number(actualFrame)) ? 0 : Number(actualFrame)}
                 step={1}
                 onChange={onFrameChange}
             />
@@ -64,7 +64,7 @@ function ControlPanel({
 
             <ButtonGroupBox
                 abortAndNavigateTo={`/differential-view/${startingWavelength}/${actualFrame}`}
-                saveAndNavigateTo={`/differential-view/${startingWavelength}`}
+                saveAndNavigateTo={`/differential-view/${startingWavelength}/${actualFrame}`}
             />
         </div>
     );
