@@ -1,8 +1,15 @@
-# import pytest
-# import numpy as np
-# import cv2
+import pytest
+import numpy as np
+import cv2
 
-# from backend.app.services import cv2_service
+from backend.app.services import cv2_service
+
+
+def test_example():
+
+    assert 1+1 == 2
+
+
 
 
 # def test_time_convert():
