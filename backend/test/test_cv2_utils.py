@@ -1,8 +1,6 @@
 import pytest
-import numpy as np
-import cv2
 
-from backend.app.services import cv2_service
+
 
 
 def test_example():
