@@ -1,5 +1,5 @@
 import os
-import subprocess
+import sys
 import threading
 import uvicorn
 import webview
@@ -25,34 +25,47 @@ app.include_router(pipeline_controller.router)
 app.include_router(roi_controller.router)
 
 
+# NON CANCELLARE
+def get_base_path() -> str:
+    """Percorso root dei file bundlati (o del sorgente in dev)."""
+    if getattr(sys, "frozen", False):
+        # Siamo dentro il bundle PyInstaller
+        return sys._MEIPASS
+    return os.path.dirname(os.path.abspath(__file__))
+
+
+# NON CANCELLARE
+def get_exe_dir() -> str:
+    """Cartella dove si trova l'exe (o il sorgente in dev).
+    Usata per file scrivibili (db, output) — mai dentro _MEIPASS che è read-only."""
+    if getattr(sys, "frozen", False):
+        return os.path.dirname(sys.executable)
+    # In dev, risale alla root del progetto (due livelli sopra backend/)
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..")
+
+
 # Percorso base ai file statici del frontend
-base_path = os.path.dirname(os.path.abspath(__file__))
-# Cartella che contiene le build dei file React - Pyinstaller la copia dentro l'exe
-static_dir = os.path.join(base_path, "..", "..", "frontend", "dist")
+base_path = get_base_path()
+exe_dir = get_exe_dir()
+
+# Cartella che contiene le build dei file React - PyInstaller la copia dentro il bundle
+static_dir = os.path.join(base_path, "frontend", "dist")
+
+# Percorso del database - accanto all'exe (mai dentro _MEIPASS che è read-only)
+db_path = os.path.join(exe_dir, "database.db")
 
 
 # Creazione db all'avvio dell'app
 @app.on_event("startup")
 def on_startup():
     # Rimozione db vecchio
-    file_path = os.path.join(base_path, "..", "..", "backend", "database.db")
-
-    if os.path.isfile(file_path):
-        os.remove(file_path)
-        print(f"{file_path} è stato eliminato con successo")
+    if os.path.isfile(db_path):
+        os.remove(db_path)
+        print(f"{db_path} è stato eliminato con successo")
     else:
-        print(f"Errore: Il file {file_path} non esiste")
+        print(f"Nessun db precedente trovato in {db_path}")
 
     database.create_db_and_tables()
-
-
-# aggiungendo queste due righe sto facendo in modo che automaticamente,
-# quando avvio il backend, venga lanciato anche un "npm run build", di modo
-# da sostituire il codice compilato "vecchio" presente in dist (che è
-# la cartella dove viene messo il codice compilato che il browser è
-# in grado di interpretare)
-frontend_dir = os.path.join(base_path, "..", "..", "frontend")
-# subprocess.run(["npm", "run", "build"], cwd=frontend_dir, check=True)
 
 
 @app.get("/")
@@ -60,8 +73,8 @@ async def root() -> FileResponse:
     return FileResponse(os.path.join(static_dir, "index.html"))
 
 
-# fallback di sicurezza, se il file richiesto esiste (file statico di React)
-# lo restitutisce, altrimenti ti butta all'index
+# Fallback di sicurezza: se il file richiesto esiste (file statico di React)
+# lo restituisce, altrimenti rimanda all'index
 @app.get("/{full_path:path}")
 def serve_frontend(full_path: str) -> FileResponse:
     file = os.path.join(static_dir, full_path)
@@ -70,7 +83,7 @@ def serve_frontend(full_path: str) -> FileResponse:
     return FileResponse(os.path.join(static_dir, "index.html"))
 
 
-# avvia uvicorn che fa da intermediario tra la rete (locale) e FastAPI:
+# Avvia uvicorn che fa da intermediario tra la rete (locale) e FastAPI:
 # raccoglie le richieste HTTP da PyWebView, le passa a FastAPI,
 # e rimanda le risposte indietro.
 def start_server() -> None:
@@ -82,12 +95,12 @@ def start_server() -> None:
 
 
 if __name__ == "__main__":
-    # avvia il server in un thread separato (daemon).
-    # Bisogna fare così perché uvicorn è bloccante, se girasse sul thread
+    # Avvia il server in un thread separato (daemon).
+    # Bisogna fare così perché uvicorn è bloccante: se girasse sul thread
     # principale bloccherebbe l'esecuzione e la finestra non si aprirebbe mai.
     # Essendo daemon, il thread si ferma automaticamente quando la finestra viene chiusa.
     threading.Thread(target=start_server, daemon=True).start()
-    # questo semplicemente regista la finestra di PyWebView con le varie specifiche
+    # Registra la finestra di PyWebView con le varie specifiche
     webview.create_window(
         "Image Analysis",
         "http://localhost:8000",
@@ -95,5 +108,5 @@ if __name__ == "__main__":
         height=800,
         resizable=True,
     )
-    # questo apre effettivamente la finestra e la mantiene aperta
+    # Apre effettivamente la finestra e la mantiene aperta
     webview.start()

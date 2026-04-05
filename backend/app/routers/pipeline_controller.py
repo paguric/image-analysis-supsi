@@ -1,5 +1,6 @@
 import io
 import os
+import sys
 import cv2
 import numpy as np
 
@@ -24,6 +25,15 @@ from sqlmodel import select
 
 router = APIRouter(prefix="/pipeline")
 
+# NON CANCELLARE
+def get_output_dir() -> str:
+    # Salva vicino all'exe, non relativo al CWD
+    if getattr(sys, "frozen", False):
+        exe_dir = os.path.dirname(sys.executable)
+    else:
+        exe_dir = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(exe_dir, "out")
+
 
 @router.post("/")
 async def analyze(
@@ -38,7 +48,7 @@ async def analyze(
     prima_bytes = await video_prima.read()
     dopo_bytes = await video_dopo.read()
 
-    output_dir = "../out"
+    output_dir = get_output_dir()
     os.makedirs(output_dir, exist_ok=True)
     prima_avi_path = os.path.join(output_dir, "prima.avi")
     dopo_avi_path = os.path.join(output_dir, "dopo.avi")

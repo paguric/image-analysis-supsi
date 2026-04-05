@@ -1,14 +1,12 @@
 from PyInstaller.utils.hooks import collect_all, copy_metadata
 
-# 1. Recupera tutto quello che serve per imageio
 img_datas, img_binaries, img_hidden = collect_all('imageio')
 
 a = Analysis(
     ['backend/app/main.py'],
     pathex=['.'],
-    # 2. Unisci i dati: i tuoi + quelli di imageio + i metadati critici
     datas=[
-        ('frontend/dist', 'static'),
+        ('frontend/dist', 'frontend/dist'),  # deve matchare static_dir in main.py
     ] + img_datas + copy_metadata('imageio'),
     binaries=img_binaries,
     hiddenimports=[
@@ -21,6 +19,10 @@ a = Analysis(
         'uvicorn.protocols.http.h11_impl',
         'uvicorn.lifespan',
         'uvicorn.lifespan.on',
+        'multipart',
+        'sqlmodel',
+        'sqlalchemy',
+        'sqlalchemy.dialects.sqlite',
         'webview',
     ] + img_hidden,
 )
@@ -33,7 +35,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     name='SUPSI Image Analysis',
-    onefile=True,   
-    windowed=True,  
-    console=False,  
+    onefile=True,
+    windowed=True,
+    console=False,
 )
