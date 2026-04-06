@@ -33,5 +33,9 @@ export async function runPipeline(roiNumber) {
 
 
 export async function getStepOfARoi(roiNumber, stepNumber) {
-  return await fetchImage(`${BASE_URL}/pipeline/roi/prima/${roiNumber}/step/${stepNumber}`);
+  return await fetchImage(`${BASE_URL}/pipeline/roi/prima/${roiNumber}/step/${stepNumber}/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({}),
+  });
 }

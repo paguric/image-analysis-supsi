@@ -258,7 +258,7 @@ def make_pipeline_step_getter(analisi: Analisi):
         patch = roi.get_pixels(video_metadata.brightest_idx)
 
         # Applica la pipeline al patch
-        img = pipeline_service.pipeline(patch, body)[-1]
+        img = pipeline_service.pipeline(patch, body)[i]
 
         """
         OLD (06-04-2026) - Non uso più il db per salvare le applicazioni della pipeline, non ha senso!
@@ -275,7 +275,7 @@ def make_pipeline_step_getter(analisi: Analisi):
 
 
 router.add_api_route(
-    "/roi/prima/{idx}/step/{i}",
+    "/roi/prima/{idx}/step/{i}/",
     make_pipeline_step_getter(Analisi.PRIMA),
     methods=["POST"],
 )
