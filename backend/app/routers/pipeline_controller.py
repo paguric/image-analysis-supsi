@@ -185,66 +185,105 @@ def get_diff_with_contours(
     return StreamingResponse(io_buffer, media_type="image/jpeg")
 
 
-@router.post("/roi/prima/{idx}/")
-async def analyze_roi_prima(
+def make_roi_analyzer(analisi: Analisi):
+    async def endpoint(
+        roi_repo: RoiRepoDep,
+        pipeline_repo: PipelineRepoDep,
+        video_metadata_repo: VideoMetadataRepoDep,
+        body: PipelineParams,
+        idx: int,
+    ):
+        """
+        Restituisce la nuova ROI identificata dall'applicazione della pipeline sulla singola patch.
+        Nota: se nel body della richiesta ci fossero valori mancanti vengono presi quelli di default definiti nello schema della richiesta PipelineParams.
+        """
+        roi = roi_service.get_roi(roi_repo, idx, analisi)
+
+        # Estrae il frame più luminoso dall'analisi prima
+        video_metadata = video_metadata_service.get_video_metadata(
+            video_metadata_repo, analisi
+        )
+        patch = roi.get_pixels(video_metadata.brightest_idx)
+
+        # Applica la pipeline al patch
+        pipeline_steps: list[np.ndarray] = pipeline_service.pipeline(patch, body)
+        roi_new = pipeline_service.find_valid_contours(pipeline_steps[-1], body)
+
+        # Salva i singoli step della pipeline nel db
+        new_pipeline = Pipeline.from_steps(
+            roi_id=roi.id, steps=pipeline_steps, params=body
+        )
+        pipeline_service.add_pipeline(pipeline_repo, new_pipeline)
+
+        # TODO definire Pydantic/SQLModel schema di risposta (aggiungerlo anche alla firma del metodo!)
+        # return roi_new
+        return None
+
+    return endpoint
+
+
+router.add_api_route(
+    "/roi/prima/{idx}/",
+    make_roi_analyzer(Analisi.PRIMA),
+    methods=["POST"],
+)
+router.add_api_route(
+    "/roi/dopo/{idx}/",
+    make_roi_analyzer(Analisi.DOPO),
+    methods=["POST"],
+)
+
+
+def make_pipeline_step_getter(analisi: Analisi):
+    async def endpoint(
+        roi_repo: RoiRepoDep,
+        pipeline_repo: PipelineRepoDep,
+        idx: int,
+        i: int,
+    ) -> StreamingResponse:
+        """
+        Restituisce lo step intermedio i-esimo dell'applicazione della pipeline su una singola ROI dell'analisi prima.
+        """
+        roi = roi_service.get_roi(roi_repo, idx, analisi)
+
+        pipeline: Pipeline = pipeline_service.get_pipeline(pipeline_repo, roi.id)
+
+        img = pipeline.get_step(i)
+
+        _, buffer = cv2.imencode(".jpg", img)
+        io_buffer = io.BytesIO(buffer)
+
+        return StreamingResponse(io_buffer, media_type="image/jpeg")
+
+    return endpoint
+
+
+router.add_api_route(
+    "/roi/prima/{idx}/step/{i}",
+    make_pipeline_step_getter(Analisi.PRIMA),
+    methods=["GET"],
+)
+router.add_api_route(
+    "/roi/dopo/{idx}/step/{i}/",
+    make_pipeline_step_getter(Analisi.DOPO),
+    methods=["GET"],
+)
+
+
+@router.get("/roi/dopo/{idx}/step/{i}")
+async def get_step_pipeline_roi_dopo(
     roi_repo: RoiRepoDep,
-    pipeline_repo: PipelineRepoDep,
-    video_metadata_repo: VideoMetadataRepoDep,
-    body: PipelineParams,
     idx: int,
-):
-    """
-    Restituisce la nuova ROI identificata dall'applicazione della pipeline sulla singola patch.
-    Nota: se nel body della richiesta ci fossero valori mancanti vengono presi quelli di default definiti nello schema della richiesta PipelineParams.
-    """
-    roi = roi_service.get_roi(roi_repo, idx, Analisi.PRIMA)
-
-    # Estrae il frame più luminoso dall'analisi prima
-    video_metadata = video_metadata_service.get_video_metadata(
-        video_metadata_repo, Analisi.PRIMA
-    )
-    patch = roi.get_pixels(video_metadata.brightest_idx)
-
-    # Applica la pipeline al patch
-    pipeline_steps: list[np.ndarray] = pipeline_service.pipeline(patch, body)
-    roi_new = pipeline_service.find_valid_contours(pipeline_steps[-1], body)
-
-    # Salva i singoli step della pipeline nel db
-    new_pipeline = Pipeline(roi_id=roi.id)
-    new_pipeline.hpf = pipeline_steps[0]
-    new_pipeline.enhanced = pipeline_steps[1]
-    new_pipeline.edges = pipeline_steps[2]
-    new_pipeline.edges_closed = pipeline_steps[3]
-    pipeline_service.add_pipeline(pipeline_repo, new_pipeline)
-
-    # TODO definire Pydantic/SQLModel schema di risposta (aggiungerlo anche alla firma del metodo!)
-    # return roi_new
-    return None
-
-
-@router.get("/roi/prima/{idx}/step/{j}")
-async def get_step_pipeline_roi_prima(
-    roi_repo: RoiRepoDep,
-    idx: int,
-    j: int,
+    i: int,
 ) -> StreamingResponse:
     """
-    Restituisce gli step intermedi dell'applicazione della pipeline su una singola ROI.
+    Restituisce lo step intermedio i-esimo dell'applicazione della pipeline su una singola ROI dell'analisi dopo.
     """
-    roi = roi_service.get_roi(roi_repo, idx, Analisi.PRIMA)
+    roi = roi_service.get_roi(roi_repo, idx, Analisi.DOPO)
 
     pipeline: Pipeline = pipeline_service.get_pipeline(roi_repo, roi.id)
 
-    img = None
-    match j:
-        case 0:
-            img = pipeline.hpf
-        case 1:
-            img = pipeline.enhanced
-        case 2:
-            img = pipeline.edges
-        case 3:
-            img = pipeline.edges_closed
+    img = pipeline.get_step(i)
 
     _, buffer = cv2.imencode(".jpg", img)
     io_buffer = io.BytesIO(buffer)
