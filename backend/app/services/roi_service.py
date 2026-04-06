@@ -5,6 +5,7 @@ from scipy.optimize import linear_sum_assignment
 from app.services import cv2_service
 from app.models.roi import Roi
 from app.models.roi import Analisi
+from app.schemas.roi import RoiResponse
 from app.repositories.roi_repo import RoiRepository
 
 
@@ -14,6 +15,26 @@ def get_roi_list(repo: RoiRepository, analisi: Analisi) -> list[Roi]:
 
 def get_roi(repo: RoiRepository, idx: int, analisi: Analisi) -> list[Roi]:
     return repo.get(idx, analisi)
+
+
+def roi_to_response(roi: Roi) -> RoiResponse:
+    center = roi.get_center() if roi.contours_data else None
+
+    # np.ndarray di shape (N, 1, 2) -> lista di punti [[x, y], ...]
+    contours_list = None
+    if roi.contours_data is not None:
+        contours_list = roi.contours.reshape(-1, 2).tolist()
+
+    return RoiResponse(
+        id=roi.id,
+        idx=roi.idx,
+        video_path=roi.video_path,
+        fase=roi.fase,
+        center_x=center[0] if center else None,
+        center_y=center[1] if center else None,
+        has_contours=roi.contours_data is not None,
+        contours=contours_list,
+    )
 
 
 def match_rois_by_center(

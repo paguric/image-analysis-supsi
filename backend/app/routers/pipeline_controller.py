@@ -15,6 +15,7 @@ from app.models.diff import Diff
 from app.models.pipeline import Pipeline
 from app.models.video_metadata import VideoMetadata
 from app.schemas.pipeline_params import PipelineParams
+from app.schemas.roi import RoiResponse
 from app.db.database import SessionDep
 from app.dependencies import RoiRepoDep
 from app.dependencies import PipelineRepoDep
@@ -192,7 +193,7 @@ def make_roi_analyzer(analisi: Analisi):
         video_metadata_repo: VideoMetadataRepoDep,
         body: PipelineParams,
         idx: int,
-    ):
+    ) -> RoiResponse:
         """
         Restituisce la nuova ROI identificata dall'applicazione della pipeline sulla singola patch.
         Nota: se nel body della richiesta ci fossero valori mancanti vengono presi quelli di default definiti nello schema della richiesta PipelineParams.
@@ -218,9 +219,8 @@ def make_roi_analyzer(analisi: Analisi):
         )
         pipeline_service.add_pipeline(pipeline_repo, new_pipeline)"""
 
-        # TODO definire Pydantic/SQLModel schema di risposta (aggiungerlo anche alla firma del metodo!)
-        # return roi_new
-        return None
+        # Pydantic BaseModel della Roi
+        return roi_service.roi_to_response(roi_new)
 
     return endpoint
 
