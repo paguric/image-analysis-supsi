@@ -17,6 +17,7 @@ from app.models.video_metadata import VideoMetadata
 from app.schemas.pipeline_params import PipelineParams
 from app.db.database import SessionDep
 from app.dependencies import RoiRepoDep
+from app.dependencies import PipelineRepoDep
 from app.dependencies import VideoMetadataRepoDep
 
 from fastapi import APIRouter, File, UploadFile, HTTPException
@@ -186,8 +187,8 @@ def get_diff_with_contours(
 
 @router.post("/roi/prima/{idx}/")
 async def analyze_roi_prima(
-    session: SessionDep,
     roi_repo: RoiRepoDep,
+    pipeline_repo: PipelineRepoDep,
     video_metadata_repo: VideoMetadataRepoDep,
     body: PipelineParams,
     idx: int,
@@ -214,10 +215,7 @@ async def analyze_roi_prima(
     new_pipeline.enhanced = pipeline_steps[1]
     new_pipeline.edges = pipeline_steps[2]
     new_pipeline.edges_closed = pipeline_steps[3]
-
-    session.add(new_pipeline)
-    session.commit()
-    session.refresh(new_pipeline)
+    pipeline_service.add_pipeline(pipeline_repo, new_pipeline)
 
     # TODO definire Pydantic/SQLModel schema di risposta (aggiungerlo anche alla firma del metodo!)
     # return roi_new

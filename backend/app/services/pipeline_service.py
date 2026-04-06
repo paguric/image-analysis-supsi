@@ -2,8 +2,14 @@ import cv2
 import numpy as np
 
 from app.models.roi import Roi
+from app.models.pipeline import Pipeline
 from app.schemas.pipeline_params import PipelineParams
 from app.services import normalization_service
+from app.dependencies import PipelineRepository
+
+
+def add_pipeline(repo: PipelineRepository, pipeline: Pipeline):
+    repo.add(pipeline)
 
 
 def ensure_odd(v: int) -> int:
