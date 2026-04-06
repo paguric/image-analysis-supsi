@@ -209,11 +209,14 @@ def make_roi_analyzer(analisi: Analisi):
         pipeline_steps: list[np.ndarray] = pipeline_service.pipeline(patch, body)
         roi_new = pipeline_service.find_valid_contours(pipeline_steps[-1], body)
 
+        """
+        OLD (06-04-2026) - Non è responsabilità di questo endpoint!
+        In più, non è davvero necessario salvare TUTTO nel db.
         # Salva i singoli step della pipeline nel db
         new_pipeline = Pipeline.from_steps(
             roi_id=roi.id, steps=pipeline_steps, params=body
         )
-        pipeline_service.add_pipeline(pipeline_repo, new_pipeline)
+        pipeline_service.add_pipeline(pipeline_repo, new_pipeline)"""
 
         # TODO definire Pydantic/SQLModel schema di risposta (aggiungerlo anche alla firma del metodo!)
         # return roi_new
@@ -238,6 +241,8 @@ def make_pipeline_step_getter(analisi: Analisi):
     async def endpoint(
         roi_repo: RoiRepoDep,
         pipeline_repo: PipelineRepoDep,
+        video_metadata_repo: VideoMetadataRepoDep,
+        body: PipelineParams,
         idx: int,
         i: int,
     ) -> StreamingResponse:
@@ -246,9 +251,20 @@ def make_pipeline_step_getter(analisi: Analisi):
         """
         roi = roi_service.get_roi(roi_repo, idx, analisi)
 
-        pipeline: Pipeline = pipeline_service.get_pipeline(pipeline_repo, roi.id)
+        # Estrae il frame più luminoso dall'analisi prima
+        video_metadata = video_metadata_service.get_video_metadata(
+            video_metadata_repo, analisi
+        )
+        patch = roi.get_pixels(video_metadata.brightest_idx)
 
-        img = pipeline.get_step(i)
+        # Applica la pipeline al patch
+        img = pipeline_service.pipeline(patch, body)[-1]
+
+        """
+        OLD (06-04-2026) - Non uso più il db per salvare le applicazioni della pipeline, non ha senso!
+        roi = roi_service.get_roi(roi_repo, idx, analisi)
+        pipeline: Pipeline = pipeline_service.get_pipeline(pipeline_repo, roi.id)
+        img = pipeline.get_step(i)"""
 
         _, buffer = cv2.imencode(".jpg", img)
         io_buffer = io.BytesIO(buffer)
@@ -261,12 +277,12 @@ def make_pipeline_step_getter(analisi: Analisi):
 router.add_api_route(
     "/roi/prima/{idx}/step/{i}",
     make_pipeline_step_getter(Analisi.PRIMA),
-    methods=["GET"],
+    methods=["POST"],
 )
 router.add_api_route(
     "/roi/dopo/{idx}/step/{i}/",
     make_pipeline_step_getter(Analisi.DOPO),
-    methods=["GET"],
+    methods=["POST"],
 )
 
 
