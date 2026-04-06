@@ -4,11 +4,11 @@ import sys
 import cv2
 import numpy as np
 
-from app.routers import roi_controller
 from app.services import pipeline_service
 from app.services import roi_service
 from app.services import cv2_service
 from app.services import draw_service
+from app.services import video_metadata_service
 from app.models.roi import Roi
 from app.models.roi import Analisi
 from app.models.diff import Diff
@@ -17,6 +17,7 @@ from app.models.video_metadata import VideoMetadata
 from app.schemas.pipeline_params import PipelineParams
 from app.db.database import SessionDep
 from app.dependencies import RoiRepoDep
+from app.dependencies import VideoMetadataRepoDep
 
 from fastapi import APIRouter, File, UploadFile, HTTPException
 from fastapi.responses import StreamingResponse
@@ -70,7 +71,7 @@ async def analyze(
 
     brightest_idx, brightest_frame = cv2_service.brightest_frame(dopo_avi_path)
     metadata_dopo = VideoMetadata(
-        video_path=dopo_avi_path, fase=Analisi.PRIMA, brightest_idx=brightest_idx
+        video_path=dopo_avi_path, fase=Analisi.DOPO, brightest_idx=brightest_idx
     )
     metadata_dopo.brightest_frame = brightest_frame
 
@@ -183,21 +184,24 @@ def get_diff_with_contours(
     return StreamingResponse(io_buffer, media_type="image/jpeg")
 
 
-@router.post("/roi/prima/{n}/")
+@router.post("/roi/prima/{idx}/")
 async def analyze_roi_prima(
-    session: SessionDep, repo: RoiRepoDep, body: PipelineParams, n: int
+    session: SessionDep,
+    roi_repo: RoiRepoDep,
+    video_metadata_repo: VideoMetadataRepoDep,
+    body: PipelineParams,
+    idx: int,
 ):
     """
     Restituisce la nuova ROI identificata dall'applicazione della pipeline sulla singola patch.
     Nota: se nel body della richiesta ci fossero valori mancanti vengono presi quelli di default definiti nello schema della richiesta PipelineParams.
     """
-    roi = roi_service.get_roi_list(repo, Analisi.PRIMA)[n]
+    roi = roi_service.get_roi(roi_repo, idx, Analisi.PRIMA)
 
     # Estrae il frame più luminoso dall'analisi prima
-    # TODO spostare questa logica in un VideoController o simili
-    statement = select(VideoMetadata).where(VideoMetadata.fase == Analisi.PRIMA)
-    video_metadata = session.exec(statement).all()[0]
-
+    video_metadata = video_metadata_service.get_video_metadata(
+        video_metadata_repo, Analisi.PRIMA
+    )
     patch = roi.get_pixels(video_metadata.brightest_idx)
 
     # Applica la pipeline al patch
@@ -220,17 +224,17 @@ async def analyze_roi_prima(
     return None
 
 
-@router.get("/roi/prima/{i}/step/{j}")
+@router.get("/roi/prima/{idx}/step/{j}")
 async def get_step_pipeline_roi_prima(
     session: SessionDep,
-    repo: RoiRepoDep,
-    i: int,
+    roi_repo: RoiRepoDep,
+    idx: int,
     j: int,
 ) -> StreamingResponse:
     """
     Restituisce gli step intermedi dell'applicazione della pipeline su una singola ROI.
     """
-    roi: list[Roi] = roi_service.get_roi_list(repo, Analisi.PRIMA)[i]
+    roi = roi_service.get_roi(roi_repo, idx, Analisi.PRIMA)
 
     # TODO spostare questa query (e tutte le altre) in un metodo a parte
     pipeline: Pipeline | None = session.exec(
@@ -255,11 +259,11 @@ async def get_step_pipeline_roi_prima(
 
 
 @router.get("/get-number-of-frames")
-async def get_number_of_frames(repo: RoiRepoDep) -> dict[str, int | float]:
+async def get_number_of_frames(roi_repo: RoiRepoDep) -> dict[str, int | float]:
     """
     Restituisce il numero di frame del video prima.
     """
-    roi_prima: list[Roi] = roi_service.get_roi_list(repo, Analisi.PRIMA)
+    roi_prima: list[Roi] = roi_service.get_roi_list(roi_repo, Analisi.PRIMA)
     video_path = roi_prima[0].video_path
 
     video_info = cv2_service.get_video_info(video_path)

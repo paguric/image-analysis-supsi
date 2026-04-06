@@ -12,6 +12,10 @@ def get_roi_list(repo: RoiRepository, analisi: Analisi) -> list[Roi]:
     return repo.list(analisi)
 
 
+def get_roi(repo: RoiRepository, idx: int, analisi: Analisi) -> list[Roi]:
+    return repo.get(idx, analisi)
+
+
 def match_rois_by_center(
     roi_1: list[Roi], roi_2: list[Roi]
 ) -> tuple[list[Roi], list[Roi]]:

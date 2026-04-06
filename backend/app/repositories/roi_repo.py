@@ -9,8 +9,8 @@ class RoiRepository:
     def add(self, metadata):
         self.session.add(metadata)
 
-    """def get(self):
-        return self.session.query(Roi).filter_by(smt=smt).one()"""
+    def get(self, idx: int, fase: Analisi):
+        return self.session.query(Roi).filter_by(idx=idx).filter_by(fase=fase).one()
 
     def list(self, fase: Analisi):
         return self.session.query(Roi).filter_by(fase=fase).all()
