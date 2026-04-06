@@ -4,6 +4,12 @@ from scipy.optimize import linear_sum_assignment
 
 from app.services import cv2_service
 from app.models.roi import Roi
+from app.models.roi import Analisi
+from app.repositories.roi_repo import RoiRepository
+
+
+def get_roi_list(repo: RoiRepository, analisi: Analisi) -> list[Roi]:
+    return repo.list(analisi)
 
 
 def match_rois_by_center(

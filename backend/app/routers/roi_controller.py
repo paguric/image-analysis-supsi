@@ -6,34 +6,27 @@ from app.models.roi import Roi
 from app.models.roi import Analisi
 from app.schemas.roi import RoiData
 from app.services import roi_service
-from app.db.database import SessionDep
+
+from app.dependencies import RoiRepoDep
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
-
-from sqlmodel import Session, select
 
 
 router = APIRouter(prefix="/roi")
 
 
-# TODO da cambiare/spostare
-def get_roi_list(session: Session, analisi: Analisi) -> list[Roi]:
-    statement = select(Roi).where(Roi.fase == analisi)
-    return session.exec(statement).all()
-
-
 @router.post("/prima/")
-async def get_roi_prima(session: SessionDep, body: RoiData):
-    roi_prima: list[Roi] = get_roi_list(session, Analisi.PRIMA)
-    roi_dopo: list[Roi] = get_roi_list(session, Analisi.DOPO)
+async def get_roi_prima(repo: RoiRepoDep, body: RoiData):
+    roi_prima: list[Roi] = roi_service.get_roi_list(repo, Analisi.PRIMA)
+    roi_dopo: list[Roi] = roi_service.get_roi_list(repo, Analisi.DOPO)
 
     if roi_prima is None or roi_dopo is None:
         raise HTTPException(status_code=400, detail="No images uploaded yet")
 
     patch_prima = roi_prima[body.index].get_pixels(body.frame)
     patch_dopo = roi_dopo[body.index].get_pixels(body.frame)
-    #canvas_size = roi_service.get_common_size(patch_prima, patch_dopo)
+    # canvas_size = roi_service.get_common_size(patch_prima, patch_dopo)
     canvas_size = roi_service.get_min_size(patch_prima, patch_dopo)
     roi = roi_service.center_patch_on_canvas(patch_prima, canvas_size)
 
@@ -44,16 +37,16 @@ async def get_roi_prima(session: SessionDep, body: RoiData):
 
 
 @router.post("/dopo/")
-async def get_roi_dopo(session: SessionDep, body: RoiData):
-    roi_prima: list[Roi] = get_roi_list(session, Analisi.PRIMA)
-    roi_dopo: list[Roi] = get_roi_list(session, Analisi.DOPO)
+async def get_roi_dopo(repo: RoiRepoDep, body: RoiData):
+    roi_prima: list[Roi] = roi_service.get_roi_list(repo, Analisi.PRIMA)
+    roi_dopo: list[Roi] = roi_service.get_roi_list(repo, Analisi.DOPO)
 
     if roi_prima is None or roi_dopo is None:
         raise HTTPException(status_code=400, detail="No images uploaded yet")
 
     patch_prima = roi_prima[body.index].get_pixels(body.frame)
     patch_dopo = roi_dopo[body.index].get_pixels(body.frame)
-    #canvas_size = roi_service.get_common_size(patch_prima, patch_dopo)
+    # canvas_size = roi_service.get_common_size(patch_prima, patch_dopo)
     canvas_size = roi_service.get_min_size(patch_prima, patch_dopo)
     roi = roi_service.center_patch_on_canvas(patch_dopo, canvas_size)
 
@@ -64,16 +57,16 @@ async def get_roi_dopo(session: SessionDep, body: RoiData):
 
 
 @router.post("/diff/")
-async def get_roi_diff(session: SessionDep, body: RoiData):
-    roi_prima: list[Roi] = get_roi_list(session, Analisi.PRIMA)
-    roi_dopo: list[Roi] = get_roi_list(session, Analisi.DOPO)
+async def get_roi_diff(repo: RoiRepoDep, body: RoiData):
+    roi_prima: list[Roi] = roi_service.get_roi_list(repo, Analisi.PRIMA)
+    roi_dopo: list[Roi] = roi_service.get_roi_list(repo, Analisi.DOPO)
 
     if roi_prima is None or roi_dopo is None:
         raise HTTPException(status_code=400, detail="No images uploaded yet")
 
     patch_prima = roi_prima[body.index].get_pixels(body.frame)
     patch_dopo = roi_dopo[body.index].get_pixels(body.frame)
-    #canvas_size = roi_service.get_common_size(patch_prima, patch_dopo)
+    # canvas_size = roi_service.get_common_size(patch_prima, patch_dopo)
     canvas_size = roi_service.get_min_size(patch_prima, patch_dopo)
     diff = roi_service.center_patch_on_canvas(patch_dopo, canvas_size).astype(
         np.float32
@@ -86,5 +79,5 @@ async def get_roi_diff(session: SessionDep, body: RoiData):
 
 
 @router.get("/number-of-rois")
-async def get_number_of_rois(session: SessionDep) -> int:
-    return len(get_roi_list(session, Analisi.PRIMA))
+async def get_number_of_rois(repo: RoiRepoDep) -> int:
+    return len(roi_service.get_roi_list(repo, Analisi.PRIMA))
