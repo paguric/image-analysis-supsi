@@ -12,6 +12,10 @@ def add_pipeline(repo: PipelineRepository, pipeline: Pipeline):
     repo.add(pipeline)
 
 
+def get_pipeline(repo: PipelineRepository, roi_id: int):
+    repo.get(roi_id)
+
+
 def ensure_odd(v: int) -> int:
     """OpenCV richiede kernel di dimensione dispari."""
     v = max(1, int(v))

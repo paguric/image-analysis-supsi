@@ -224,7 +224,6 @@ async def analyze_roi_prima(
 
 @router.get("/roi/prima/{idx}/step/{j}")
 async def get_step_pipeline_roi_prima(
-    session: SessionDep,
     roi_repo: RoiRepoDep,
     idx: int,
     j: int,
@@ -234,10 +233,7 @@ async def get_step_pipeline_roi_prima(
     """
     roi = roi_service.get_roi(roi_repo, idx, Analisi.PRIMA)
 
-    # TODO spostare questa query (e tutte le altre) in un metodo a parte
-    pipeline: Pipeline | None = session.exec(
-        select(Pipeline).where(Pipeline.roi_id == roi.id)
-    ).all()[0]
+    pipeline: Pipeline = pipeline_service.get_pipeline(roi_repo, roi.id)
 
     img = None
     match j:
