@@ -7,6 +7,7 @@ import InfoPopupWindow from '../components/InfoPopupWindow';
 
 
 function Home() {
+  useSetInfoPopup("home_title", "home_description")
 
 
   const [startingWaveLenght, setStartingWaveLenght] = useState(0);
@@ -65,9 +66,6 @@ function Home() {
         </Button>
       </div>
 
-      <div>
-        <InfoPopupWindow title={"home_title"} description={"home_description"} />
-      </div>
 
     </div>
   )

@@ -12,9 +12,7 @@ export default function DarkModeToggle() {
             <IconButton
                 onClick={toggle}
                 sx={{ 
-                    position: 'fixed', 
-                    top: 7, 
-                    left: 12, 
+                    
                     zIndex: 9999,
                     color: 'text.primary',
                 }}

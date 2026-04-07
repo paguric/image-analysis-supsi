@@ -9,8 +9,10 @@ import { useDifferentialView } from '../hooks/DifferentialViewSetup'
 import { useParams } from 'react-router-dom';
 import { computeWaveLength } from '../hooks/ComputeActualWaveLen';
 import { clearDataBase } from '../services/analysisApi'
+import { useSetInfoPopup } from '../hooks/useSetInfoPopup'
 
 function DifferentialView() {
+    useSetInfoPopup("differential_view_title", "differential_description")
 
     const { startingWaveLenght, finalWaveLenght, actualFrame } = useParams();
 
@@ -124,9 +126,6 @@ function DifferentialView() {
                             <p>Current Wavelength: <strong>{Number(currentWavelength).toFixed(2)} nm</strong></p>
                         </div>
 
-                        <div className="flex justify-center">
-                            <InfoPopupWindow title={"differential_view_title"} description={"differential_description"} />
-                        </div>
                     </div>
 
                 </div>

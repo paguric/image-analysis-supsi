@@ -8,7 +8,10 @@ import InfoPopupWindow from '../components/InfoPopupWindow';
 import { useHandleFrameChange } from '../hooks/useHandleFrameChange';
 import { computeWaveLength } from '../hooks/ComputeActualWaveLen';
 
+import { useSetInfoPopup } from '../hooks/useSetInfoPopup'
+
 function SingleRoiView() {
+    useSetInfoPopup("single_roi_view_title", "single_roi_view_description") 
 
     const { roiNumber, frameNumber, startingWaveLenght, finalWaveLenght } = useParams();
 
@@ -63,9 +66,6 @@ function SingleRoiView() {
                     frameCount={frameCount}
                 />
 
-                <div className="flex justify-center mt-4">
-                    <InfoPopupWindow title={"single_roi_view_title"} description={"single_roi_view_description"} />
-                </div>
             </div>
 
             {/* Colonna destra */}
