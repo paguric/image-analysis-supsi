@@ -8,6 +8,7 @@ import InfoPopupWindow from '../components/InfoPopupWindow';
 import { useDifferentialView } from '../hooks/DifferentialViewSetup'
 import { useParams } from 'react-router-dom';
 import { computeWaveLength } from '../hooks/ComputeActualWaveLen';
+import { clearDataBase } from '../services/analysisApi'
 
 function DifferentialView() {
 
@@ -85,7 +86,9 @@ function DifferentialView() {
                         <Button
                             className="w-full"
                             variant="outlined"
-                            onClick={() => navigate('/')}
+                            onClick={() => (
+                                        clearDataBase(),
+                                        navigate('/'))}
                         >
                             Take another Analysis
                         </Button>

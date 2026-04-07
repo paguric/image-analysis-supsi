@@ -89,7 +89,7 @@ export function useSingleRoiView(roiNumber, frameNumber) {
         }
 
 
-        async function loadAllSteps() {
+        async function loadAllStepsBefore() {
             setIsLoading(true);
             setError(false);
             try {
@@ -114,7 +114,7 @@ export function useSingleRoiView(roiNumber, frameNumber) {
         loadBeforeImg();
         loadAfterImg();
         loadDiffImg();
-        loadAllSteps();
+        loadAllStepsBefore();
 
         return () => {
             stepUrls.forEach(url => objectUrlRevoker(url));

@@ -33,7 +33,9 @@ function SingleRoiView() {
         frameCount
     });
 
-    const items = stepUrls.map((url, i) => ({ img: url, title: `Step ${i}` }));
+    const stepsBefore = stepUrls.map((url, i) => ({ img: url, title: `Step ${i}` }));
+    const stepsAfter = stepUrls.map((url, i) => ({ img: url, title: `Step ${i}` }));
+
 
     const currentWavelength = computeWaveLength(    startingWaveLenght, finalWaveLenght, 
                                                     frameNumber, frameCount
@@ -68,7 +70,7 @@ function SingleRoiView() {
             {/* Colonna destra */}
             <div className="w-3/4 p-4 h-full overflow-hidden flex flex-col gap-3">
 
-                {/* Riga superiore - occupa lo spazio rimanente e si rimpicciolisce */}
+                {/* Riga superiore */}
                 <div className="flex gap-3 flex-1 min-h-0 overflow-hidden">
                     <div className="flex-1 min-w-0 overflow-hidden">
                         {isBeforeLoading ? <CircularIndeterminate /> : <ImgBox src={beforeImgUrl} stepName="Before" />}
@@ -81,10 +83,11 @@ function SingleRoiView() {
                     </div>
                 </div>
 
-                {/* Riga inferiore - sempre visibile per intero, non si schiaccia mai */}
+                {/* Riga inferiore */}
                 <div className="flex gap-3 shrink-0">
                     <div className="flex-1 min-w-0">
-                        {isLoading ? <CircularIndeterminate /> : <ImageGrid items={items} />}
+                        {/* {isLoading ? <CircularIndeterminate /> : <ImageGrid items={stepsBefore} />} */}
+                        <ImgBox src="../../img/placeholder.png" />
                     </div>
                     <div className="flex-1 min-w-0">
                         <ImgBox src="../../img/placeholder.png" />
