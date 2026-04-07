@@ -17,13 +17,6 @@ export function useSingleRoiView(roiNumber, frameNumber) {
     const [beforeImgUrl, setBeforeImgUrl] = useState(null);
     const [afterImgUrl, setAfterImgUrl] = useState(null);
     const [diffImgUrl, setDiffImgUrl] = useState(null);
-    const [frameCount, setFrameCount] = useState(1);
-
-    useEffect(() => {
-        getNumberOfFrames()
-            .then(data => setFrameCount(data.total_frames))
-            .catch(err => console.error(err));
-    }, []);
 
 
 
@@ -134,8 +127,7 @@ export function useSingleRoiView(roiNumber, frameNumber) {
         isDiffLoading,
         beforeImgUrl,
         afterImgUrl,
-        diffImgUrl,
-        frameCount
+        diffImgUrl
     }
 }
 

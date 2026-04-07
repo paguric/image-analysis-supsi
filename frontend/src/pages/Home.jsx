@@ -4,6 +4,7 @@ import { useHome } from '../hooks/HomeSetup'
 import MaterialNumberField from '../components/ColorTextField';
 import { useState } from 'react'
 import { useSetInfoPopup } from '../hooks/useSetInfoPopup'
+import ConfirmationAlert from '../components/ConfirmationAlert';
 
 
 function Home() {
@@ -14,14 +15,22 @@ function Home() {
   const [finalWaveLenght, setFinalWaveLenght] = useState(0);
 
   const {
+
     loading,
     response,
     videoPrima, setVideoPrima,
     videoDopo, setVideoDopo,
-    analyze
-  } = useHome({ startingWaveLenght: startingWaveLenght, 
-                finalWaveLenght: finalWaveLenght
-              });
+    analyze,
+    firstVideoFrameCount,
+    secondVideoFrameCount,
+    differentFrameCountError, setDifferentFrameCountError,
+    totalFrameCount,
+    navigateToNext
+
+  } = useHome({
+    startingWaveLenght: startingWaveLenght,
+    finalWaveLenght: finalWaveLenght
+  });
 
   return (
     <div className="max-w-5xl mx-auto px-8 py-8 min-h-screen flex flex-col justify-center items-center">
@@ -39,6 +48,19 @@ function Home() {
           setFileSelezionato={setVideoDopo}
         />
       </div>
+
+      <ConfirmationAlert
+        open={differentFrameCountError}
+        firstVideoFrameCount={firstVideoFrameCount}
+        secondVideoFrameCount={secondVideoFrameCount}
+        totalFrameCount={totalFrameCount}
+        onAbort={() => setDifferentFrameCountError(false)}
+        onContinue={() => {
+          setDifferentFrameCountError(false)
+          navigateToNext(startingWaveLenght, finalWaveLenght, totalFrameCount)
+        }}
+      />
+
 
       {response && <p className="mb-4 text-sm">{response}</p>}
 

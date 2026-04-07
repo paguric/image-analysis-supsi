@@ -6,13 +6,13 @@ function ControlPanel({
     finalWavelength,
     actualFrame = 0,
     onFrameChange,
-    frameCount
+    totalFrameCount
 }) {
 
     return (
         <div className="grid grid-cols-1 gap-4 mt-4 ">
             <NumberSpinnerBox
-                name={`Actual Frame (max allowed: ${frameCount})`}
+                name={`Actual Frame (max allowed: ${totalFrameCount})`}
                 min={0}
                 defaultValue={isNaN(Number(actualFrame)) ? 0 : Number(actualFrame)}
                 step={1}
@@ -64,8 +64,8 @@ function ControlPanel({
             />
 
             <ButtonGroupBox
-                abortAndNavigateTo={`/differential-view/${startingWavelength}/${finalWavelength}/${actualFrame}`}
-                saveAndNavigateTo={`/differential-view/${startingWavelength}/${finalWavelength}/${actualFrame}`}
+                abortAndNavigateTo={`/differential-view/${startingWavelength}/${finalWavelength}/${totalFrameCount}/${actualFrame}`}
+                saveAndNavigateTo={`/differential-view/${startingWavelength}/${finalWavelength}/${totalFrameCount}/${actualFrame}`}
             />
         </div>
     );

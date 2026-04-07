@@ -13,13 +13,12 @@ import { useSetInfoPopup } from '../hooks/useSetInfoPopup'
 function DifferentialView() {
     useSetInfoPopup("differential_view_title", "differential_description")
 
-    const { startingWaveLenght, finalWaveLenght, actualFrame } = useParams();
+    const { startingWaveLenght, finalWaveLenght, totalFrameCount, actualFrame } = useParams();
 
     
     const {
         navigate,
         numberOfRois,
-        frameCount,
         currentFrame,
         setCurrentFrame,
         urlDiff,
@@ -32,13 +31,8 @@ function DifferentialView() {
     } = useDifferentialView(actualFrame);
 
 
-    console.log("startingWaveLenght:", startingWaveLenght, 
-            "finalWaveLenght:", finalWaveLenght,
-            "frameNumber:", actualFrame,
-            "frameCount:", frameCount)
-
     const currentWavelength = computeWaveLength(    startingWaveLenght, finalWaveLenght, 
-                                                    currentFrame, frameCount
+                                                    currentFrame, totalFrameCount
                                                 );
 
 
@@ -62,7 +56,7 @@ function DifferentialView() {
                                 fullWidth
                                 variant="outlined"
                                 onClick={() => navigate(
-                                    `/single-roi-view/${i}/${currentFrame}/${startingWaveLenght}/${finalWaveLenght}`
+                                    `/single-roi-view/${i}/${currentFrame}/${totalFrameCount}/${startingWaveLenght}/${finalWaveLenght}`
                                 )}
                             >
                                 ROI {i + 1}
@@ -111,7 +105,7 @@ function DifferentialView() {
                     <div className="space-y-2">
                         <DiscreteSlider
                             startingValue={actualFrame}
-                            numberOfFrames={frameCount}
+                            numberOfFrames={totalFrameCount}
                             onChange={(value) => {
                                 if (debounceTimer.current)
                                     clearTimeout(debounceTimer.current);

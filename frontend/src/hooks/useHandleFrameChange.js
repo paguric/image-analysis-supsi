@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-export function useHandleFrameChange({ roiNumber, startingWaveLenght, finalWaveLenght, frameCount }) {
+export function useHandleFrameChange({ roiNumber, startingWaveLenght, finalWaveLenght, totalFrameCount }) {
     const navigate = useNavigate();
     const debounceTimer = useRef(null);
 
@@ -10,16 +10,16 @@ export function useHandleFrameChange({ roiNumber, startingWaveLenght, finalWaveL
             clearTimeout(debounceTimer.current);
         }
 
-        if (newFrame > frameCount) {
+        if (newFrame > totalFrameCount) {
             debounceTimer.current = setTimeout(() => {
                 setFrameCountError(true);
-                navigate(`/single-roi-view/${roiNumber}/${frameCount}/${startingWaveLenght}/${finalWaveLenght}`, { replace: true });
+                navigate(`/single-roi-view/${roiNumber}/${totalFrameCount}/${totalFrameCount}/${startingWaveLenght}/${finalWaveLenght}`, { replace: true });
             }, 180);
             return;  
         }
 
         debounceTimer.current = setTimeout(() => {
-            navigate(`/single-roi-view/${roiNumber}/${newFrame}/${startingWaveLenght}/${finalWaveLenght}`, { replace: true });
+            navigate(`/single-roi-view/${roiNumber}/${newFrame}/${totalFrameCount}/${startingWaveLenght}/${finalWaveLenght}`, { replace: true });
         }, 180);
     };
 

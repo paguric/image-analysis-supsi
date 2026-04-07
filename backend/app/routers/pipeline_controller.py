@@ -284,11 +284,18 @@ async def get_step_pipeline_roi_dopo(
 @router.get("/get-number-of-frames")
 async def get_number_of_frames(roi_repo: RoiRepoDep) -> dict[str, int | float]:
     """
-    Restituisce il numero di frame del video prima.
+    Restituisce il numero di frame del video prima e dopo.
     """
     roi_prima: list[Roi] = roi_service.get_roi_list(roi_repo, Analisi.PRIMA)
-    video_path = roi_prima[0].video_path
+    roi_dopo: list[Roi] = roi_service.get_roi_list(roi_repo, Analisi.DOPO)
 
-    video_info = cv2_service.get_video_info(video_path)
-    frame_count = video_info["total_frames"]
-    return {"total_frames": frame_count}
+    video_path_prima = roi_prima[0].video_path
+    video_path_dopo = roi_dopo[0].video_path
+
+    video_prima_info = cv2_service.get_video_info(video_path_prima)
+    video_dopo_info = cv2_service.get_video_info(video_path_dopo)
+
+    frame_count_prima = video_prima_info["total_frames"]
+    frame_count_dopo = video_dopo_info["total_frames"]
+
+    return {"total_frames_prima": frame_count_prima, "total_frames_dopo": frame_count_dopo}

@@ -4,16 +4,16 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useSingleRoiView } from '../hooks/SingleRoiViewSetup';
 import ImageGrid from '../components/ImageGrid';
 import CircularIndeterminate from '../components/CircularIndeterminate';
-import InfoPopupWindow from '../components/InfoPopupWindow';
 import { useHandleFrameChange } from '../hooks/useHandleFrameChange';
 import { computeWaveLength } from '../hooks/ComputeActualWaveLen';
 
 import { useSetInfoPopup } from '../hooks/useSetInfoPopup'
 
 function SingleRoiView() {
+
     useSetInfoPopup("single_roi_view_title", "single_roi_view_description") 
 
-    const { roiNumber, frameNumber, startingWaveLenght, finalWaveLenght } = useParams();
+    const { roiNumber, frameNumber, totalFrameCount, startingWaveLenght, finalWaveLenght } = useParams();
 
 
     const {
@@ -24,16 +24,15 @@ function SingleRoiView() {
         isDiffLoading,
         beforeImgUrl,
         afterImgUrl,
-        diffImgUrl,
-        frameCount
+        diffImgUrl
     } = useSingleRoiView(roiNumber, frameNumber);
 
 
     const { handleFrameChange } = useHandleFrameChange({
         roiNumber,
         startingWaveLenght,
-        finalWaveLenght,
-        frameCount
+        totalFrameCount,
+        finalWaveLenght
     });
 
     const stepsBefore = stepUrls.map((url, i) => ({ img: url, title: `Step ${i}` }));
@@ -41,7 +40,7 @@ function SingleRoiView() {
 
 
     const currentWavelength = computeWaveLength(    startingWaveLenght, finalWaveLenght,
-                                                    frameNumber, frameCount
+                                                    frameNumber, totalFrameCount
                                                 );
 
     return (
@@ -63,7 +62,7 @@ function SingleRoiView() {
                     finalWavelength={finalWaveLenght}
                     actualFrame={frameNumber}
                     onFrameChange={handleFrameChange}
-                    frameCount={frameCount}
+                    totalFrameCount={totalFrameCount}
                 />
 
             </div>

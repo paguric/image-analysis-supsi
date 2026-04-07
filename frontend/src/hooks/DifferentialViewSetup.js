@@ -65,12 +65,6 @@ export function useDifferentialView(actualFrame) {
     }, [currentFrame]);
 
     useEffect(() => {
-        getNumberOfFrames()
-            .then(data => setFrameCount(data.total_frames))
-            .catch(err => console.error(err));
-    }, []);
-
-    useEffect(() => {
         getRoiCount()
             .then(data => setNumberOfRois(data))
             .catch(err => console.error(err));
