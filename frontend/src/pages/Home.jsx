@@ -3,7 +3,7 @@ import VideoSlot from '../components/VideoSlot'
 import { useHome } from '../hooks/HomeSetup'
 import MaterialNumberField from '../components/ColorTextField';
 import { useState } from 'react'
-import InfoPopupWindow from '../components/InfoPopupWindow';
+import { useSetInfoPopup } from '../hooks/useSetInfoPopup'
 
 
 function Home() {
