@@ -1,5 +1,10 @@
 from fastapi.testclient import TestClient
 import pytest
+import os
+import cv2
+import numpy as np
+
+from app.routers import roi_controller
 
 from app.main import app
 
@@ -11,6 +16,16 @@ VIDEO_DOPO = (
 )
 
 
+def test_db_reset():
+    response = client.delete("/analysis/reset/")
+    assert response.status_code == 200
+
+    # Il db dovrebbe essere vuoto
+    response = client.get("/roi/number-of-rois")
+    assert response.json() == 0
+
+
+# @pytest.mark.skip(reason="")
 def test_analysis():
     with open(VIDEO_PRIMA, "rb") as f_prima, open(VIDEO_DOPO, "rb") as f_dopo:
         response = client.post(
@@ -24,6 +39,48 @@ def test_analysis():
     assert response.status_code == 200
 
 
-def test_global_diff():
+# @pytest.mark.skip(reason="")
+def test_get_diff():
     response = client.get("/pipeline/diff/100/")
+
     assert response.status_code == 200
+    assert response.headers["content-type"] == "image/jpeg"
+
+    # Leggi e salva l'immagine
+    image_bytes = response.content
+
+    # Salvataggio su file per check manuale
+    os.makedirs("out", exist_ok=True)
+    os.makedirs("out/diff", exist_ok=True)
+
+    with open("out/diff/diff_frame_100.jpg", "wb") as f:
+        f.write(image_bytes)
+
+    buffer = np.frombuffer(image_bytes, dtype=np.uint8)
+    image = cv2.imdecode(buffer, cv2.IMREAD_COLOR)
+    assert image is not None
+    assert image.shape[0] > 0  # altezza
+    assert image.shape[1] > 0  # larghezza
+
+
+def test_get_diff_with_contours():
+    response = client.get("/pipeline/diff/100/contours/")
+
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "image/jpeg"
+
+    # Leggi e salva l'immagine
+    image_bytes = response.content
+
+    # Salvataggio su file per check manuale
+    os.makedirs("out", exist_ok=True)
+    os.makedirs("out/diff", exist_ok=True)
+
+    with open("out/diff/diff_frame_100_contours.jpg", "wb") as f:
+        f.write(image_bytes)
+
+    buffer = np.frombuffer(image_bytes, dtype=np.uint8)
+    image = cv2.imdecode(buffer, cv2.IMREAD_COLOR)
+    assert image is not None
+    assert image.shape[0] > 0  # altezza
+    assert image.shape[1] > 0  # larghezza
