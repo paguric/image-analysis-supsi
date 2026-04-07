@@ -6,10 +6,11 @@ import ImageGrid from '../components/ImageGrid';
 import CircularIndeterminate from '../components/CircularIndeterminate';
 import InfoPopupWindow from '../components/InfoPopupWindow';
 import { useHandleFrameChange } from '../hooks/useHandleFrameChange';
+import { computeWaveLength } from '../hooks/ComputeActualWaveLen';
 
 function SingleRoiView() {
 
-    const { roiNumber, frameNumber, startingWaveLenght } = useParams();
+    const { roiNumber, frameNumber, startingWaveLenght, finalWaveLenght } = useParams();
 
 
     const {
@@ -28,12 +29,15 @@ function SingleRoiView() {
     const { handleFrameChange } = useHandleFrameChange({
         roiNumber,
         startingWaveLenght,
+        finalWaveLenght,
         frameCount
     });
 
     const items = stepUrls.map((url, i) => ({ img: url, title: `Step ${i}` }));
 
-    const currentWavelength = Number(startingWaveLenght) + Number(frameNumber);
+    const currentWavelength = computeWaveLength(    startingWaveLenght, finalWaveLenght, 
+                                                    frameNumber, frameCount
+                                                );
 
     return (
         <div className="flex h-screen w-full overflow-hidden">
@@ -45,7 +49,7 @@ function SingleRoiView() {
                         ROI #{Number(roiNumber) + Number(1)}
                         </p>
                     <p className="text-center text-gray-600 dark:text-gray-400">
-                        Current Wavelength: <strong>{isNaN(currentWavelength) ? '-' : currentWavelength}</strong>
+                        Current Wavelength: <strong>{isNaN(currentWavelength) ? '-' : `${Number(currentWavelength).toFixed(2)} nm`}</strong>
                     </p>
                 </div>
 

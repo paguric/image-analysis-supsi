@@ -10,6 +10,7 @@ function Home() {
 
 
   const [startingWaveLenght, setStartingWaveLenght] = useState(0);
+  const [finalWaveLenght, setFinalWaveLenght] = useState(0);
 
   const {
     loading,
@@ -17,7 +18,9 @@ function Home() {
     videoPrima, setVideoPrima,
     videoDopo, setVideoDopo,
     analyze
-  } = useHome({ startingWaveLenght: startingWaveLenght });
+  } = useHome({ startingWaveLenght: startingWaveLenght, 
+                finalWaveLenght: finalWaveLenght
+              });
 
   return (
     <div className="max-w-5xl mx-auto px-8 py-8 min-h-screen flex flex-col justify-center items-center">
@@ -43,6 +46,12 @@ function Home() {
           label={"Starting Wavelength"}
           color={"info"}
           onChange={setStartingWaveLenght}
+        />
+
+        <MaterialNumberField
+          label={"Final Wavelength"}
+          color={"info"}
+          onChange={setFinalWaveLenght}
         />
       </div>
 

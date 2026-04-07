@@ -10,8 +10,8 @@ function App() {
       <DarkModeToggle />
       <Routes>
         <Route path="/" element={<Home/>}/>
-        <Route path="/differential-view/:startingWaveLenght/:actualFrame" element={<DifferentialView/>}/>
-        <Route path="/single-roi-view/:roiNumber/:frameNumber/:startingWaveLenght" element={<SingleRoiView />} />
+        <Route path="/differential-view/:startingWaveLenght/:finalWaveLenght/:actualFrame" element={<DifferentialView/>}/>
+        <Route path="/single-roi-view/:roiNumber/:frameNumber/:startingWaveLenght/:finalWaveLenght/" element={<SingleRoiView />} />
       </Routes>
     </>
   )

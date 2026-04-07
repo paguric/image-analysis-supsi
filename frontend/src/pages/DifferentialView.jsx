@@ -7,11 +7,13 @@ import InfoPopupWindow from '../components/InfoPopupWindow';
 
 import { useDifferentialView } from '../hooks/DifferentialViewSetup'
 import { useParams } from 'react-router-dom';
+import { computeWaveLength } from '../hooks/ComputeActualWaveLen';
 
 function DifferentialView() {
 
-    const { startingWaveLenght, actualFrame } = useParams();
+    const { startingWaveLenght, finalWaveLenght, actualFrame } = useParams();
 
+    
     const {
         navigate,
         numberOfRois,
@@ -22,6 +24,13 @@ function DifferentialView() {
         debounceTimer,
         isLoading,
     } = useDifferentialView(actualFrame);
+
+
+
+    const currentWavelength = computeWaveLength(    startingWaveLenght, finalWaveLenght, 
+                                                    currentFrame, frameCount
+                                                );
+
 
     return (
         <div className="flex h-screen w-full overflow-hidden">
@@ -43,7 +52,7 @@ function DifferentialView() {
                                 fullWidth
                                 variant="outlined"
                                 onClick={() => navigate(
-                                    `/single-roi-view/${i}/${currentFrame}/${startingWaveLenght}`
+                                    `/single-roi-view/${i}/${currentFrame}/${startingWaveLenght}/${finalWaveLenght}`
                                 )}
                             >
                                 ROI {i + 1}
@@ -87,7 +96,7 @@ function DifferentialView() {
                             startingValue={actualFrame}
                             numberOfFrames={frameCount}
                             onChange={(value) => {
-                                if (debounceTimer.current) 
+                                if (debounceTimer.current)
                                     clearTimeout(debounceTimer.current);
                                 debounceTimer.current = setTimeout(() => {
                                     setCurrentFrame(value);
@@ -96,7 +105,7 @@ function DifferentialView() {
                         />
                         <div className="text-center text-sm text-gray-600 dark:text-gray-400">
                             <p>Current Frame: <strong>{currentFrame}</strong></p>
-                            <p>Current Wavelength: <strong>{Number(currentFrame) + Number(startingWaveLenght)}</strong></p>
+                            <p>Current Wavelength: <strong>{Number(currentWavelength).toFixed(2)} nm</strong></p>
                         </div>
 
                         <div className="flex justify-center">

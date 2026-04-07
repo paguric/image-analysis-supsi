@@ -3,6 +3,7 @@ import ButtonGroupBox from './ControlPanelButtonGroup';
 
 function ControlPanel({
     startingWavelength,
+    finalWavelength,
     actualFrame = 0,
     onFrameChange,
     frameCount
@@ -63,8 +64,8 @@ function ControlPanel({
             />
 
             <ButtonGroupBox
-                abortAndNavigateTo={`/differential-view/${startingWavelength}/${actualFrame}`}
-                saveAndNavigateTo={`/differential-view/${startingWavelength}/${actualFrame}`}
+                abortAndNavigateTo={`/differential-view/${startingWavelength}/${finalWavelength}/${actualFrame}`}
+                saveAndNavigateTo={`/differential-view/${startingWavelength}/${finalWavelength}/${actualFrame}`}
             />
         </div>
     );
