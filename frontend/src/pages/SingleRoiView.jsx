@@ -57,6 +57,7 @@ function SingleRoiView() {
 
                 <ControlPanel
                     startingWavelength={startingWaveLenght}
+                    finalWavelength={finalWaveLenght}
                     actualFrame={frameNumber}
                     onFrameChange={handleFrameChange}
                     frameCount={frameCount}

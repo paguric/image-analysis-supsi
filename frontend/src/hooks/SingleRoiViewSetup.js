@@ -17,7 +17,7 @@ export function useSingleRoiView(roiNumber, frameNumber) {
     const [beforeImgUrl, setBeforeImgUrl] = useState(null);
     const [afterImgUrl, setAfterImgUrl] = useState(null);
     const [diffImgUrl, setDiffImgUrl] = useState(null);
-    const [frameCount, setFrameCount] = useState(0);
+    const [frameCount, setFrameCount] = useState(1);
 
     useEffect(() => {
         getNumberOfFrames()

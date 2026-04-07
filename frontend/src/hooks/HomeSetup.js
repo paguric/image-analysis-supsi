@@ -32,7 +32,7 @@ export function useHome( {startingWaveLenght, finalWaveLenght} ) {
             setAnalysisReady(true)
             setResponse("Analysis completed successfully.")
             await sleep(1000);
-            navigate(`/differential-view/${startingWaveLenght}/${finalWaveLenght}/0`)
+            navigate(`/differential-view/${startingWaveLenght}/${finalWaveLenght}/1`)
         } catch (err) {
             setResponse('Error: ' + err.message)
         } finally {

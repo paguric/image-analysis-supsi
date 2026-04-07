@@ -110,4 +110,4 @@ if __name__ == "__main__":
         resizable=True,
     )
     # Apre effettivamente la finestra e la mantiene aperta
-    webview.start(debug=True)
+    webview.start()

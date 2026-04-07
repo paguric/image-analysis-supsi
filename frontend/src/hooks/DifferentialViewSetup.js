@@ -10,7 +10,7 @@ export function useDifferentialView(actualFrame) {
     const [numberOfRois, setNumberOfRois] = useState(0);
     const [frameCount, setFrameCount] = useState(100);
     const [urlDiff, setUrlDiff] = useState(null);
-    const [currentFrame, setCurrentFrame] = useState(Number(actualFrame) || 0);
+    const [currentFrame, setCurrentFrame] = useState(Number(actualFrame) || 1);
     const prevDiffUrl = useRef(null);
     const debounceTimer = useRef(null);
     const [isLoading, setIsLoading] = useState(true);

@@ -27,6 +27,10 @@ function DifferentialView() {
     } = useDifferentialView(actualFrame);
 
 
+    console.log("startingWaveLenght:", startingWaveLenght, 
+            "finalWaveLenght:", finalWaveLenght,
+            "frameNumber:", actualFrame,
+            "frameCount:", frameCount)
 
     const currentWavelength = computeWaveLength(    startingWaveLenght, finalWaveLenght, 
                                                     currentFrame, frameCount
