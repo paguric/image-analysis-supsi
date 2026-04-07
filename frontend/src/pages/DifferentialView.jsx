@@ -22,6 +22,10 @@ function DifferentialView() {
         currentFrame,
         setCurrentFrame,
         urlDiff,
+        urlDiffContours,
+        showContours,
+        toggleContours,
+        isContoursLoading,
         debounceTimer,
         isLoading,
     } = useDifferentialView(actualFrame);
@@ -76,14 +80,19 @@ function DifferentialView() {
                 <div className="flex-1 min-h-0 flex items-center justify-center bg-black rounded-lg overflow-hidden">
                     {isLoading ? (
                         <CircularIndeterminate />
-                    ) : urlDiff && <ImgBox src={urlDiff} />}
+                    ) : <ImgBox src={showContours ? urlDiffContours : urlDiff} />}
                 </div>
 
                 {/* Parte inferiore - dimensione naturale, non si schiaccia */}
                 <div className="shrink-0 flex flex-col gap-3">
 
                     <div className="flex items-center justify-center">
-                        <DifferentialViewButtonGroup className="w-full max-w-2xl" />
+                        <DifferentialViewButtonGroup
+                            className="w-full max-w-2xl"
+                            showContours={showContours}
+                            isContoursLoading={isContoursLoading}
+                            onToggleContours={toggleContours}
+                        />
                     </div>
 
                     <div>

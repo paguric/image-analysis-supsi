@@ -100,7 +100,7 @@ export function useSingleRoiView(roiNumber, frameNumber) {
                 for (let i = 0; i < PIPELINE_STEPS_NUMBER; i++) {
                     promises.push(getStepOfARoi(roiNumber, i));
                 }
-                
+
                 const urls = await Promise.all(promises);
                 setStepUrls(urls);
             } catch (err) {

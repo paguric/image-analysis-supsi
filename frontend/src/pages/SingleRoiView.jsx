@@ -37,7 +37,7 @@ function SingleRoiView() {
     const stepsAfter = stepUrls.map((url, i) => ({ img: url, title: `Step ${i}` }));
 
 
-    const currentWavelength = computeWaveLength(    startingWaveLenght, finalWaveLenght, 
+    const currentWavelength = computeWaveLength(    startingWaveLenght, finalWaveLenght,
                                                     frameNumber, frameCount
                                                 );
 

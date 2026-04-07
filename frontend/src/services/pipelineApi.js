@@ -39,3 +39,9 @@ export async function getStepOfARoi(roiNumber, stepNumber) {
     body: JSON.stringify({}),
   });
 }
+
+
+export async function getDiffWithContours(frame) {
+  if (frame < 0) return null;
+  return fetchImage(`${BASE_URL}/pipeline/diff/${frame}/contours/`);
+}
