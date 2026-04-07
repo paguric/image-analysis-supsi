@@ -4,7 +4,7 @@ import threading
 import uvicorn
 import webview
 
-from app.routers import pipeline_controller, roi_controller
+from app.routers import pipeline_controller, roi_controller, analysis_controller
 from app.db import database
 
 from fastapi import FastAPI
@@ -23,6 +23,7 @@ app.add_middleware(
 
 app.include_router(pipeline_controller.router)
 app.include_router(roi_controller.router)
+app.include_router(analysis_controller.router)
 
 
 # NON CANCELLARE
