@@ -106,39 +106,15 @@ async def analyze(
 @router.get("/diff/{frame}/")
 def get_diff(session: SessionDep, repo: RoiRepoDep, frame: int) -> StreamingResponse:
     """
-    Calcola il frame differenziale fra le due analisi e lo salva nel db.
+    Calcola il frame differenziale fra le due analisi.
     """
 
-    # Se il differenziale è già stato calcolato ed è nel db, lo possiamo restituire subito
-    # TODO spostare questa query (come quella in analyze_roi_prima) in un metodo a parte
-    result: Diff | None = session.exec(select(Diff).where(Diff.frame == frame)).all()
+    roi_prima = roi_service.get_roi_list(repo, Analisi.PRIMA)
+    roi_dopo = roi_service.get_roi_list(repo, Analisi.DOPO)
 
-    if len(result) != 0:
-        diff: Diff = result[0]
-        # TODO impacchettare queste tre righe per creare l'output in un metodo a parte
-        _, buffer = cv2.imencode(".jpg", diff.diff_frame)
-        io_buffer = io.BytesIO(buffer)
+    diff_frame = roi_service.compute_aligned_roi_diff(roi_prima, roi_dopo, frame)
 
-        return StreamingResponse(io_buffer, media_type="image/jpeg")
-
-    roi_prima: list[Roi] = roi_service.get_roi_list(repo, Analisi.PRIMA)
-    roi_dopo: list[Roi] = roi_service.get_roi_list(repo, Analisi.DOPO)
-
-    if roi_prima is None or roi_dopo is None:
-        raise HTTPException(status_code=400, detail="No images uploaded yet")
-
-    diff_frame: np.ndarray = roi_service.compute_aligned_roi_diff(
-        roi_prima, roi_dopo, frame
-    )
-
-    # Calcola e salva il differenziale
-    diff = Diff(frame=frame)
-    diff.diff_frame = diff_frame
-    session.add(diff)
-    session.commit()
-    session.refresh(diff)
-
-    _, buffer = cv2.imencode(".jpg", diff.diff_frame)
+    _, buffer = cv2.imencode(".jpg", diff_frame)
     io_buffer = io.BytesIO(buffer)
 
     return StreamingResponse(io_buffer, media_type="image/jpeg")
@@ -149,21 +125,15 @@ def get_diff_with_contours(
     session: SessionDep, repo: RoiRepoDep, frame: int
 ) -> StreamingResponse:
     """
-    Applica un overlay verde che permette di identificare le ROI sul differenziale fra le due analisi.
+    Calcola il frame differenziale, poi applica un overlay verde che permette di identificare le ROI sul differenziale fra le due analisi.
     L'overlay è calcolato come il minEnclosingCircle di raggio minimo fra le due patch.
+    Viene aggiunto anche un indice per identificare le ROI.
     """
 
-    roi_prima: list[Roi] = roi_service.get_roi_list(repo, Analisi.PRIMA)
-    roi_dopo: list[Roi] = roi_service.get_roi_list(repo, Analisi.DOPO)
+    roi_prima = roi_service.get_roi_list(repo, Analisi.PRIMA)
+    roi_dopo = roi_service.get_roi_list(repo, Analisi.DOPO)
 
-    # Prende differenziale dal db se già calcolato
-    result: Diff | None = session.exec(select(Diff).where(Diff.frame == frame)).all()
-
-    if len(result) != 0:
-        diff: Diff = result[0]
-        diff_frame: np.ndarray = diff.diff_frame
-
-    # TODO calcola differenziale e salvalo nel db se non esiste
+    diff_frame = roi_service.compute_aligned_roi_diff(roi_prima, roi_dopo, frame)
 
     # Prende come riferimento per il centro le ROI del prima, coerentemente con roi_service.compute_aligned_roi_diff che ricompone il differenziale sui centri delle ROI del prima
     for i, roi in enumerate(roi_prima):
@@ -179,6 +149,10 @@ def get_diff_with_contours(
         draw_service.draw_circle(
             diff_frame, roi.get_center(), radius=radius, color=(255, 0, 0), filled=False
         )
+
+        # Applica indice sull'angolo in alto a sx
+        x, y, w, h = cv2.boundingRect(roi.contours)
+        draw_service.draw_label(diff_frame, roi.idx, (x, y), (0, 255, 0), 0.8)
 
     _, buffer = cv2.imencode(".jpg", diff_frame)
     io_buffer = io.BytesIO(buffer)
