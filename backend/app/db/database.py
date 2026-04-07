@@ -11,7 +11,9 @@ def get_db_path() -> str:
         # Dentro il bundle: accanto all'exe
         return os.path.join(os.path.dirname(sys.executable), "database.db")
     # In dev: nella cartella backend/
-    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "database.db")
+    return os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "..", "..", "database.db"
+    )
 
 
 # Using check_same_thread=False allows FastAPI to use the same SQLite database in different threads
