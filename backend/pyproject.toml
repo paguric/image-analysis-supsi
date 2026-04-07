@@ -16,6 +16,8 @@ dependencies = [
     "pillow>=12.1.1",
     "scipy>=1.17.1",
     "sqlmodel>=0.0.37",
+    "starlette>=0.52.1",
+    "pytest>=9.0.2",
 ]
 
 [dependency-groups]
