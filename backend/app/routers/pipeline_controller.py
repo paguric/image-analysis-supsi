@@ -181,8 +181,12 @@ def make_roi_analyzer(analisi: Analisi):
         patch = roi.get_pixels(video_metadata.brightest_idx)
 
         # Applica la pipeline al patch
-        pipeline_steps: list[np.ndarray] = pipeline_service.pipeline(patch, body)
-        roi_new = pipeline_service.find_valid_contours(pipeline_steps[-1], body)
+        roi_new = pipeline_service.extract_rois(patch, body)[0]
+
+        # Clona i valori (tranne i contorni) della ROI originale
+        roi_new.idx = roi.idx
+        roi_new.video_path = roi.video_path
+        roi_new.fase = roi.fase
 
         """
         OLD (06-04-2026) - Non è responsabilità di questo endpoint!
@@ -277,4 +281,7 @@ async def get_number_of_frames(roi_repo: RoiRepoDep) -> dict[str, int | float]:
     frame_count_prima = video_prima_info["total_frames"]
     frame_count_dopo = video_dopo_info["total_frames"]
 
-    return {"total_frames_prima": frame_count_prima, "total_frames_dopo": frame_count_dopo}
+    return {
+        "total_frames_prima": frame_count_prima,
+        "total_frames_dopo": frame_count_dopo,
+    }

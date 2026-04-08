@@ -100,13 +100,13 @@ def find_valid_contours(
     return contour_list
 
 
-def extract_rois(frame: np.ndarray) -> list[Roi] | None:
+def extract_rois(frame: np.ndarray, params: PipelineParams = None) -> list[Roi] | None:
     """
     Estrae un array di ROI a partire da un frame del video
     """
 
     binary = pipeline(frame)[-1]
-    contour_list = find_valid_contours(binary)
+    contour_list = find_valid_contours(binary, params)
 
     rois: list[Roi] = []
 
