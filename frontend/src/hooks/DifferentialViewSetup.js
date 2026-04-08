@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState, useRef } from 'react';
-import { getDifferentialFrame, getNumberOfFrames, getDiffWithContours } from "../services/pipelineApi";
+import { getDifferentialFrame, getDiffWithContours } from "../services/pipelineApi";
 import { getRoiCount } from '../services/roiApi';
+
 
 export function useDifferentialView(actualFrame) {
 
@@ -18,6 +19,7 @@ export function useDifferentialView(actualFrame) {
     const [isContoursLoading, setIsContoursLoading] = useState(false);
     const [urlDiffContours, setUrlDiffContours] = useState(null);
     const prevContoursUrl = useRef(null);
+    
 
     async function loadDiffFrame(frame) {
         setIsLoading(true);
