@@ -1,10 +1,12 @@
 import { getDifferentialFrame } from '../services/pipelineApi'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, use } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api, { sleep } from '../services/api'
 
+import { getNumberOfFrames } from '../services/pipelineApi'
 
-export function useHome( {startingWaveLenght} ) {
+
+export function useHome() {
     const navigate = useNavigate()
 
     const [loading, setLoading] = useState(false)
@@ -13,6 +15,11 @@ export function useHome( {startingWaveLenght} ) {
     const [videoDopo, setVideoDopo] = useState(null)
     const [analysisReady, setAnalysisReady] = useState(false)
     const [urlDiff, setUrlDiff] = useState(null)
+
+    const [firstVideoFrameCount, setFirstVideoFrameCount] = useState(0);
+    const [secondVideoFrameCount, setSecondVideoFrameCount] = useState(0);
+    const [differentFrameCountError, setDifferentFrameCountError] = useState(false);
+    const [totalFrameCount, setTotalFrameCount] = useState(1);
 
     const prevDiffUrl = useRef(null)
 
@@ -30,9 +37,24 @@ export function useHome( {startingWaveLenght} ) {
         try {
             await api.post('/pipeline/', formData)
             setAnalysisReady(true)
+
+
+            const data = await getNumberOfFrames();
+            const framesPrima = data.total_frames_prima;
+            const framesDopo = data.total_frames_dopo;
+
+            if (framesPrima !== framesDopo)
+                setDifferentFrameCountError(true);
+
+            setFirstVideoFrameCount(framesPrima);
+            setSecondVideoFrameCount(framesDopo);
+
+            setTotalFrameCount(Math.min(framesPrima, framesDopo));
+
+
             setResponse("Analysis completed successfully.")
             await sleep(1000);
-            navigate(`/differential-view/${startingWaveLenght}/0`)
+
         } catch (err) {
             setResponse('Error: ' + err.message)
         } finally {
@@ -49,7 +71,8 @@ export function useHome( {startingWaveLenght} ) {
     }
 
     useEffect(() => {
-        if (analysisReady) getFrame(0)
+        if (analysisReady)
+            getFrame(0)
     }, [analysisReady])
 
     useEffect(() => {
@@ -58,12 +81,20 @@ export function useHome( {startingWaveLenght} ) {
                 URL.revokeObjectURL(prevDiffUrl.current)
         }
     }, [])
+    
+
+    const navigateToNext = (startingWaveLenght, finalWaveLenght, numberOfFrames) => 
+        navigate(`/differential-view/${startingWaveLenght}/${finalWaveLenght}/${numberOfFrames}/1`)
 
     return {
-        loading,
-        response,
+        loading, response,
         videoPrima, setVideoPrima,
         videoDopo, setVideoDopo,
-        analyze
+        analyze,
+        firstVideoFrameCount,
+        secondVideoFrameCount,
+        differentFrameCountError, setDifferentFrameCountError,
+        totalFrameCount,
+        navigateToNext
     }
 }

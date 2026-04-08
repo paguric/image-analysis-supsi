@@ -3,13 +3,19 @@ import { createTheme, ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 
 const ThemeContext = createContext(null)
+const InfoContext = createContext(null)
 
 export function useThemeMode() {
     return useContext(ThemeContext)
 }
 
+export function useInfoPopup() {
+    return useContext(InfoContext)
+}
+
 export function AppThemeProvider({ children }) {
     const [dark, setDark] = useState(false)
+    const [infoProps, setInfoProps] = useState(null) // { title, description }
 
     const toggle = () => {
         setDark(prev => !prev)
@@ -22,10 +28,12 @@ export function AppThemeProvider({ children }) {
 
     return (
         <ThemeContext.Provider value={{ dark, toggle }}>
-            <ThemeProvider theme={muiTheme}>
-                <CssBaseline />
-                {children}
-            </ThemeProvider>
+            <InfoContext.Provider value={{ infoProps, setInfoProps }}>
+                <ThemeProvider theme={muiTheme}>
+                    <CssBaseline />
+                    {children}
+                </ThemeProvider>
+            </InfoContext.Provider>
         </ThemeContext.Provider>
     )
 }

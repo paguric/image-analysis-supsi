@@ -3,25 +3,38 @@ import { ImgBox } from '../components/ImgBox';
 import DifferentialViewButtonGroup from '../components/DifferentialViewButtonGroup'
 import DiscreteSlider from '../components/DiscreteSlider';
 import CircularIndeterminate from '../components/CircularIndeterminate';
-import InfoPopupWindow from '../components/InfoPopupWindow';
 
 import { useDifferentialView } from '../hooks/DifferentialViewSetup'
 import { useParams } from 'react-router-dom';
+import { computeWaveLength } from '../hooks/ComputeActualWaveLen';
+import { clearDataBase } from '../services/analysisApi'
+import { useSetInfoPopup } from '../hooks/useSetInfoPopup'
 
 function DifferentialView() {
+    useSetInfoPopup("differential_view_title", "differential_description")
 
-    const { startingWaveLenght, actualFrame } = useParams();
+    const { startingWaveLenght, finalWaveLenght, totalFrameCount, actualFrame } = useParams();
 
+    
     const {
         navigate,
         numberOfRois,
-        frameCount,
         currentFrame,
         setCurrentFrame,
         urlDiff,
+        urlDiffContours,
+        showContours,
+        toggleContours,
+        isContoursLoading,
         debounceTimer,
         isLoading,
     } = useDifferentialView(actualFrame);
+
+
+    const currentWavelength = computeWaveLength(    startingWaveLenght, finalWaveLenght, 
+                                                    currentFrame, totalFrameCount
+                                                );
+
 
     return (
         <div className="flex h-screen w-full overflow-hidden">
@@ -43,7 +56,7 @@ function DifferentialView() {
                                 fullWidth
                                 variant="outlined"
                                 onClick={() => navigate(
-                                    `/single-roi-view/${i}/${currentFrame}/${startingWaveLenght}`
+                                    `/single-roi-view/${i}/${currentFrame}/${totalFrameCount}/${startingWaveLenght}/${finalWaveLenght}`
                                 )}
                             >
                                 ROI {i + 1}
@@ -62,21 +75,28 @@ function DifferentialView() {
                 <div className="flex-1 min-h-0 flex items-center justify-center bg-black rounded-lg overflow-hidden">
                     {isLoading ? (
                         <CircularIndeterminate />
-                    ) : urlDiff && <ImgBox src={urlDiff} />}
+                    ) : <ImgBox src={showContours ? urlDiffContours : urlDiff} />}
                 </div>
 
                 {/* Parte inferiore - dimensione naturale, non si schiaccia */}
                 <div className="shrink-0 flex flex-col gap-3">
 
                     <div className="flex items-center justify-center">
-                        <DifferentialViewButtonGroup className="w-full max-w-2xl" />
+                        <DifferentialViewButtonGroup
+                            className="w-full max-w-2xl"
+                            showContours={showContours}
+                            isContoursLoading={isContoursLoading}
+                            onToggleContours={toggleContours}
+                        />
                     </div>
 
                     <div>
                         <Button
                             className="w-full"
                             variant="outlined"
-                            onClick={() => navigate('/')}
+                            onClick={() => (
+                                        clearDataBase(),
+                                        navigate('/'))}
                         >
                             Take another Analysis
                         </Button>
@@ -85,9 +105,9 @@ function DifferentialView() {
                     <div className="space-y-2">
                         <DiscreteSlider
                             startingValue={actualFrame}
-                            numberOfFrames={frameCount}
+                            numberOfFrames={totalFrameCount}
                             onChange={(value) => {
-                                if (debounceTimer.current) 
+                                if (debounceTimer.current)
                                     clearTimeout(debounceTimer.current);
                                 debounceTimer.current = setTimeout(() => {
                                     setCurrentFrame(value);
@@ -96,12 +116,9 @@ function DifferentialView() {
                         />
                         <div className="text-center text-sm text-gray-600 dark:text-gray-400">
                             <p>Current Frame: <strong>{currentFrame}</strong></p>
-                            <p>Current Wavelength: <strong>{Number(currentFrame) + Number(startingWaveLenght)}</strong></p>
+                            <p>Current Wavelength: <strong>{Number(currentWavelength).toFixed(2)} nm</strong></p>
                         </div>
 
-                        <div className="flex justify-center">
-                            <InfoPopupWindow title={"differential_view_title"} description={"differential_description"} />
-                        </div>
                     </div>
 
                 </div>

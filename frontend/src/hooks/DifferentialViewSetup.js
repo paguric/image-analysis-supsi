@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState, useRef } from 'react';
-import { getDifferentialFrame, getNumberOfFrames } from "../services/pipelineApi";
+import { getDifferentialFrame, getNumberOfFrames, getDiffWithContours } from "../services/pipelineApi";
 import { getRoiCount } from '../services/roiApi';
 
 export function useDifferentialView(actualFrame) {
@@ -10,10 +10,14 @@ export function useDifferentialView(actualFrame) {
     const [numberOfRois, setNumberOfRois] = useState(0);
     const [frameCount, setFrameCount] = useState(100);
     const [urlDiff, setUrlDiff] = useState(null);
-    const [currentFrame, setCurrentFrame] = useState(Number(actualFrame) || 0);
+    const [currentFrame, setCurrentFrame] = useState(Number(actualFrame) || 1);
     const prevDiffUrl = useRef(null);
     const debounceTimer = useRef(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [showContours, setShowContours] = useState(false);
+    const [isContoursLoading, setIsContoursLoading] = useState(false);
+    const [urlDiffContours, setUrlDiffContours] = useState(null);
+    const prevContoursUrl = useRef(null);
 
     async function loadDiffFrame(frame) {
         setIsLoading(true);
@@ -28,15 +32,37 @@ export function useDifferentialView(actualFrame) {
         }
     }
 
-    useEffect(() => {
-        loadDiffFrame(currentFrame);
-    }, [currentFrame]);
+    async function toggleContours() {
+        if (showContours) {
+            setShowContours(false);
+            return;
+        }
+
+        if (urlDiffContours) {
+            setShowContours(true);
+            return;
+        }
+
+        setIsContoursLoading(true);
+        try {
+            const url = await getDiffWithContours(currentFrame);
+            if (prevContoursUrl.current)
+                URL.revokeObjectURL(prevContoursUrl.current);
+            prevContoursUrl.current = url;
+            setUrlDiffContours(url);
+            setShowContours(true);
+        } catch (err) {
+            console.error("Errore nel caricamento dei contorni:", err);
+        } finally {
+            setIsContoursLoading(false);
+        }
+    }
 
     useEffect(() => {
-        getNumberOfFrames()
-            .then(data => setFrameCount(data.total_frames))
-            .catch(err => console.error(err));
-    }, []);
+        setShowContours(false);
+        setUrlDiffContours(null);
+        loadDiffFrame(currentFrame);
+    }, [currentFrame]);
 
     useEffect(() => {
         getRoiCount()
@@ -57,8 +83,12 @@ export function useDifferentialView(actualFrame) {
         numberOfRois,
         frameCount,
         currentFrame, setCurrentFrame,
-        urlDiff,           
-        debounceTimer,  
+        urlDiff,
+        urlDiffContours,
+        showContours,
+        toggleContours,
+        isContoursLoading,
+        debounceTimer,
         isLoading,
     }
 

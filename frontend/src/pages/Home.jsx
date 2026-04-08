@@ -3,21 +3,34 @@ import VideoSlot from '../components/VideoSlot'
 import { useHome } from '../hooks/HomeSetup'
 import MaterialNumberField from '../components/ColorTextField';
 import { useState } from 'react'
-import InfoPopupWindow from '../components/InfoPopupWindow';
+import { useSetInfoPopup } from '../hooks/useSetInfoPopup'
+import ConfirmationAlert from '../components/ConfirmationAlert';
 
 
 function Home() {
+  useSetInfoPopup("home_title", "home_description")
 
 
   const [startingWaveLenght, setStartingWaveLenght] = useState(0);
+  const [finalWaveLenght, setFinalWaveLenght] = useState(0);
 
   const {
+
     loading,
     response,
     videoPrima, setVideoPrima,
     videoDopo, setVideoDopo,
-    analyze
-  } = useHome({ startingWaveLenght: startingWaveLenght });
+    analyze,
+    firstVideoFrameCount,
+    secondVideoFrameCount,
+    differentFrameCountError, setDifferentFrameCountError,
+    totalFrameCount,
+    navigateToNext
+
+  } = useHome({
+    startingWaveLenght: startingWaveLenght,
+    finalWaveLenght: finalWaveLenght
+  });
 
   return (
     <div className="max-w-5xl mx-auto px-8 py-8 min-h-screen flex flex-col justify-center items-center">
@@ -36,6 +49,19 @@ function Home() {
         />
       </div>
 
+      <ConfirmationAlert
+        open={differentFrameCountError}
+        firstVideoFrameCount={firstVideoFrameCount}
+        secondVideoFrameCount={secondVideoFrameCount}
+        totalFrameCount={totalFrameCount}
+        onAbort={() => setDifferentFrameCountError(false)}
+        onContinue={() => {
+          setDifferentFrameCountError(false)
+          navigateToNext(startingWaveLenght, finalWaveLenght, totalFrameCount)
+        }}
+      />
+
+
       {response && <p className="mb-4 text-sm">{response}</p>}
 
       <div className="flex">
@@ -43,6 +69,12 @@ function Home() {
           label={"Starting Wavelength"}
           color={"info"}
           onChange={setStartingWaveLenght}
+        />
+
+        <MaterialNumberField
+          label={"Final Wavelength"}
+          color={"info"}
+          onChange={setFinalWaveLenght}
         />
       </div>
 
@@ -56,9 +88,6 @@ function Home() {
         </Button>
       </div>
 
-      <div>
-        <InfoPopupWindow title={"home_title"} description={"home_description"} />
-      </div>
 
     </div>
   )

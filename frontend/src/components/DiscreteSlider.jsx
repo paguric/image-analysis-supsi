@@ -21,7 +21,7 @@ export default function DiscreteSlider({startingValue, numberOfFrames, onChange}
         shiftStep={0}
         step={1}
         marks={true}
-        min={0}
+        min={1}
         max={numberOfFrames}
         onChange={(e, value) => onChange(value)}
       />

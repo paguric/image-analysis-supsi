@@ -17,13 +17,6 @@ export function useSingleRoiView(roiNumber, frameNumber) {
     const [beforeImgUrl, setBeforeImgUrl] = useState(null);
     const [afterImgUrl, setAfterImgUrl] = useState(null);
     const [diffImgUrl, setDiffImgUrl] = useState(null);
-    const [frameCount, setFrameCount] = useState(0);
-
-    useEffect(() => {
-        getNumberOfFrames()
-            .then(data => setFrameCount(data.total_frames))
-            .catch(err => console.error(err));
-    }, []);
 
 
 
@@ -89,7 +82,7 @@ export function useSingleRoiView(roiNumber, frameNumber) {
         }
 
 
-        async function loadAllSteps() {
+        async function loadAllStepsBefore() {
             setIsLoading(true);
             setError(false);
             try {
@@ -100,7 +93,7 @@ export function useSingleRoiView(roiNumber, frameNumber) {
                 for (let i = 0; i < PIPELINE_STEPS_NUMBER; i++) {
                     promises.push(getStepOfARoi(roiNumber, i));
                 }
-                
+
                 const urls = await Promise.all(promises);
                 setStepUrls(urls);
             } catch (err) {
@@ -114,7 +107,7 @@ export function useSingleRoiView(roiNumber, frameNumber) {
         loadBeforeImg();
         loadAfterImg();
         loadDiffImg();
-        loadAllSteps();
+        loadAllStepsBefore();
 
         return () => {
             stepUrls.forEach(url => objectUrlRevoker(url));
@@ -134,8 +127,7 @@ export function useSingleRoiView(roiNumber, frameNumber) {
         isDiffLoading,
         beforeImgUrl,
         afterImgUrl,
-        diffImgUrl,
-        frameCount
+        diffImgUrl
     }
 }
 
