@@ -40,8 +40,8 @@ async def reset_db():
     database.create_db_and_tables()
 
 
-@router.get("/diff/results/")
-def get_diff_csv(roi_repo: RoiRepoDep):
+@router.get("/diff/results/{min_freq}/{max_freq}/")
+def get_diff_csv(roi_repo: RoiRepoDep, min_freq: int, max_freq: int):
     """
     Restituisce il file CSV della differenza ROI-ROI.
     """
@@ -60,7 +60,7 @@ def get_diff_csv(roi_repo: RoiRepoDep):
         video_prima_info["total_frames"], video_dopo_info["total_frames"]
     )
 
-    analysis_service.compute_diff_csv(roi_repo, 10, 20, total_frames)
+    analysis_service.compute_diff_csv(roi_repo, min_freq, max_freq, total_frames)
 
 
 # TODO
