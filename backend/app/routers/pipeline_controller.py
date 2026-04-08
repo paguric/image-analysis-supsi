@@ -152,7 +152,7 @@ def get_diff_with_contours(
 
         # Applica indice sull'angolo in alto a sx
         x, y, w, h = cv2.boundingRect(roi.contours)
-        draw_service.draw_label(diff_frame, (roi.idx + 1), (x, y), (0, 255, 0), 0.8)
+        draw_service.draw_label(diff_frame, roi.idx, (x, y), (0, 255, 0), 0.8)
 
     _, buffer = cv2.imencode(".jpg", diff_frame)
     io_buffer = io.BytesIO(buffer)
@@ -221,7 +221,7 @@ def make_pipeline_step_getter(analisi: Analisi):
         i: int,
     ) -> StreamingResponse:
         """
-        Restituisce lo step intermedio i-esimo dell'applicazione della pipeline su una singola ROI dell'analisi prima.
+        Restituisce lo step intermedio i-esimo (zero based) dell'applicazione della pipeline su una singola ROI dell'analisi prima.
         """
         roi = roi_service.get_roi(roi_repo, idx, analisi)
 
@@ -260,42 +260,14 @@ router.add_api_route(
 )
 
 
-@router.get("/roi/dopo/{idx}/step/{i}")
-async def get_step_pipeline_roi_dopo(
-    roi_repo: RoiRepoDep,
-    idx: int,
-    i: int,
-) -> StreamingResponse:
-    """
-    Restituisce lo step intermedio i-esimo dell'applicazione della pipeline su una singola ROI dell'analisi dopo.
-    """
-    roi = roi_service.get_roi(roi_repo, idx, Analisi.DOPO)
-
-    pipeline: Pipeline = pipeline_service.get_pipeline(roi_repo, roi.id)
-
-    img = pipeline.get_step(i)
-
-    _, buffer = cv2.imencode(".jpg", img)
-    io_buffer = io.BytesIO(buffer)
-
-    return StreamingResponse(io_buffer, media_type="image/jpeg")
-
-
 @router.get("/get-number-of-frames")
 async def get_number_of_frames(roi_repo: RoiRepoDep) -> dict[str, int | float]:
     """
-    Restituisce il numero di frame del video prima e dopo.
+    Restituisce il numero di frame del video prima.
     """
     roi_prima: list[Roi] = roi_service.get_roi_list(roi_repo, Analisi.PRIMA)
-    roi_dopo: list[Roi] = roi_service.get_roi_list(roi_repo, Analisi.DOPO)
+    video_path = roi_prima[0].video_path
 
-    video_path_prima = roi_prima[0].video_path
-    video_path_dopo = roi_dopo[0].video_path
-
-    video_prima_info = cv2_service.get_video_info(video_path_prima)
-    video_dopo_info = cv2_service.get_video_info(video_path_dopo)
-
-    frame_count_prima = video_prima_info["total_frames"]
-    frame_count_dopo = video_dopo_info["total_frames"]
-
-    return {"total_frames_prima": frame_count_prima, "total_frames_dopo": frame_count_dopo}
+    video_info = cv2_service.get_video_info(video_path)
+    frame_count = video_info["total_frames"]
+    return {"total_frames": frame_count}

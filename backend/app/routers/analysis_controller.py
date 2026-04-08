@@ -20,10 +20,6 @@ async def reset_db():
 
     db_path = database.get_db_path()
 
-
-    # Chiudiamo tutte le vecchie connessioni
-    database.reset_engine()
-
     # Rimozione db vecchio
     if os.path.isfile(db_path):
         os.remove(db_path)

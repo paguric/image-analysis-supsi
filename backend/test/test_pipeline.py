@@ -84,3 +84,77 @@ def test_get_diff_with_contours():
     assert image is not None
     assert image.shape[0] > 0  # altezza
     assert image.shape[1] > 0  # larghezza
+
+
+def test_get_roi_prima_steps():
+    for i in range(4):
+        response = client.post(
+            f"/pipeline/roi/prima/10/step/{i}/",
+            json={
+                "bg_blur_size": 101,
+                "canny_low": 0,
+                "canny_high": 0,
+                "clahe_clip_limit": 3.0,
+                "clahe_grid_size": 8,
+                "morph_kernel_size": 3,
+                "morph_iterations": 4,
+                "min_area": 5000,
+                "min_circularity": 0.10,
+            },
+        )
+
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "image/jpeg"
+
+        # Leggi e salva l'immagine
+        image_bytes = response.content
+
+        # Salvataggio su file per check manuale
+        os.makedirs("out", exist_ok=True)
+        os.makedirs("out/roi_prima_steps/", exist_ok=True)
+
+        with open(f"out/roi_prima_steps/roi_10_prima_step_{i}.jpg", "wb") as f:
+            f.write(image_bytes)
+
+        buffer = np.frombuffer(image_bytes, dtype=np.uint8)
+        image = cv2.imdecode(buffer, cv2.IMREAD_COLOR)
+        assert image is not None
+        assert image.shape[0] > 0  # altezza
+        assert image.shape[1] > 0  # larghezza
+
+
+def test_get_roi_dopo_steps():
+    for i in range(4):
+        response = client.post(
+            f"/pipeline/roi/dopo/10/step/{i}/",
+            json={
+                "bg_blur_size": 101,
+                "canny_low": 0,
+                "canny_high": 0,
+                "clahe_clip_limit": 3.0,
+                "clahe_grid_size": 8,
+                "morph_kernel_size": 3,
+                "morph_iterations": 4,
+                "min_area": 5000,
+                "min_circularity": 0.10,
+            },
+        )
+
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "image/jpeg"
+
+        # Leggi e salva l'immagine
+        image_bytes = response.content
+
+        # Salvataggio su file per check manuale
+        os.makedirs("out", exist_ok=True)
+        os.makedirs("out/roi_dopo_steps/", exist_ok=True)
+
+        with open(f"out/roi_dopo_steps/roi_10_prima_step_{i}.jpg", "wb") as f:
+            f.write(image_bytes)
+
+        buffer = np.frombuffer(image_bytes, dtype=np.uint8)
+        image = cv2.imdecode(buffer, cv2.IMREAD_COLOR)
+        assert image is not None
+        assert image.shape[0] > 0  # altezza
+        assert image.shape[1] > 0  # larghezza

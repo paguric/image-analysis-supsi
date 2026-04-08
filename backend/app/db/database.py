@@ -6,13 +6,6 @@ from fastapi import Depends
 from sqlmodel import Session, SQLModel, create_engine
 
 
-def reset_engine():
-    """Dispone tutte le connessioni del pool e ricrea l'engine sul db attuale."""
-    global engine
-    engine.dispose()
-    engine = create_engine(f"sqlite:///{get_db_path()}", connect_args=connect_args)
-
-
 def get_db_path() -> str:
     if getattr(sys, "frozen", False):
         # Dentro il bundle: accanto all'exe
