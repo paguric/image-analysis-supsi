@@ -53,3 +53,9 @@ class Roi(SQLModel, table=True):
         img = cv2_service.extract_frame(self.video_path, frame)
         (cx, cy), radius = cv2.minEnclosingCircle(self.contours)
         return cv2.getRectSubPix(img, (int(2 * radius), int(2 * radius)), (cx, cy))
+
+    def get_intensity(self, frame: int) -> float:
+        patch = self.get_pixels(frame)
+        mask = np.zeros(patch.shape[:2], np.uint8)
+        cv2.drawContours(mask, [self.contours], 0, 255, -1)
+        return cv2.mean(patch, mask=mask)

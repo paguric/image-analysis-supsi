@@ -1,6 +1,11 @@
 import os
 
 from app.db import database
+from app.dependencies import RoiRepoDep
+from app.models.roi import Analisi
+from app.services import analysis_service
+from app.services import roi_service
+from app.services import cv2_service
 
 from fastapi import APIRouter
 
@@ -20,7 +25,6 @@ async def reset_db():
 
     db_path = database.get_db_path()
 
-
     # Chiudiamo tutte le vecchie connessioni
     database.reset_engine()
 
@@ -34,3 +38,30 @@ async def reset_db():
 
     # Creazione nuovo db vuoto
     database.create_db_and_tables()
+
+
+@router.get("/diff/results/")
+def get_diff_csv(roi_repo: RoiRepoDep):
+    """
+    Restituisce il file CSV della differenza ROI-ROI.
+    """
+
+    # TODO linee duplicate da get_number_of_frames in pipeline_controller. Va aggiunta una colonna a VideoMetadata con il numero di frame, così da sostituire cv2_service
+    roi_prima = roi_service.get_roi_list(roi_repo, Analisi.PRIMA)
+    roi_dopo = roi_service.get_roi_list(roi_repo, Analisi.DOPO)
+
+    video_path_prima = roi_prima[0].video_path
+    video_path_dopo = roi_dopo[0].video_path
+
+    video_prima_info = cv2_service.get_video_info(video_path_prima)
+    video_dopo_info = cv2_service.get_video_info(video_path_dopo)
+
+    total_frames = min(
+        video_prima_info["total_frames"], video_dopo_info["total_frames"]
+    )
+
+    analysis_service.compute_diff_csv(roi_repo, 10, 20, total_frames)
+
+
+# TODO
+# @router.get("/diff/results/pixels/")

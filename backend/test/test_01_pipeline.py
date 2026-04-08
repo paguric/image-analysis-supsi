@@ -1,14 +1,9 @@
-from fastapi.testclient import TestClient
 import pytest
 import os
 import cv2
 import numpy as np
 
-from app.routers import roi_controller
-
-from app.main import app
-
-client = TestClient(app)
+import conftest
 
 VIDEO_PRIMA = (
     "/home/lapo225/università/as25-26-sp/prog-semestre/00_image_analysis_unict/dopo.avi"
@@ -16,7 +11,7 @@ VIDEO_PRIMA = (
 VIDEO_DOPO = "/home/lapo225/università/as25-26-sp/prog-semestre/00_image_analysis_unict/prima.avi"
 
 
-def test_db_reset():
+def test_db_reset(client):
     response = client.delete("/analysis/reset/")
     assert response.status_code == 200
 
@@ -26,7 +21,7 @@ def test_db_reset():
 
 
 # @pytest.mark.skip(reason="")
-def test_analysis():
+def test_analysis(client):
     with open(VIDEO_PRIMA, "rb") as f_prima, open(VIDEO_DOPO, "rb") as f_dopo:
         response = client.post(
             "/pipeline/",
@@ -40,7 +35,7 @@ def test_analysis():
 
 
 # @pytest.mark.skip(reason="")
-def test_get_diff():
+def test_get_diff(client):
     response = client.get("/pipeline/diff/100/")
 
     assert response.status_code == 200
@@ -63,7 +58,7 @@ def test_get_diff():
     assert image.shape[1] > 0  # larghezza
 
 
-def test_get_diff_with_contours():
+def test_get_diff_with_contours(client):
     response = client.get("/pipeline/diff/100/contours/")
 
     assert response.status_code == 200
@@ -86,7 +81,7 @@ def test_get_diff_with_contours():
     assert image.shape[1] > 0  # larghezza
 
 
-def test_get_roi_prima():
+def test_get_roi_prima(client):
     """
     Test per estrarre le 20 ROI prima.
     Serve anche a verificare (manualmente) che gli indici corrispondano con quelli del differenziale.
@@ -121,7 +116,7 @@ def test_get_roi_prima():
         assert image.shape[1] > 0  # larghezza
 
 
-def test_get_roi_dopo():
+def test_get_roi_dopo(client):
     """
     Test per estrarre le 20 ROI dopo.
     Serve anche a verificare (manualmente) che gli indici corrispondano con quelli del differenziale.
@@ -156,7 +151,7 @@ def test_get_roi_dopo():
         assert image.shape[1] > 0  # larghezza
 
 
-def test_get_roi_prima_steps():
+def test_get_roi_prima_steps(client):
     # Salvataggio su file per check manuale
     os.makedirs("out", exist_ok=True)
     os.makedirs("out/roi_prima_steps", exist_ok=True)
@@ -193,7 +188,7 @@ def test_get_roi_prima_steps():
         assert image.shape[1] > 0  # larghezza
 
 
-def test_get_roi_dopo_steps():
+def test_get_roi_dopo_steps(client):
     # Salvataggio su file per check manuale
     os.makedirs("out", exist_ok=True)
     os.makedirs("out/roi_dopo_steps", exist_ok=True)
@@ -230,7 +225,7 @@ def test_get_roi_dopo_steps():
         assert image.shape[1] > 0  # larghezza
 
 
-def test_roi_analyzer():
+def test_roi_analyzer(client):
     response = client.post(
         "/pipeline/roi/prima/1/",
         json={
