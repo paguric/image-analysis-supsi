@@ -9,7 +9,6 @@ import { useParams } from 'react-router-dom';
 import { computeWaveLength } from '../hooks/ComputeActualWaveLen';
 import { clearDataBase } from '../services/analysisApi'
 import { useSetInfoPopup } from '../hooks/useSetInfoPopup'
-import { useFileSelector } from '../hooks/FileSelector'
 
 function DifferentialView() {
     useSetInfoPopup("differential_view_title", "differential_description")
@@ -58,7 +57,7 @@ function DifferentialView() {
                                 fullWidth
                                 variant="outlined"
                                 onClick={() => navigate(
-                                    `/single-roi-view/${i}/${currentFrame}/${totalFrameCount}/${startingWaveLenght}/${finalWaveLenght}`
+                                    `/single-roi-view/${i}/${numberOfRois}/${currentFrame}/${totalFrameCount}/${startingWaveLenght}/${finalWaveLenght}`
                                 )}
                             >
                                 ROI {i + 1}
@@ -77,7 +76,7 @@ function DifferentialView() {
                 <div className="flex-1 min-h-0 flex items-center justify-center bg-black rounded-lg overflow-hidden">
                     {isLoading ? (
                         <CircularIndeterminate />
-                    ) : <ImgBox src={showContours ? urlDiffContours : urlDiff} />}
+                    ) : <ImgBox src={showContours ? urlDiffContours : urlDiff} zoomable={true} />}
                 </div>
 
                 {/* Parte inferiore - dimensione naturale, non si schiaccia */}

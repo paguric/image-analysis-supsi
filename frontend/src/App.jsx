@@ -18,7 +18,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home/>}/>
         <Route path="/differential-view/:startingWaveLenght/:finalWaveLenght/:totalFrameCount/:actualFrame" element={<DifferentialView/>}/>
-        <Route path="/single-roi-view/:roiNumber/:frameNumber/:totalFrameCount/:startingWaveLenght/:finalWaveLenght/" element={<SingleRoiView />} />
+        <Route path="/single-roi-view/:roiNumber/:totalRoiCount/:frameNumber/:totalFrameCount/:startingWaveLenght/:finalWaveLenght/" element={<SingleRoiView />} />
       </Routes>
     </>
   )

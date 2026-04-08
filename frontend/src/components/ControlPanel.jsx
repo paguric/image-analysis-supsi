@@ -5,12 +5,23 @@ function ControlPanel({
     startingWavelength,
     finalWavelength,
     actualFrame = 0,
+    actualRoi,
     onFrameChange,
+    onRoiChange,
     totalFrameCount
 }) {
 
     return (
         <div className="grid grid-cols-1 gap-6 mt-4">
+
+
+            <NumberSpinnerBox
+                name={`Actual ROI`}
+                min={1}
+                defaultValue={isNaN(Number(actualRoi)) ? 1 : Number(actualRoi)}
+                step={1}
+                onChange={onRoiChange}
+            />
 
 
             <NumberSpinnerBox
