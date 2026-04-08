@@ -221,7 +221,7 @@ def make_pipeline_step_getter(analisi: Analisi):
         i: int,
     ) -> StreamingResponse:
         """
-        Restituisce lo step intermedio i-esimo dell'applicazione della pipeline su una singola ROI dell'analisi prima.
+        Restituisce lo step intermedio i-esimo (zero based) dell'applicazione della pipeline su una singola ROI dell'analisi prima.
         """
         roi = roi_service.get_roi(roi_repo, idx, analisi)
 
@@ -258,27 +258,6 @@ router.add_api_route(
     make_pipeline_step_getter(Analisi.DOPO),
     methods=["POST"],
 )
-
-
-@router.get("/roi/dopo/{idx}/step/{i}")
-async def get_step_pipeline_roi_dopo(
-    roi_repo: RoiRepoDep,
-    idx: int,
-    i: int,
-) -> StreamingResponse:
-    """
-    Restituisce lo step intermedio i-esimo dell'applicazione della pipeline su una singola ROI dell'analisi dopo.
-    """
-    roi = roi_service.get_roi(roi_repo, idx, Analisi.DOPO)
-
-    pipeline: Pipeline = pipeline_service.get_pipeline(roi_repo, roi.id)
-
-    img = pipeline.get_step(i)
-
-    _, buffer = cv2.imencode(".jpg", img)
-    io_buffer = io.BytesIO(buffer)
-
-    return StreamingResponse(io_buffer, media_type="image/jpeg")
 
 
 @router.get("/get-number-of-frames")
