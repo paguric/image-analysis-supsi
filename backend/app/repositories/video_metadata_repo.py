@@ -8,6 +8,8 @@ class VideoMetadataRepository:
 
     def add(self, metadata):
         self.session.add(metadata)
+        self.session.commit()
+        self.session.refresh(metadata)
 
     def get(self, fase: Analisi):
         return self.session.query(VideoMetadata).filter_by(fase=fase).one()

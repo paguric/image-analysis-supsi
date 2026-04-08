@@ -16,6 +16,7 @@ from app.models.pipeline import Pipeline
 from app.models.video_metadata import VideoMetadata
 from app.schemas.pipeline_params import PipelineParams
 from app.schemas.roi import RoiResponse
+from app.schemas.analyze_request import AnalyzeRequest
 from app.db.database import SessionDep
 from app.dependencies import RoiRepoDep
 from app.dependencies import PipelineRepoDep
@@ -101,6 +102,51 @@ async def analyze(
         session.add(roi)
         session.commit()
         session.refresh(roi)
+
+
+@router.post("/local/")
+async def analyze_local(
+    roi_repo: RoiRepoDep,
+    video_metadata_repo: VideoMetadataRepoDep,
+    body: AnalyzeRequest,
+):
+    prima_avi_path = body.video_prima
+    dopo_avi_path = body.video_dopo
+
+    # Trova il frame più luminoso per le due analisi
+    brightest_idx, brightest_frame = cv2_service.brightest_frame(prima_avi_path)
+    metadata_prima = VideoMetadata(
+        video_path=prima_avi_path, fase=Analisi.PRIMA, brightest_idx=brightest_idx
+    )
+    metadata_prima.brightest_frame = brightest_frame
+
+    brightest_idx, brightest_frame = cv2_service.brightest_frame(dopo_avi_path)
+    metadata_dopo = VideoMetadata(
+        video_path=dopo_avi_path, fase=Analisi.DOPO, brightest_idx=brightest_idx
+    )
+    metadata_dopo.brightest_frame = brightest_frame
+
+    # Salva frame più luminoso nel db
+    video_metadata_service.add_video_metadata(video_metadata_repo, metadata_prima)
+    video_metadata_service.add_video_metadata(video_metadata_repo, metadata_dopo)
+
+    # Estrai le ROI e aggiungi i metadati necessari
+    roi_prima: list[Roi] = pipeline_service.extract_rois(metadata_prima.brightest_frame)
+    for roi in roi_prima:
+        roi.video_path = prima_avi_path
+        roi.fase = Analisi.PRIMA
+
+    roi_dopo: list[Roi] = pipeline_service.extract_rois(metadata_dopo.brightest_frame)
+    for roi in roi_dopo:
+        roi.video_path = dopo_avi_path
+        roi.fase = Analisi.DOPO
+
+    # Dopo aver calcolato le ROI, assegna lo stesso indice
+    roi_prima, roi_dopo = roi_service.match_rois_by_center(roi_prima, roi_dopo)
+
+    # Salva ROI nel db
+    for roi in roi_prima + roi_dopo:
+        roi_service.add_roi(roi_repo, roi)
 
 
 @router.get("/diff/{frame}/")

@@ -9,12 +9,16 @@ from app.schemas.roi import RoiResponse
 from app.repositories.roi_repo import RoiRepository
 
 
-def get_roi_list(repo: RoiRepository, analisi: Analisi) -> list[Roi]:
-    return repo.list(analisi)
+def add_roi(repo: RoiRepository, roi: Roi):
+    return repo.add(roi)
 
 
 def get_roi(repo: RoiRepository, idx: int, analisi: Analisi) -> list[Roi]:
     return repo.get(idx, analisi)
+
+
+def get_roi_list(repo: RoiRepository, analisi: Analisi) -> list[Roi]:
+    return repo.list(analisi)
 
 
 def roi_to_response(roi: Roi) -> RoiResponse:

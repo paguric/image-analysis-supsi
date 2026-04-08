@@ -54,8 +54,40 @@ class Roi(SQLModel, table=True):
         (cx, cy), radius = cv2.minEnclosingCircle(self.contours)
         return cv2.getRectSubPix(img, (int(2 * radius), int(2 * radius)), (cx, cy))
 
+    def get_pixels_from_frame(self, frame: np.ndarray) -> np.ndarray:
+        """
+        Versione alternativa a cui viene passato il frame dall'esterno, in modo da essere più efficiente dentro a un loop.
+        """
+        (cx, cy), radius = cv2.minEnclosingCircle(self.contours)
+        return cv2.getRectSubPix(frame, (int(2 * radius), int(2 * radius)), (cx, cy))
+
     def get_intensity(self, frame: int) -> float:
         patch = self.get_pixels(frame)
+
+        (cx, cy), radius = cv2.minEnclosingCircle(self.contours)
+        x0, y0 = cx - radius, cy - radius
+
+        # Trasla il contorno in coordinate locali della patch
+        local_contours = self.contours.copy().astype(np.int32)
+        local_contours[:, 0, 0] -= int(x0)
+        local_contours[:, 0, 1] -= int(y0)
+
         mask = np.zeros(patch.shape[:2], np.uint8)
-        cv2.drawContours(mask, [self.contours], 0, 255, -1)
+        cv2.drawContours(mask, [local_contours], 0, 255, -1)
+        return cv2.mean(patch, mask=mask)
+
+    def get_intensity_from_patch(self, patch: np.ndarray) -> float:
+        """
+        Versione alternativa a cui viene passato il patch dall'esterno, in modo da essere più efficiente dentro a un loop.
+        """
+        (cx, cy), radius = cv2.minEnclosingCircle(self.contours)
+        x0, y0 = cx - radius, cy - radius
+
+        # Trasla il contorno in coordinate locali della patch
+        local_contours = self.contours.copy().astype(np.int32)
+        local_contours[:, 0, 0] -= int(x0)
+        local_contours[:, 0, 1] -= int(y0)
+
+        mask = np.zeros(patch.shape[:2], np.uint8)
+        cv2.drawContours(mask, [local_contours], 0, 255, -1)
         return cv2.mean(patch, mask=mask)

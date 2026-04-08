@@ -6,8 +6,10 @@ class RoiRepository:
     def __init__(self, session):
         self.session = session
 
-    def add(self, metadata):
-        self.session.add(metadata)
+    def add(self, roi):
+        self.session.add(roi)
+        self.session.commit()
+        self.session.refresh(roi)
 
     def get(self, idx: int, fase: Analisi):
         return self.session.query(Roi).filter_by(idx=idx).filter_by(fase=fase).one()

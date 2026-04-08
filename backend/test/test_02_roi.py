@@ -7,7 +7,6 @@ import numpy as np
 from app.main import app
 
 
-@pytest.mark.skip(reason="Mi sono accorto a metà che non serve a niente, per ora")
 def test_intensity_extraction(client):
     """
     Testa che questa funzione cv2.drawContours(mask, [contours], 0, 255, -1) faccia effettivamente il suo lavoro
@@ -34,8 +33,22 @@ def test_intensity_extraction(client):
     assert image.shape[1] > 0  # larghezza
 
     # Crea un contorno "falso": il cerchio inscritto all'immagine (che è sempre quadrata)
-    # TODO
-    contours = None
+    h, w = image.shape[:2]
+    center = (w // 2, h // 2)
+    radius = min(w, h) // 2
+    contours = cv2.ellipse2Poly(center, (radius, radius), 0, 0, 360, 1)
 
-    mask = np.zeros(image, np.uint8)
+    mask = np.zeros(image.shape[:2], np.uint8)
     cv2.drawContours(mask, [contours], 0, 255, -1)
+
+    print("MEAN TEST")
+    print(cv2.mean(image, mask=mask))
+
+    # Salvataggio su file per check manuale
+    os.makedirs("out", exist_ok=True)
+    os.makedirs("out/intensity", exist_ok=True)
+
+    with open("out/intensity/intensity_with_mask.jpg", "wb") as f:
+        f.write(
+            cv2.imencode(".jpg", cv2.bitwise_and(image, image, mask=mask))[1].tobytes()
+        )

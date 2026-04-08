@@ -8,10 +8,5 @@ from app.main import app
 
 
 def test_csv(client):
-    """
-    Testa che questa funzione cv2.drawContours(mask, [contours], 0, 255, -1) faccia effettivamente il suo lavoro
-    """
-
-    response = client.get("/analysis/diff/results/")
-
+    response = client.get("/analysis/diff/results/420/730/")
     assert response.status_code == 200

@@ -9,11 +9,11 @@ from app.dependencies import PipelineRepository
 
 
 def add_pipeline(repo: PipelineRepository, pipeline: Pipeline):
-    repo.add(pipeline)
+    return repo.add(pipeline)
 
 
 def get_pipeline(repo: PipelineRepository, roi_id: int, params: PipelineParams):
-    repo.get(roi_id, params)
+    return repo.get(roi_id, params)
 
 
 def ensure_odd(v: int) -> int:

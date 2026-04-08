@@ -20,7 +20,7 @@ def test_db_reset(client):
     assert response.json() == 0
 
 
-# @pytest.mark.skip(reason="")
+@pytest.mark.skip(reason="Sostituito con endpoint sotto.")
 def test_analysis(client):
     with open(VIDEO_PRIMA, "rb") as f_prima, open(VIDEO_DOPO, "rb") as f_dopo:
         response = client.post(
@@ -30,6 +30,18 @@ def test_analysis(client):
                 "video_dopo": ("dopo.avi", f_dopo, "video/x-msvideo"),
             },
         )
+
+    assert response.status_code == 200
+
+
+def test_analysis_local(client):
+    response = client.post(
+        "/pipeline/local/",
+        json={
+            "video_prima": VIDEO_PRIMA,
+            "video_dopo": VIDEO_DOPO,
+        },
+    )
 
     assert response.status_code == 200
 
