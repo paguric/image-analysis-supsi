@@ -19,7 +19,7 @@ export function useHandleFrameChange({ roiNumber, startingWaveLenght, finalWaveL
         }
 
         debounceTimer.current = setTimeout(() => {
-            navigate(`/single-roi-view/${roiNumber}/${newFrame}/${totalFrameCount}/${startingWaveLenght}/${finalWaveLenght}`, { replace: true });
+            navigate(`/single-roi-view/${roiNumber}/${newFrame-1}/${totalFrameCount}/${startingWaveLenght}/${finalWaveLenght}`, { replace: true });
         }, 180);
     };
 

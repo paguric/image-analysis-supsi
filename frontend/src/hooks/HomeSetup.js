@@ -6,13 +6,6 @@ import api, { sleep } from '../services/api'
 import { getNumberOfFrames } from '../services/pipelineApi'
 
 
-const navigateToNext = 
-            (startingWaveLenght, finalWaveLenght, numberOfFrames) => navigate(
-                                `/differential-view/${startingWaveLenght}/${finalWaveLenght}/${numberOfFrames}/1`
-                                              )
-
-
-
 export function useHome() {
     const navigate = useNavigate()
 
