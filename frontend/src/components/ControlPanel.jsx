@@ -18,7 +18,7 @@ function ControlPanel({
             <NumberSpinnerBox
                 name={`Actual ROI`}
                 min={1}
-                defaultValue={isNaN(Number(actualRoi)) ? 1 : Number(actualRoi)}
+                defaultValue={isNaN(Number(actualRoi)) ? 1 : Number(actualRoi+1)}
                 step={1}
                 onChange={onRoiChange}
             />

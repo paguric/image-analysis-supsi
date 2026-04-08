@@ -12,6 +12,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
 
+from app.db.database import get_db_path
+
+
 app = FastAPI()
 
 app.add_middleware(
@@ -53,12 +56,13 @@ exe_dir = get_exe_dir()
 static_dir = os.path.join(base_path, "frontend", "dist")
 
 # Percorso del database - accanto all'exe (mai dentro _MEIPASS che è read-only)
-db_path = os.path.join(exe_dir, "database.db")
+db_path = get_db_path()
 
 
 # Creazione db all'avvio dell'app
 @app.on_event("startup")
 def on_startup():
+
     # Rimozione db vecchio
     if os.path.isfile(db_path):
         os.remove(db_path)
