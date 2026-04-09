@@ -1,9 +1,11 @@
-import TEXT from '../constants/Info';
+import TEXT from '../constants/PageInfos';
 
 function TextRetriever({ label }) {
+    const content = TEXT[label] ?? label;
+
     return (
-        <span
-            dangerouslySetInnerHTML={{ __html: TEXT[label] }}
+        <div
+            dangerouslySetInnerHTML={{ __html: content }}
         />
     );
 }

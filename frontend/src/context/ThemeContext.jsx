@@ -15,7 +15,7 @@ export function useInfoPopup() {
 
 export function AppThemeProvider({ children }) {
     const [dark, setDark] = useState(false)
-    const [infoProps, setInfoProps] = useState(null) // { title, description }
+    const [infoProps, setInfoProps] = useState(null) 
 
     const toggle = () => {
         setDark(prev => !prev)

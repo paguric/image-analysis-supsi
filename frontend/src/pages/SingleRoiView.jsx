@@ -10,6 +10,7 @@ import { computeWaveLength } from '../hooks/ComputeActualWaveLen';
 
 import { useSetInfoPopup } from '../hooks/useSetInfoPopup'
 import { useHandleRoiChange } from '../hooks/useHandleRoiChange';
+import { usePipelineParams } from '../hooks/usePipelineParams';
 
 function SingleRoiView() {
 
@@ -47,8 +48,16 @@ function SingleRoiView() {
         totalRoiCount
     });
 
+    const {
+        params, 
+        setParams, 
+        newStepUrl, 
+        isNewLoading 
+    } = usePipelineParams(roiNumber);
+
     const stepsBefore = stepUrls.map((url, i) => ({ img: url, title: `Step ${i}` }));
-    const stepsAfter = stepUrls.map((url, i) => ({ img: url, title: `Step ${i}` }));
+    const stepsAfter = newStepUrl.map((url, i) => ({ img: url, title: `Step ${i}` }));
+
 
 
     const currentWavelength = computeWaveLength(    startingWaveLenght, finalWaveLenght,
@@ -78,6 +87,7 @@ function SingleRoiView() {
                     actualRoi={roiNumber}
                     onFrameChange={handleFrameChange}
                     onRoiChange={handleRoiChange}
+                    onParamsChange={setParams}
                     totalFrameCount={totalFrameCount}
                 />
 
@@ -106,7 +116,7 @@ function SingleRoiView() {
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                        <ImgBox src="../../img/placeholder.png" />
+                        {isNewLoading ? <CircularIndeterminate /> : <ImageGrid items={stepsAfter} title="New Parametrization"/>}
                     </div>
                 </div>
 

@@ -1,5 +1,5 @@
 import { BASE_URL } from '../constants/BaseUrl';
-import { DEFAULT_PIPELINE_PARAMS } from '../constants/DefaultPipelineParams';
+import DEFAULT_PIPELINE_PARAMS from '../constants/DefaultPipelineParams';
 import { fetchImage } from './api';
 
 export async function getDifferentialFrame(frame) {

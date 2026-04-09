@@ -2,6 +2,9 @@ import { BASE_URL } from  '../constants/BaseUrl'
 import { fetchImage } from './api';
 
 async function getGeneralRoi(index, frame, stadium) {
+
+  console.log(`RICHIESTA ROI ${index} ${stadium}`);
+
   return fetchImage(`${BASE_URL}/roi/${stadium}/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

@@ -66,7 +66,7 @@ def pipeline(img: np.ndarray, params: PipelineParams = None) -> list[np.ndarray]
         edges, cv2.MORPH_CLOSE, kernel, iterations=int(params.morph_iterations)
     )
 
-    out.append(background)
+    out.append(no_bg)
     out.append(enhanced)
     out.append(edges)
     out.append(edges_closed)

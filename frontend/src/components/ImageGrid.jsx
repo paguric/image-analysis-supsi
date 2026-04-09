@@ -24,9 +24,9 @@ export default function ImageGrid({ items, title }) {
               sx={{
                 background: 'transparent',
                 '& .MuiImageListItemBar-title': {
-                  fontSize: '1.5rem',
+                  fontSize: '0.8rem',
                   fontWeight: 'bold',
-                  color: 'red'
+                  color: 'yellow'
                 }
               }}
             />

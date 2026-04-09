@@ -20,6 +20,7 @@ export function useSingleRoiView(roiNumber, frameNumber) {
 
 
 
+
     useEffect(() => {
 
         async function loadBeforeImg() {
@@ -28,8 +29,8 @@ export function useSingleRoiView(roiNumber, frameNumber) {
             setError(false);
 
             try {
-                const promise = getPreprocessedROI(roiNumber, frameNumber);
-                const url = await promise;
+
+                const url = await getPreprocessedROI(roiNumber, frameNumber);
 
                 setBeforeImgUrl(url);
 
@@ -48,8 +49,8 @@ export function useSingleRoiView(roiNumber, frameNumber) {
             setError(false);
 
             try {
-                const promise = getPostprocessedROI(roiNumber, frameNumber);
-                const url = await promise;
+
+                const url = await getPostprocessedROI(roiNumber, frameNumber);
 
                 setAfterImgUrl(url);
 
@@ -68,8 +69,8 @@ export function useSingleRoiView(roiNumber, frameNumber) {
             setError(false);
 
             try {
-                const promise = getDifferentialROI(roiNumber, frameNumber);
-                const url = await promise;
+
+                const url = await getDifferentialROI(roiNumber, frameNumber);
 
                 setDiffImgUrl(url);
 
@@ -81,6 +82,21 @@ export function useSingleRoiView(roiNumber, frameNumber) {
 
         }
 
+        loadBeforeImg();
+        loadAfterImg();
+        loadDiffImg();
+
+        return () => {
+            objectUrlRevoker(beforeImgUrl);
+            objectUrlRevoker(afterImgUrl);
+            objectUrlRevoker(diffImgUrl);
+        }
+
+    }, [roiNumber, frameNumber]);
+
+
+    // Carica gli step della pipeline SOLO quando cambia roiNumber
+    useEffect(() => {
 
         async function loadAllStepsBefore() {
             setIsLoading(true);
@@ -104,19 +120,13 @@ export function useSingleRoiView(roiNumber, frameNumber) {
             }
         }
 
-        loadBeforeImg();
-        loadAfterImg();
-        loadDiffImg();
         loadAllStepsBefore();
 
         return () => {
             stepUrls.forEach(url => objectUrlRevoker(url));
-            objectUrlRevoker(beforeImgUrl);
-            objectUrlRevoker(afterImgUrl);
-            objectUrlRevoker(diffImgUrl);
         }
 
-    }, [roiNumber, frameNumber]);
+    }, [roiNumber]);
 
 
     return {
