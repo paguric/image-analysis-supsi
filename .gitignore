@@ -271,3 +271,4 @@ backend/app/out/*
 backend/database.db
 out/*
 backend/test/video/*
+backend/app/routers/out/*
