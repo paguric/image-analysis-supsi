@@ -14,7 +14,7 @@ import { usePipelineParams } from '../hooks/usePipelineParams';
 
 function SingleRoiView() {
 
-    useSetInfoPopup("single_roi_view_title", "single_roi_view_description") 
+    useSetInfoPopup("single_roi_view_title", "single_roi_view_description")
 
     const { roiNumber, totalRoiCount, frameNumber, totalFrameCount, startingWaveLenght, finalWaveLenght } = useParams();
 
@@ -59,9 +59,9 @@ function SingleRoiView() {
 
 
 
-    const currentWavelength = computeWaveLength(    startingWaveLenght, finalWaveLenght,
-                                                    frameNumber, totalFrameCount
-                                                );
+    const currentWavelength = computeWaveLength(startingWaveLenght, finalWaveLenght,
+        frameNumber, totalFrameCount
+    );
 
     return (
         <div className="flex h-screen w-full overflow-hidden">
@@ -110,12 +110,22 @@ function SingleRoiView() {
 
                 {/* Riga inferiore */}
                 <div className="flex gap-3 shrink-0">
-                    <div className="flex-1 min-w-0">
-                        {isNewLoading ? <CircularIndeterminate /> : <ImageGrid items={stepsBefore} title="Current Parametrization applied on the first video"/>}
+                    <div className="flex-1 min-w-0 relative">
+                        <ImageGrid items={stepsBefore} title="Current Parametrization applied on the first video" />
+                        {isNewLoading && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-white/60 dark:bg-gray-900/60 rounded">
+                                <CircularIndeterminate />
+                            </div>
+                        )}
                     </div>
-                    
-                    <div className="flex-1 min-w-0">
-                        {isNewLoading ? <CircularIndeterminate /> : <ImageGrid items={stepsAfter} title="Current Parametrization applied on the second video"/>}
+
+                    <div className="flex-1 min-w-0 relative">
+                        <ImageGrid items={stepsAfter} title="Current Parametrization applied on the second video" />
+                        {isNewLoading && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-white/60 dark:bg-gray-900/60 rounded">
+                                <CircularIndeterminate />
+                            </div>
+                        )}
                     </div>
                 </div>
 

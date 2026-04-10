@@ -31,8 +31,6 @@ const TEXT = {
         <ul>
             <li>Show detected contours</li>
             <li>Export analyzed data as a CSV file</li>
-            <li>Export the current parameter configuration</li>
-            <li>Import a previously saved configuration</li>
         </ul>
 
         <p>Below these controls, you can start a new analysis.</p>
@@ -53,10 +51,10 @@ const TEXT = {
             <li>The differential ROI</li>
         </ul>
 
-        <p>In the <strong>bottom left</strong>, the current intermediate pipeline steps are displayed.</p>
+    
 
-        <p>In the <strong>bottom right</strong>, the same steps are shown again,
-        but with your modified parameters applied.</p>
+        <p>In the <strong>bottom right</strong>, the intermediate pipeline steps
+        are displayed with your modified parameters applied.</p>
     `
 };
 
