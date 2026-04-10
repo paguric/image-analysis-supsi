@@ -20,8 +20,6 @@ function SingleRoiView() {
 
 
     const {
-        stepUrls,
-        isLoading,
         isBeforeLoading,
         isAfterLoading,
         isDiffLoading,
@@ -49,14 +47,15 @@ function SingleRoiView() {
     });
 
     const {
-        params, 
-        setParams, 
-        newStepUrl, 
-        isNewLoading 
+        params,
+        setParams,
+        newFirstStepUrl,
+        newSecondStepUrl,
+        isNewLoading
     } = usePipelineParams(roiNumber);
 
-    const stepsBefore = stepUrls.map((url, i) => ({ img: url, title: `Step ${i}` }));
-    const stepsAfter = newStepUrl.map((url, i) => ({ img: url, title: `Step ${i}` }));
+    const stepsBefore = newFirstStepUrl.map((url, i) => ({ img: url, title: `Step ${i}` }));
+    const stepsAfter = newSecondStepUrl.map((url, i) => ({ img: url, title: `Step ${i}` }));
 
 
 
@@ -112,11 +111,11 @@ function SingleRoiView() {
                 {/* Riga inferiore */}
                 <div className="flex gap-3 shrink-0">
                     <div className="flex-1 min-w-0">
-                        {isLoading ? <CircularIndeterminate /> : <ImageGrid items={stepsBefore} title="Actual Parametrization"/>}
+                        {isNewLoading ? <CircularIndeterminate /> : <ImageGrid items={stepsBefore} title="Current Parametrization applied on the first video"/>}
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                        {isNewLoading ? <CircularIndeterminate /> : <ImageGrid items={stepsAfter} title="New Parametrization"/>}
+                        {isNewLoading ? <CircularIndeterminate /> : <ImageGrid items={stepsAfter} title="Current Parametrization applied on the second video"/>}
                     </div>
                 </div>
 

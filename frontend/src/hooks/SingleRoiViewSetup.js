@@ -95,42 +95,10 @@ export function useSingleRoiView(roiNumber, frameNumber) {
     }, [roiNumber, frameNumber]);
 
 
-    // Carica gli step della pipeline SOLO quando cambia roiNumber
-    useEffect(() => {
-
-        async function loadAllStepsBefore() {
-            setIsLoading(true);
-            setError(false);
-            try {
-                await runPipeline(roiNumber);
-
-                const promises = [];
-
-                for (let i = 0; i < PIPELINE_STEPS_NUMBER; i++) {
-                    promises.push(getStepOfARoi(roiNumber, i));
-                }
-
-                const urls = await Promise.all(promises);
-                setStepUrls(urls);
-            } catch (err) {
-                console.error("Errore:", err);
-                setError(err.message);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-
-        loadAllStepsBefore();
-
-        return () => {
-            stepUrls.forEach(url => objectUrlRevoker(url));
-        }
-
-    }, [roiNumber]);
+    
 
 
     return {
-        stepUrls,
         isLoading,
         isBeforeLoading,
         isAfterLoading,
