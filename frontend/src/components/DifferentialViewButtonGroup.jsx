@@ -16,8 +16,13 @@ function DifferentialViewButtonGroup({ showContours, isContoursLoading, onToggle
             <Button
                 // onClick={onCsvExport}
             >
-                Export CSV
+                Export CSV (Global)
             </Button>
+
+            <Button>
+                Export Frame CSV (Pixel by Pixel)
+            </Button>
+
         </ButtonGroup>
     )
 }

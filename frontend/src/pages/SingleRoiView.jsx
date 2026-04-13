@@ -93,11 +93,11 @@ function SingleRoiView() {
             </div>
 
             {/* Colonna destra */}
-            <div className="w-3/4 p-4 h-full overflow-hidden flex flex-col gap-3">
+            <div className="w-3/4 p-4 h-full overflow-hidden flex flex-col gap-3 ">
 
                 {/* Riga superiore */}
                 <div className="flex gap-3 flex-1 min-h-0 overflow-hidden">
-                    <div className="flex-1 min-w-0 overflow-hidden">
+                    <div className="flex-1 min-w-0 overflow-hidden ">
                         {isBeforeLoading ? <CircularIndeterminate /> : <ImgBox src={beforeImgUrl} stepName="Before" zoomable={false} />}
                     </div>
                     <div className="flex-1 min-w-0 overflow-hidden">
@@ -107,6 +107,8 @@ function SingleRoiView() {
                         {isDiffLoading ? <CircularIndeterminate /> : <ImgBox src={diffImgUrl} stepName="Differential" zoomable={false} />}
                     </div>
                 </div>
+
+                <div className="outline outline-offset outline-solid"></div>
 
                 {/* Riga inferiore */}
                 <div className="flex gap-3 shrink-0">

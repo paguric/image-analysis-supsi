@@ -11,7 +11,7 @@ const TEXT = {
         <p>To use this program:</p>
         <ol>
             <li>Upload the videos in the specified order.</li>
-            <li>Enter the starting wavelength.</li>
+            <li>Enter the starting and the final wavelength.</li>
             <li>Click the <strong>"Analyze"</strong> button.</li>
         </ol>
 

@@ -14,8 +14,8 @@ function ConfirmationAlert({ open, onContinue, onAbort, firstVideoFrameCount, se
       </DialogTitle>
       <DialogContent>
         <DialogContentText>
-          The two videos have a different number of frames ({firstVideoFrameCount} vs {secondVideoFrameCount}).
-          The analysis may produce inaccurate results. If you continue, only the first {totalFrameCount} frames will be used.
+          The two videos have a different number of frames (video before: {firstVideoFrameCount} vs video after: {secondVideoFrameCount}).
+          The analysis may produce inaccurate results. If you continue, the longer video will be cut to {totalFrameCount}.
           Do you want to continue anyway?
         </DialogContentText>
       </DialogContent>
