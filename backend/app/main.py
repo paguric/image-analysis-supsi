@@ -11,8 +11,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
-
-from app.db.database import get_db_path
+from app.bootstrapper import bootstrap
 
 
 app = FastAPI()
@@ -38,38 +37,16 @@ def get_base_path() -> str:
     return os.path.dirname(os.path.abspath(__file__))
 
 
-# NON CANCELLARE
-def get_exe_dir() -> str:
-    """Cartella dove si trova l'exe (o il sorgente in dev).
-    Usata per file scrivibili (db, output) — mai dentro _MEIPASS che è read-only."""
-    if getattr(sys, "frozen", False):
-        return os.path.dirname(sys.executable)
-    # In dev, risale alla root del progetto (due livelli sopra backend/)
-    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..")
-
-
 # Percorso base ai file statici del frontend
 base_path = get_base_path()
-exe_dir = get_exe_dir()
 
 # Cartella che contiene le build dei file React - PyInstaller la copia dentro il bundle
 static_dir = os.path.join(base_path, "frontend", "dist")
-
-# Percorso del database - accanto all'exe (mai dentro _MEIPASS che è read-only)
-db_path = get_db_path()
 
 
 # Creazione db all'avvio dell'app
 @app.on_event("startup")
 def on_startup():
-
-    # Rimozione db vecchio
-    if os.path.isfile(db_path):
-        os.remove(db_path)
-        print(f"{db_path} è stato eliminato con successo")
-    else:
-        print(f"Nessun db precedente trovato in {db_path}")
-
     database.create_db_and_tables()
 
 
@@ -100,6 +77,8 @@ def start_server() -> None:
 
 
 if __name__ == "__main__":
+    bootstrap()  # ← prima di tutto: crea cartelle e pulisce il db vecchio
+
     # Avvia il server in un thread separato (daemon).
     # Bisogna fare così perché uvicorn è bloccante: se girasse sul thread
     # principale bloccherebbe l'esecuzione e la finestra non si aprirebbe mai.

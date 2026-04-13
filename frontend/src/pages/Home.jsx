@@ -38,11 +38,13 @@ function Home() {
 
       <div className="flex justify-center gap-5 flex-wrap mb-8">
         <VideoSlot
+          deletable={true}
           titolo="Video Before"
           fileSelezionato={videoPrima}
           setFileSelezionato={setVideoPrima}
         />
         <VideoSlot
+          deletable={true}
           titolo="Video After"
           fileSelezionato={videoDopo}
           setFileSelezionato={setVideoDopo}

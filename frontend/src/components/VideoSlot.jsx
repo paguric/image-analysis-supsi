@@ -1,7 +1,7 @@
 import VideoUploader from './VideoUploader'
 import VideoPlayer from './VideoPlayer'
 
-function VideoSlot({ titolo, fileSelezionato, setFileSelezionato, videoUrl, solaLettura }) {
+function VideoSlot({ deletable, titolo, fileSelezionato, setFileSelezionato, videoUrl, solaLettura }) {
   return (
     <div className="bg-[#1a1a1a] p-4 rounded-xl w-80 shadow-lg flex flex-col gap-4">
       <div className="flex justify-center">
@@ -12,11 +12,17 @@ function VideoSlot({ titolo, fileSelezionato, setFileSelezionato, videoUrl, sola
       {videoUrl ? (
         <VideoPlayer src={videoUrl} />
       ) : solaLettura ? (
-        <div className="border-2 border-dashed border-[#444] rounded-lg p-5 text-center text-[#888] bg-white/[0.02] flex items-center justify-center flex-grow">
-          <p>In attesa del video elaborato...</p>
-        </div>
+        <div className="border-2 border-dashed border-[#444] rounded-lg p-5 text-center text-[#888] bg-white/[0.02] flex items-center justify-center flex-grow" />
       ) : fileSelezionato ? (
-        <div className="border-2 border-dashed border-[#666] rounded-lg p-5 text-center text-[#aaa] bg-white/5">
+        <div className="relative border-2 border-dashed border-[#666] rounded-lg p-5 text-center text-[#aaa] bg-white/5">
+          {deletable && (
+            <span
+              onClick={() => setFileSelezionato(null)}
+              className="absolute top-1 right-1 w-7 h-7 flex items-center justify-center rounded-full text-white/40 hover:text-white hover:bg-black text-2xl cursor-pointer transition-all"
+            >
+              &times;
+            </span>
+          )}
           <p>File: <strong>{fileSelezionato.name}</strong></p>
         </div>
       ) : (
