@@ -1,12 +1,30 @@
-from fastapi.testclient import TestClient
-import pytest
 import os
-import cv2
-import numpy as np
-
+import unittest
+import pytest
+from fastapi.testclient import TestClient
 from app.main import app
 
 
-def test_csv(client):
-    response = client.get("/analysis/diff/results/420/730/")
-    assert response.status_code == 200
+class AnalysisControllerTest(unittest.TestCase):
+    def setUp(self):
+        """
+        Inizializza il client di test e crea le cartelle dove salvare i file di output per ogni test.
+        """
+        self.client = TestClient(app)
+        
+        os.makedirs("out", exist_ok=True)
+        os.makedirs("out/roi", exist_ok=True)
+        os.makedirs("out/roi/prima", exist_ok=True)
+        os.makedirs("out/roi/dopo", exist_ok=True)
+
+
+    def tearDown(self):  
+        return None
+
+
+    def test_csv(self):
+        """
+        Verifica /analysis/diff/results/{min_freq}/{max_freq}/ (calcolo CSV globale).
+        """
+        response = self.client.get("/analysis/diff/results/420/730/")
+        assert response.status_code == 200
