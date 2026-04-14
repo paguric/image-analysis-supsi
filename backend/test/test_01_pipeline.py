@@ -1,11 +1,9 @@
+import os
 import unittest
 import pytest
+import utils
 from fastapi.testclient import TestClient
 from app.main import app
-
-import os
-import cv2
-import numpy as np
 
 
 class PipelineControllerTest(unittest.TestCase):
@@ -29,19 +27,6 @@ class PipelineControllerTest(unittest.TestCase):
 
     def tearDown(self):  
         return None
-    
-
-    def save_image(self, image_bytes: bytes, out_path: str):
-
-        buffer = np.frombuffer(image_bytes, dtype=np.uint8)
-        image = cv2.imdecode(buffer, cv2.IMREAD_COLOR)
-        assert image is not None
-        assert image.shape[0] > 0  # altezza
-        assert image.shape[1] > 0  # larghezza
-
-        # Salva l'immagine
-        with open(out_path, "wb") as f:
-            f.write(image_bytes)
 
 
     @pytest.mark.order(1)
@@ -105,7 +90,7 @@ class PipelineControllerTest(unittest.TestCase):
         assert response.status_code == 200
         assert response.headers["content-type"] == "image/jpeg"
 
-        self.save_image(response.content, "out/diff/diff_frame_100.jpg")
+        utils.save_image(response.content, "out/diff/diff_frame_100.jpg")
     
 
     def test_get_diff_with_contours(self):
@@ -117,7 +102,7 @@ class PipelineControllerTest(unittest.TestCase):
         assert response.status_code == 200
         assert response.headers["content-type"] == "image/jpeg"
 
-        self.save_image(response.content, "out/diff/diff_frame_100_contours.jpg")
+        utils.save_image(response.content, "out/diff/diff_frame_100_contours.jpg")
 
 
     def test_get_roi_prima_steps(self):
@@ -143,7 +128,7 @@ class PipelineControllerTest(unittest.TestCase):
             assert response.status_code == 200
             assert response.headers["content-type"] == "image/jpeg"
 
-            self.save_image(response.content, f"out/roi/prima/steps/roi_10_prima_step_{i}.jpg")
+            utils.save_image(response.content, f"out/roi/prima/steps/roi_10_prima_step_{i}.jpg")
 
 
     def test_get_roi_dopo_steps(self):
@@ -170,7 +155,7 @@ class PipelineControllerTest(unittest.TestCase):
             assert response.status_code == 200
             assert response.headers["content-type"] == "image/jpeg"
 
-            self.save_image(response.content, f"out/roi/dopo/steps/roi_10_prima_step_{i}.jpg")
+            utils.save_image(response.content, f"out/roi/dopo/steps/roi_10_prima_step_{i}.jpg")
 
 
     def test_roi_analyzer(self):
