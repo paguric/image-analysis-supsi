@@ -14,6 +14,7 @@ from sqlalchemy import LargeBinary
 class Analisi(str, enum.Enum):
     PRIMA = "prima"
     DOPO = "dopo"
+    DIFF = "diff"
 
 
 class Roi(SQLModel, table=True):

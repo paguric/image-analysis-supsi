@@ -16,66 +16,55 @@ from fastapi.responses import StreamingResponse
 router = APIRouter(prefix="/roi")
 
 
-@router.post("/prima/")
-async def get_roi_prima(repo: RoiRepoDep, body: RoiData):
-    roi_prima: list[Roi] = roi_service.get_roi_list(repo, Analisi.PRIMA)
-    roi_dopo: list[Roi] = roi_service.get_roi_list(repo, Analisi.DOPO)
+def make_roi_patch_getter(analisi: Analisi):
+    async def endpoint(
+        roi_repo: RoiRepoDep,
+        body: RoiData,
+    ) -> StreamingResponse:
+        roi_prima: list[Roi] = roi_service.get_roi_list(roi_repo, Analisi.PRIMA)
+        roi_dopo: list[Roi] = roi_service.get_roi_list(roi_repo, Analisi.DOPO)
 
-    if roi_prima is None or roi_dopo is None:
-        raise HTTPException(status_code=400, detail="No images uploaded yet")
+        if roi_prima is None or roi_dopo is None:
+            raise HTTPException(status_code=400, detail="No images uploaded yet")
 
-    patch_prima = roi_prima[body.index].get_pixels(body.frame)
-    patch_dopo = roi_dopo[body.index].get_pixels(body.frame)
-    # canvas_size = roi_service.get_common_size(patch_prima, patch_dopo)
-    canvas_size = roi_service.get_min_size(patch_prima, patch_dopo)
-    roi = roi_service.center_patch_on_canvas(patch_prima, canvas_size)
+        patch_prima = roi_prima[body.index].get_pixels(body.frame)
+        patch_dopo = roi_dopo[body.index].get_pixels(body.frame)
+        
+        canvas_size = roi_service.get_min_size(patch_prima, patch_dopo)
 
-    _, buffer = cv2.imencode(".jpg", roi)
-    io_buffer = io.BytesIO(buffer)
+        match analisi:
+            case Analisi.PRIMA:
+                patch = roi_service.center_patch_on_canvas(patch_prima, canvas_size).astype(np.float32)
+            case Analisi.DOPO:
+                patch = roi_service.center_patch_on_canvas(patch_dopo, canvas_size).astype(np.float32)
+            case Analisi.DIFF:
+                patch_prima = roi_service.center_patch_on_canvas(patch_prima, canvas_size).astype(np.float32)
+                patch_dopo = roi_service.center_patch_on_canvas(patch_dopo, canvas_size).astype(np.float32)
+                patch = patch_dopo - patch_prima
 
-    return StreamingResponse(io_buffer, media_type="image/jpeg")
+        _, buffer = cv2.imencode(".jpg", patch)
+        io_buffer = io.BytesIO(buffer)
 
-
-@router.post("/dopo/")
-async def get_roi_dopo(repo: RoiRepoDep, body: RoiData):
-    roi_prima: list[Roi] = roi_service.get_roi_list(repo, Analisi.PRIMA)
-    roi_dopo: list[Roi] = roi_service.get_roi_list(repo, Analisi.DOPO)
-
-    if roi_prima is None or roi_dopo is None:
-        raise HTTPException(status_code=400, detail="No images uploaded yet")
-
-    patch_prima = roi_prima[body.index].get_pixels(body.frame)
-    patch_dopo = roi_dopo[body.index].get_pixels(body.frame)
-    # canvas_size = roi_service.get_common_size(patch_prima, patch_dopo)
-    canvas_size = roi_service.get_min_size(patch_prima, patch_dopo)
-    roi = roi_service.center_patch_on_canvas(patch_dopo, canvas_size)
-
-    _, buffer = cv2.imencode(".jpg", roi)
-    io_buffer = io.BytesIO(buffer)
-
-    return StreamingResponse(io_buffer, media_type="image/jpeg")
+        return StreamingResponse(io_buffer, media_type="image/jpeg")
+        
+    return endpoint
 
 
-@router.post("/diff/")
-async def get_roi_diff(repo: RoiRepoDep, body: RoiData):
-    roi_prima: list[Roi] = roi_service.get_roi_list(repo, Analisi.PRIMA)
-    roi_dopo: list[Roi] = roi_service.get_roi_list(repo, Analisi.DOPO)
-
-    if roi_prima is None or roi_dopo is None:
-        raise HTTPException(status_code=400, detail="No images uploaded yet")
-
-    patch_prima = roi_prima[body.index].get_pixels(body.frame)
-    patch_dopo = roi_dopo[body.index].get_pixels(body.frame)
-    # canvas_size = roi_service.get_common_size(patch_prima, patch_dopo)
-    canvas_size = roi_service.get_min_size(patch_prima, patch_dopo)
-    diff = roi_service.center_patch_on_canvas(patch_dopo, canvas_size).astype(
-        np.float32
-    ) - roi_service.center_patch_on_canvas(patch_prima, canvas_size).astype(np.float32)
-
-    _, buffer = cv2.imencode(".jpg", diff)
-    io_buffer = io.BytesIO(buffer)
-
-    return StreamingResponse(io_buffer, media_type="image/jpeg")
+router.add_api_route(
+    "/prima/",
+    make_roi_patch_getter(Analisi.PRIMA),
+    methods=["POST"],
+)
+router.add_api_route(
+    "/dopo/",
+    make_roi_patch_getter(Analisi.DOPO),
+    methods=["POST"],
+)
+router.add_api_route(
+    "/diff/",
+    make_roi_patch_getter(Analisi.DIFF),
+    methods=["POST"],
+)
 
 
 @router.get("/number-of-rois")
