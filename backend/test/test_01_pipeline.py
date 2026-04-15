@@ -4,7 +4,8 @@ import pytest
 import utils
 from fastapi.testclient import TestClient
 from app.main import app
-
+from pydantic_core import from_json
+from app.schemas.roi import RoiResponse
 
 class PipelineControllerTest(unittest.TestCase):
     def setUp(self):
@@ -160,7 +161,7 @@ class PipelineControllerTest(unittest.TestCase):
 
     def test_roi_analyzer(self):
         """
-        Verifica /pipeline/roi/prima/1/ (creazione BaseModel RoiResponse)
+        Verifica /pipeline/roi/prima/{idx}/ (creazione BaseModel RoiResponse).
         """
         
         response = self.client.post(
@@ -179,3 +180,9 @@ class PipelineControllerTest(unittest.TestCase):
         )
 
         assert response.status_code == 200
+        
+        roi = RoiResponse.model_validate(response.json())
+        assert roi.idx != 0
+        assert roi.video_path != ""
+        assert roi.fase != None
+        assert roi.contours != None
