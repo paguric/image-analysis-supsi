@@ -4,6 +4,12 @@ import pytest
 import utils
 from fastapi.testclient import TestClient
 from app.main import app
+from app.db.database import engine
+from app.repositories.roi_repo import RoiRepository
+from sqlmodel import Session
+from app.schemas.roi import RoiResponse
+from app.models.roi import Analisi
+from app.dependencies import RoiRepoDep
 import cv2
 import numpy as np
 
@@ -14,6 +20,8 @@ class RoiControllerTest(unittest.TestCase):
         Inizializza il client di test e crea le cartelle dove salvare i file di output per ogni test.
         """
         self.client = TestClient(app)
+        self.session = Session(engine)  # nuova sessione
+        self.roi_repo = RoiRepository(self.session)
         
         os.makedirs("out", exist_ok=True)
         os.makedirs("out/roi", exist_ok=True)
@@ -22,7 +30,7 @@ class RoiControllerTest(unittest.TestCase):
 
 
     def tearDown(self):  
-        return None
+        self.session.close()
 
     
     def test_get_roi_prima(self):
@@ -63,6 +71,15 @@ class RoiControllerTest(unittest.TestCase):
             assert response.headers["content-type"] == "image/jpeg"
 
             utils.save_image(response.content, f"out/roi/dopo/idx_{i}_frame_150.jpg")
+
+
+    # TODO
+    def test_save_new_roi(self):
+        """
+        Verifica /roi/save/ (sostituzione nuova ROI con vecchia).
+        """
+
+        assert self.roi_repo.get(1, Analisi.PRIMA) != None
 
 
     def test_intensity_extraction(self):
