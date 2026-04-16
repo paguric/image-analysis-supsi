@@ -11,6 +11,15 @@ class RoiRepository:
         self.session.commit()
         self.session.refresh(roi)
 
+    def delete(self, id: int) -> Roi | None:
+        roi = self.session.get(Roi, id)
+        if not roi:
+            return None
+        
+        self.session.delete(roi)
+        self.session.commit()
+        return roi
+
     def get(self, idx: int, fase: Analisi):
         return self.session.query(Roi).filter_by(idx=idx).filter_by(fase=fase).one()
 
