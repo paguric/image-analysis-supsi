@@ -118,7 +118,22 @@ class TestRoiController:
         )
         assert response.status_code == 200
 
-        # TODO Check manuale: salva la patch con contorni di self.roi_repo.get(i, Analisi.PRIMA) per verificare se il contorno nel backend è cambiato
+        # Check manuale: salva la patch con contorni di self.roi_repo.get(i, Analisi.PRIMA) per verificare se il contorno nel backend è cambiato
+        response = self.client.post(
+            "/roi/prima/",
+            json={
+                "index": i,
+                "frame": self.total_frames // 2,
+            },
+        )
+
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "image/jpeg"
+
+        utils.save_image(
+            response.content,
+            f"out/roi/prima/idx_{i}_frame_{self.total_frames // 2}_aftersave.jpg",
+        )
 
     def test_intensity_extraction(self):
         """
