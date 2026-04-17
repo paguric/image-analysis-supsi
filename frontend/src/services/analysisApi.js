@@ -14,13 +14,20 @@ export async function clearDataBase() {
     }
 }
 
-// da finire
-export function exportToCSV(path) {
-    const response = fetch(`${BASE_URL}/analysis/diff/results/`);
 
-    if(!response.ok) {
-        throw new Error(`HTTP error: ${response.status}`);
-    }
+export async function exportToCSV() {
+  const response = await fetch(`${BASE_URL}/analysis/export-csv/`);
+  
+  if (!response.ok) {
+    throw new Error(`HTTP error: ${response.status}`);
+  }
 
-    return true;
+  const result = await response.json();
+  
+  if (result.cancelled) {
+    console.log("Export annullato dall'utente");
+    return { success: false };
+  }
+  
+  return result; // { success: true, path: "/home/user/export.csv" }
 }

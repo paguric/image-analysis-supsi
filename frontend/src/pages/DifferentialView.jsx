@@ -9,6 +9,7 @@ import { useParams } from 'react-router-dom';
 import { computeWaveLength } from '../hooks/ComputeActualWaveLen';
 import { clearDataBase } from '../services/analysisApi'
 import { useSetInfoPopup } from '../hooks/useSetInfoPopup'
+import { handleExport } from '../hooks/CsvExportHandler'
 
 function DifferentialView() {
     useSetInfoPopup("differential_view_title", "differential_description")
@@ -35,6 +36,9 @@ function DifferentialView() {
     const currentWavelength = computeWaveLength(    startingWaveLenght, finalWaveLenght, 
                                                     currentFrame, totalFrameCount
                                                 );
+
+
+    const handleCsvExport = await handleExport();
 
 
     return (
@@ -89,7 +93,7 @@ function DifferentialView() {
                             isContoursLoading={isContoursLoading}
                             onToggleContours={toggleContours}
 
-                            // onCsvExport={handleCsvExport}
+                             onCsvExport={handleCsvExport}
                         />
                     </div>
 
