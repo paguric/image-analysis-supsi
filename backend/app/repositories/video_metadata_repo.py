@@ -1,5 +1,5 @@
 from app.models.video_metadata import VideoMetadata
-from app.models.roi import Analisi
+from app.models.enums import Analisi
 
 
 class VideoMetadataRepository:

@@ -1,22 +1,22 @@
 import pytest
 import numpy as np
 import av
-from app.services import cv2_service
+from app.services import video_metadata_service
 
 
 @pytest.fixture
 def video_test(tmp_path):
     percorso = str(tmp_path / "test.mp4")
 
-    container = av.open(percorso, mode='w')
-    stream = container.add_stream('h264', rate=1)
+    container = av.open(percorso, mode="w")
+    stream = container.add_stream("h264", rate=1)
     stream.width = 10
     stream.height = 10
-    stream.pix_fmt = 'yuv420p'
+    stream.pix_fmt = "yuv420p"
 
     # Frame 0: scuro
     frame_scuro = av.VideoFrame.from_ndarray(
-        np.zeros((10, 10, 3), dtype=np.uint8), format='rgb24'
+        np.zeros((10, 10, 3), dtype=np.uint8), format="rgb24"
     )
     frame_scuro.pts = 0
     for packet in stream.encode(frame_scuro):
@@ -24,7 +24,7 @@ def video_test(tmp_path):
 
     # Frame 1: chiaro
     frame_chiaro = av.VideoFrame.from_ndarray(
-        np.full((10, 10, 3), 255, dtype=np.uint8), format='rgb24'
+        np.full((10, 10, 3), 255, dtype=np.uint8), format="rgb24"
     )
     frame_chiaro.pts = 1
     for packet in stream.encode(frame_chiaro):
@@ -39,29 +39,30 @@ def video_test(tmp_path):
 
 
 def test_extract_frame_valido(video_test):
-    frame = cv2_service.extract_frame(video_test, 1)
+    frame = video_metadata_service.extract_frame(video_test, 1)
     assert frame is not None
     assert frame.shape == (10, 10, 3)
     assert np.mean(frame) > 200.0
 
 
 def test_extract_frame_primo(video_test):
-    frame = cv2_service.extract_frame(video_test, 0)
+    frame = video_metadata_service.extract_frame(video_test, 0)
     assert frame is not None
     assert np.mean(frame) < 50.0  # deve essere scuro
 
 
 def test_extract_frame_fuori_range(video_test):
-    frame = cv2_service.extract_frame(video_test, 99)
+    frame = video_metadata_service.extract_frame(video_test, 99)
     assert frame is None
 
 
 def test_extract_frame_negativo(video_test):
-    frame = cv2_service.extract_frame(video_test, -1)
+    frame = video_metadata_service.extract_frame(video_test, -1)
     assert frame is None
 
+
 def test_get_video_info(video_test):
-    info = cv2_service.get_video_info(video_test)
+    info = video_metadata_service.get_video_info(video_test)
 
     # Il video ha 2 frame
     assert info["total_frames"] == 2
@@ -77,18 +78,18 @@ def test_frame_indexing(video_test):
     - frame 1 = secondo frame (chiaro)
     - total_frames = 2, quindi l'ultimo frame valido è all'indice 1
     """
-    info = cv2_service.get_video_info(video_test)
+    info = video_metadata_service.get_video_info(video_test)
     total = info["total_frames"]  # 2
 
     # L'indice va da 0 a total_frames-1
-    primo = cv2_service.extract_frame(video_test, 0)
-    ultimo = cv2_service.extract_frame(video_test, total - 1)
-    fuori = cv2_service.extract_frame(video_test, total)  # non esiste
+    primo = video_metadata_service.extract_frame(video_test, 0)
+    ultimo = video_metadata_service.extract_frame(video_test, total - 1)
+    fuori = video_metadata_service.extract_frame(video_test, total)  # non esiste
 
     assert primo is not None
-    assert np.mean(primo) < 50.0      # frame 0 = scuro
+    assert np.mean(primo) < 50.0  # frame 0 = scuro
 
     assert ultimo is not None
-    assert np.mean(ultimo) > 200.0    # frame 1 = chiaro
+    assert np.mean(ultimo) > 200.0  # frame 1 = chiaro
 
-    assert fuori is None              # total_frames non è un indice valido
+    assert fuori is None  # total_frames non è un indice valido

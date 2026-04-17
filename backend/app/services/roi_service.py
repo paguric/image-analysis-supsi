@@ -2,9 +2,9 @@ import cv2
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
-from app.services import cv2_service
+from app.services import video_metadata_service
 from app.models.roi import Roi
-from app.models.roi import Analisi
+from app.models.enums import Analisi
 from app.schemas.roi import RoiResponse
 from app.repositories.roi_repo import RoiRepository
 
@@ -159,7 +159,8 @@ def compute_aligned_roi_diff(
         )
 
     output = np.zeros_like(
-        cv2_service.extract_frame(roi_prima[0].video_path, frame), dtype=np.float32
+        video_metadata_service.extract_frame(roi_prima[0].video_path, frame),
+        dtype=np.float32,
     )
 
     for roi_l, roi_r in zip(roi_prima, roi_dopo):

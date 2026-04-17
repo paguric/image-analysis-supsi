@@ -1,5 +1,5 @@
 from app.models.roi import Roi
-from app.models.roi import Analisi
+from app.models.enums import Analisi
 
 
 class RoiRepository:
@@ -15,7 +15,7 @@ class RoiRepository:
         roi = self.session.get(Roi, id)
         if not roi:
             return None
-        
+
         self.session.delete(roi)
         self.session.commit()
         return roi

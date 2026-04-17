@@ -2,10 +2,10 @@ import os
 
 from app.db import database
 from app.dependencies import RoiRepoDep
-from app.models.roi import Analisi
+from app.models.enums import Analisi
 from app.services import analysis_service
 from app.services import roi_service
-from app.services import cv2_service
+from app.services import video_metadata_service
 
 from fastapi import APIRouter
 
@@ -53,8 +53,8 @@ def get_diff_csv(roi_repo: RoiRepoDep, min_freq: int, max_freq: int):
     video_path_prima = roi_prima[0].video_path
     video_path_dopo = roi_dopo[0].video_path
 
-    video_prima_info = cv2_service.get_video_info(video_path_prima)
-    video_dopo_info = cv2_service.get_video_info(video_path_dopo)
+    video_prima_info = video_metadata_service.get_video_info(video_path_prima)
+    video_dopo_info = video_metadata_service.get_video_info(video_path_dopo)
 
     total_frames = min(
         video_prima_info["total_frames"], video_dopo_info["total_frames"]

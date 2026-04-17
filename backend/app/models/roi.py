@@ -1,20 +1,14 @@
 import io
-import enum
 import cv2
 import numpy as np
 from typing import List
+from app.models.enums import Analisi
 
-from app.services import cv2_service
+from app.services import video_metadata_service
 
 from sqlmodel import Field, SQLModel, Column, Relationship, Enum as SAEnum
 from pydantic import ConfigDict
 from sqlalchemy import LargeBinary
-
-
-class Analisi(str, enum.Enum):
-    PRIMA = "prima"
-    DOPO = "dopo"
-    DIFF = "diff"
 
 
 class Roi(SQLModel, table=True):
@@ -51,7 +45,7 @@ class Roi(SQLModel, table=True):
         return (int(cx), int(cy))
 
     def get_pixels(self, frame: int) -> np.ndarray:
-        img = cv2_service.extract_frame(self.video_path, frame)
+        img = video_metadata_service.extract_frame(self.video_path, frame)
         (cx, cy), radius = cv2.minEnclosingCircle(self.contours)
         return cv2.getRectSubPix(img, (int(2 * radius), int(2 * radius)), (cx, cy))
 

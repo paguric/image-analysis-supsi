@@ -6,11 +6,10 @@ import numpy as np
 
 from app.services import pipeline_service
 from app.services import roi_service
-from app.services import cv2_service
 from app.services import draw_service
 from app.services import video_metadata_service
 from app.models.roi import Roi
-from app.models.roi import Analisi
+from app.models.enums import Analisi
 from app.models.diff import Diff
 from app.models.pipeline import Pipeline
 from app.models.video_metadata import VideoMetadata
@@ -41,14 +40,17 @@ def get_output_dir() -> str:
     return os.path.join(exe_dir, "out")
 
 
-@router.post("/")
+@router.post("/", deprecated=True)
 async def analyze(
     session: SessionDep,
+    roi_repo: RoiRepoDep,
+    video_metadata_repo: VideoMetadataRepoDep,
     video_prima: UploadFile = File(...),
     video_dopo: UploadFile = File(...),
 ):
     """
     Estrae le ROI dai video delle due analisi e le salva nel db.
+    Questo endpoint è stato sostituito da /pipeline/local/ che andrebbe usato al posto di questo.
     """
 
     prima_bytes = await video_prima.read()
@@ -65,31 +67,29 @@ async def analyze(
     with open(dopo_avi_path, "wb") as f:
         f.write(dopo_bytes)
 
-    # Trova il frame più luminoso per le due analisi
-    brightest_idx, brightest_frame = cv2_service.brightest_frame(prima_avi_path)
-    metadata_prima = VideoMetadata(
-        video_path=prima_avi_path, fase=Analisi.PRIMA, brightest_idx=brightest_idx
+    # Estrae tramite video_metadata_service tutti i metadati dei video e li salva nel db
+    video_metadata_service.add_video_metadata_from_path(
+        video_metadata_repo, prima_avi_path, Analisi.PRIMA
     )
-    metadata_prima.brightest_frame = brightest_frame
-
-    brightest_idx, brightest_frame = cv2_service.brightest_frame(dopo_avi_path)
-    metadata_dopo = VideoMetadata(
-        video_path=dopo_avi_path, fase=Analisi.DOPO, brightest_idx=brightest_idx
+    video_metadata_service.add_video_metadata_from_path(
+        video_metadata_repo, dopo_avi_path, Analisi.DOPO
     )
-    metadata_dopo.brightest_frame = brightest_frame
-
-    # Salva frame più luminoso nel db
-    session.add(metadata_prima)
-    session.add(metadata_dopo)
-    session.commit()
 
     # Estrai le ROI e aggiungi i metadati necessari
-    roi_prima: list[Roi] = pipeline_service.extract_rois(metadata_prima.brightest_frame)
+    roi_prima: list[Roi] = pipeline_service.extract_rois(
+        video_metadata_service.get_video_metadata(
+            video_metadata_repo, Analisi.PRIMA
+        ).brightest_frame
+    )
     for roi in roi_prima:
         roi.video_path = prima_avi_path
         roi.fase = Analisi.PRIMA
 
-    roi_dopo: list[Roi] = pipeline_service.extract_rois(metadata_dopo.brightest_frame)
+    roi_dopo: list[Roi] = pipeline_service.extract_rois(
+        video_metadata_service.get_video_metadata(
+            video_metadata_repo, Analisi.DOPO
+        ).brightest_frame
+    )
     for roi in roi_dopo:
         roi.video_path = dopo_avi_path
         roi.fase = Analisi.DOPO
@@ -99,9 +99,7 @@ async def analyze(
 
     # Salva ROI nel db
     for roi in roi_prima + roi_dopo:
-        session.add(roi)
-        session.commit()
-        session.refresh(roi)
+        roi_service.add_roi(roi_repo, roi)
 
 
 @router.post("/local/")
@@ -110,35 +108,31 @@ async def analyze_local(
     video_metadata_repo: VideoMetadataRepoDep,
     body: AnalyzeRequest,
 ):
-    prima_avi_path = body.video_prima
-    dopo_avi_path = body.video_dopo
-
-    # Trova il frame più luminoso per le due analisi
-    brightest_idx, brightest_frame = cv2_service.brightest_frame(prima_avi_path)
-    metadata_prima = VideoMetadata(
-        video_path=prima_avi_path, fase=Analisi.PRIMA, brightest_idx=brightest_idx
+    # Estrae tramite video_metadata_service tutti i metadati dei video e li salva nel db
+    video_metadata_service.add_video_metadata_from_path(
+        video_metadata_repo, body.video_prima, Analisi.PRIMA
     )
-    metadata_prima.brightest_frame = brightest_frame
-
-    brightest_idx, brightest_frame = cv2_service.brightest_frame(dopo_avi_path)
-    metadata_dopo = VideoMetadata(
-        video_path=dopo_avi_path, fase=Analisi.DOPO, brightest_idx=brightest_idx
+    video_metadata_service.add_video_metadata_from_path(
+        video_metadata_repo, body.video_dopo, Analisi.DOPO
     )
-    metadata_dopo.brightest_frame = brightest_frame
-
-    # Salva frame più luminoso nel db
-    video_metadata_service.add_video_metadata(video_metadata_repo, metadata_prima)
-    video_metadata_service.add_video_metadata(video_metadata_repo, metadata_dopo)
 
     # Estrai le ROI e aggiungi i metadati necessari
-    roi_prima: list[Roi] = pipeline_service.extract_rois(metadata_prima.brightest_frame)
+    roi_prima: list[Roi] = pipeline_service.extract_rois(
+        video_metadata_service.get_video_metadata(
+            video_metadata_repo, Analisi.PRIMA
+        ).brightest_frame
+    )
     for roi in roi_prima:
-        roi.video_path = prima_avi_path
+        roi.video_path = body.video_prima
         roi.fase = Analisi.PRIMA
 
-    roi_dopo: list[Roi] = pipeline_service.extract_rois(metadata_dopo.brightest_frame)
+    roi_dopo: list[Roi] = pipeline_service.extract_rois(
+        video_metadata_service.get_video_metadata(
+            video_metadata_repo, Analisi.DOPO
+        ).brightest_frame
+    )
     for roi in roi_dopo:
-        roi.video_path = dopo_avi_path
+        roi.video_path = body.video_dopo
         roi.fase = Analisi.DOPO
 
     # Dopo aver calcolato le ROI, assegna lo stesso indice
@@ -321,8 +315,8 @@ async def get_number_of_frames(roi_repo: RoiRepoDep) -> dict[str, int | float]:
     video_path_prima = roi_prima[0].video_path
     video_path_dopo = roi_dopo[0].video_path
 
-    video_prima_info = cv2_service.get_video_info(video_path_prima)
-    video_dopo_info = cv2_service.get_video_info(video_path_dopo)
+    video_prima_info = video_metadata_service.get_video_info(video_path_prima)
+    video_dopo_info = video_metadata_service.get_video_info(video_path_dopo)
 
     frame_count_prima = video_prima_info["total_frames"]
     frame_count_dopo = video_dopo_info["total_frames"]

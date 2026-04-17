@@ -1,8 +1,8 @@
 import csv
 
 from app.dependencies import RoiRepoDep
-from app.models.roi import Analisi
-from app.services.cv2_service import VideoReader
+from app.models.enums import Analisi
+from app.services.video_metadata_service import VideoReader
 
 
 def compute_diff_csv(

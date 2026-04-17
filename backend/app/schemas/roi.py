@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from app.models.roi import Analisi
+from app.models.enums import Analisi
 
 
 class RoiData(BaseModel):

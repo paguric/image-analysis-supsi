@@ -3,8 +3,9 @@ import numpy as np
 import io
 
 from app.models.roi import Roi
-from app.models.roi import Analisi
+from app.models.enums import Analisi
 from app.schemas.roi import RoiData
+from app.schemas.roi import RoiResponse
 from app.services import roi_service
 
 from app.dependencies import RoiRepoDep
@@ -29,24 +30,32 @@ def make_roi_patch_getter(analisi: Analisi):
 
         patch_prima = roi_prima[body.index].get_pixels(body.frame)
         patch_dopo = roi_dopo[body.index].get_pixels(body.frame)
-        
+
         canvas_size = roi_service.get_min_size(patch_prima, patch_dopo)
 
         match analisi:
             case Analisi.PRIMA:
-                patch = roi_service.center_patch_on_canvas(patch_prima, canvas_size).astype(np.float32)
+                patch = roi_service.center_patch_on_canvas(
+                    patch_prima, canvas_size
+                ).astype(np.float32)
             case Analisi.DOPO:
-                patch = roi_service.center_patch_on_canvas(patch_dopo, canvas_size).astype(np.float32)
+                patch = roi_service.center_patch_on_canvas(
+                    patch_dopo, canvas_size
+                ).astype(np.float32)
             case Analisi.DIFF:
-                patch_prima = roi_service.center_patch_on_canvas(patch_prima, canvas_size).astype(np.float32)
-                patch_dopo = roi_service.center_patch_on_canvas(patch_dopo, canvas_size).astype(np.float32)
+                patch_prima = roi_service.center_patch_on_canvas(
+                    patch_prima, canvas_size
+                ).astype(np.float32)
+                patch_dopo = roi_service.center_patch_on_canvas(
+                    patch_dopo, canvas_size
+                ).astype(np.float32)
                 patch = patch_dopo - patch_prima
 
         _, buffer = cv2.imencode(".jpg", patch)
         io_buffer = io.BytesIO(buffer)
 
         return StreamingResponse(io_buffer, media_type="image/jpeg")
-        
+
     return endpoint
 
 
@@ -65,6 +74,23 @@ router.add_api_route(
     make_roi_patch_getter(Analisi.DIFF),
     methods=["POST"],
 )
+
+
+@router.post("/save/")
+def save_new_roi(roi_repo: RoiRepoDep, body: RoiResponse):
+    """
+    Sostituisce la ROI ricevuta nel body alla ROI corrispondente nel db.
+    Restituisce la vecchia ROI.
+    """
+
+    roi_old = roi_repo.get(body.idx, body.fase)
+
+    if not roi_repo.delete(body.id):
+        raise HTTPException(status_code=404, detail="ROI not found")
+
+    roi_repo.add(body)
+
+    return roi_service.roi_to_response(roi_old)
 
 
 @router.get("/number-of-rois")

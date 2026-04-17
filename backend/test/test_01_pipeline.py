@@ -7,6 +7,7 @@ from app.main import app
 from pydantic_core import from_json
 from app.schemas.roi import RoiResponse
 
+
 class PipelineControllerTest(unittest.TestCase):
     def setUp(self):
         """
@@ -16,7 +17,10 @@ class PipelineControllerTest(unittest.TestCase):
         self.client = TestClient(app)
         self.video_prima = "/home/lapo225/università/as25-26-sp/prog-semestre/00_image_analysis_unict/dopo.avi"
         self.video_dopo = "/home/lapo225/università/as25-26-sp/prog-semestre/00_image_analysis_unict/prima.avi"
-        
+
+        # Crea una copia tagliata del video, in modo che i test eseguano più velocemente
+        self.total_frames = 20
+
         os.makedirs("out", exist_ok=True)
         os.makedirs("out/diff", exist_ok=True)
         os.makedirs("out/roi", exist_ok=True)
@@ -25,10 +29,8 @@ class PipelineControllerTest(unittest.TestCase):
         os.makedirs("out/roi/prima/steps", exist_ok=True)
         os.makedirs("out/roi/dopo/steps", exist_ok=True)
 
-
-    def tearDown(self):  
+    def tearDown(self):
         return None
-
 
     @pytest.mark.order(1)
     def test_db_reset(self):
@@ -41,7 +43,6 @@ class PipelineControllerTest(unittest.TestCase):
         # Il db dovrebbe essere vuoto
         response = self.client.get("/roi/number-of-rois")
         assert response.json() == 0
-    
 
     def test_analysis_local(self):
         """
@@ -67,8 +68,9 @@ class PipelineControllerTest(unittest.TestCase):
                 },
             )
 
-            assert response.status_code == 200, f"ROI {i} analisi prima mancante nel db."
-
+            assert response.status_code == 200, (
+                f"ROI {i} analisi prima mancante nel db."
+            )
 
         for i in range(20):
             response = self.client.post(
@@ -81,7 +83,6 @@ class PipelineControllerTest(unittest.TestCase):
 
             assert response.status_code == 200, f"ROI {i} analisi dopo mancante nel db."
 
-
     def test_get_diff(self):
         """
         Verifica /pipeline/diff/{frame}/ (differenziale globale).
@@ -92,7 +93,6 @@ class PipelineControllerTest(unittest.TestCase):
         assert response.headers["content-type"] == "image/jpeg"
 
         utils.save_image(response.content, "out/diff/diff_frame_100.jpg")
-    
 
     def test_get_diff_with_contours(self):
         """
@@ -104,7 +104,6 @@ class PipelineControllerTest(unittest.TestCase):
         assert response.headers["content-type"] == "image/jpeg"
 
         utils.save_image(response.content, "out/diff/diff_frame_100_contours.jpg")
-
 
     def test_get_roi_prima_steps(self):
         """
@@ -129,8 +128,9 @@ class PipelineControllerTest(unittest.TestCase):
             assert response.status_code == 200
             assert response.headers["content-type"] == "image/jpeg"
 
-            utils.save_image(response.content, f"out/roi/prima/steps/roi_10_prima_step_{i}.jpg")
-
+            utils.save_image(
+                response.content, f"out/roi/prima/steps/roi_10_prima_step_{i}.jpg"
+            )
 
     def test_get_roi_dopo_steps(self):
         """
@@ -156,14 +156,15 @@ class PipelineControllerTest(unittest.TestCase):
             assert response.status_code == 200
             assert response.headers["content-type"] == "image/jpeg"
 
-            utils.save_image(response.content, f"out/roi/dopo/steps/roi_10_prima_step_{i}.jpg")
-
+            utils.save_image(
+                response.content, f"out/roi/dopo/steps/roi_10_prima_step_{i}.jpg"
+            )
 
     def test_roi_analyzer(self):
         """
         Verifica /pipeline/roi/prima/{idx}/ (creazione BaseModel RoiResponse).
         """
-        
+
         response = self.client.post(
             "/pipeline/roi/prima/1/",
             json={
@@ -180,7 +181,7 @@ class PipelineControllerTest(unittest.TestCase):
         )
 
         assert response.status_code == 200
-        
+
         roi = RoiResponse.model_validate(response.json())
         assert roi.idx != 0
         assert roi.video_path != ""

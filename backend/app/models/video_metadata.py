@@ -1,7 +1,7 @@
 import io
 import numpy as np
 
-from app.models.roi import Analisi
+from app.models.enums import Analisi
 
 from sqlmodel import Field, SQLModel, Column, Enum as SAEnum
 from pydantic import ConfigDict
@@ -13,6 +13,10 @@ class VideoMetadata(SQLModel, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
     video_path: str
+    total_frames: int
+    width: int
+    height: int
+    fps: float
     fase: Analisi = Field(default=None, sa_column=Column(SAEnum(Analisi)))
     brightest_idx: int
 
