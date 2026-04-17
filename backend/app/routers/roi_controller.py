@@ -87,18 +87,12 @@ router.add_api_route(
 @router.post("/save/")
 def save_new_roi(roi_repo: RoiRepoDep, body: RoiResponse):
     """
-    Sostituisce la ROI ricevuta nel body alla ROI corrispondente nel db.
-    Restituisce la vecchia ROI.
+    Sostituisce i contorni della ROI nel db con quelli della ROI passata nel body.
     """
 
     roi_old = roi_repo.get(body.idx, body.fase)
-
-    if not roi_repo.delete(roi_old.id):
-        raise HTTPException(status_code=404, detail="ROI not found")
-
-    roi_repo.add(roi_service.response_to_roi(body))
-
-    return roi_service.roi_to_response(roi_old)
+    roi_new = roi_service.response_to_roi(body)
+    roi_old.contours = roi_new.contours
 
 
 @router.get("/number-of-rois")

@@ -13,18 +13,3 @@ def save_image(image_bytes: bytes, out_path: str):
     # Salva l'immagine
     with open(out_path, "wb") as f:
         f.write(image_bytes)
-
-
-def sanity_check(client, idx: int, frame: int, file_name: str):
-    response = client.post(
-        "/roi/prima/",
-        json={"index": idx, "frame": frame},
-    )
-
-    assert response.status_code == 200
-    assert response.headers["content-type"] == "image/jpeg"
-
-    save_image(
-        response.content,
-        f"out/roi/prima/{file_name}",
-    )
