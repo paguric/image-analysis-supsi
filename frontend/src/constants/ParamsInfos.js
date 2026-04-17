@@ -6,6 +6,7 @@ const TEXT = {
         Increasing this value improves the sensitivity of object detection.
         The result of this operation can be observed in the first step
         of the pipeline.
+        This value must be odd.
     `,
 
     clahe_title: "Local Contrast",
@@ -67,6 +68,7 @@ const TEXT = {
                     Changing this parameter affects the size of the pixel window
                     being considered. A larger window helps better close the edges
                     detected in the previous step.
+                    This value must be odd.
                 </p>
             </li>
 

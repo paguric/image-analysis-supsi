@@ -2,6 +2,8 @@ import { BASE_URL } from '../constants/BaseUrl';
 import DEFAULT_PIPELINE_PARAMS from '../constants/DefaultPipelineParams';
 import { fetchImage } from './api';
 
+
+
 export async function getDifferentialFrame(frame) {
 
   if (frame < 1) {
@@ -10,8 +12,6 @@ export async function getDifferentialFrame(frame) {
   
   return fetchImage(`${BASE_URL}/pipeline/diff/${frame - 1}/`);
 }
-
-
 
 
 
@@ -27,9 +27,10 @@ export async function getNumberOfFrames() {
 }
 
 
+
 export async function getNewComputedRoi(stadium, roiNumber, params)  {
 
-  if(params == DEFAULT_PIPELINE_PARAMS) {
+  if (JSON.stringify(params) === JSON.stringify(DEFAULT_PIPELINE_PARAMS)) {
     console.log("Parametri uguali, refresh non chiamato");
     return
   }
@@ -38,6 +39,7 @@ export async function getNewComputedRoi(stadium, roiNumber, params)  {
   console.log(`invocato ricalcolo roi ${roiNumber} per la fase ${stadium} 
                 con nuovi parametri: ${JSON.stringify(params)}`);
 
+  
   
 
   const response = await fetch(`${BASE_URL}/pipeline/roi/${stadium}/${roiNumber}/`, {
@@ -54,9 +56,6 @@ export async function getNewComputedRoi(stadium, roiNumber, params)  {
 
 
 
-
-
-
 export async function getStepOfARoi(roiNumber, stepNumber, customParams = {}, stadium) {
 
   const paramsToSend = {
@@ -70,8 +69,6 @@ export async function getStepOfARoi(roiNumber, stepNumber, customParams = {}, st
     body: JSON.stringify(paramsToSend),
   });
 }
-
-
 
 
 

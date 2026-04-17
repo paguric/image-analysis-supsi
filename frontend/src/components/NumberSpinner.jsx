@@ -10,22 +10,51 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 
-function NumberSpinner({ id: idProp, label, error, size = 'medium', step = 1, ...other }) {
+function NumberSpinner({ 
+  id: idProp, 
+  label, 
+  error, 
+  size = 'medium', 
+  step = 1, 
+  odd = false,
+  ...other 
+}) {
   let id = React.useId();
   if (idProp) {
     id = idProp;
   }
+
+  // Se odd=true, forza step a 2
+  const effectiveStep = odd ? 2 : step;
+
+  // Validazione per numeri dispari
+  const validate = React.useCallback((value) => {
+    if (!odd) return true;
+    return value % 2 !== 0; // Solo numeri dispari
+  }, [odd]);
+
+  // Correggi valore pari → dispari più vicino
+  const normalizeValue = React.useCallback((value) => {
+    if (!odd) return value;
+    if (value % 2 === 0) {
+      // Se pari, arrotonda al dispari più vicino
+      return value + 1;
+    }
+    return value;
+  }, [odd]);
+
   return (
     <BaseNumberField.Root
       {...other}
-      step={step}
+      step={effectiveStep}
+      validate={validate}
       render={(props, state) => (
         <FormControl
           size={size}
           ref={props.ref}
           disabled={state.disabled}
           required={state.required}
-          error={error}
+          error={error || (odd && !validate(state.value))}
           variant="outlined"
           sx={{
             '& .MuiButton-root': {
@@ -95,7 +124,18 @@ function NumberSpinner({ id: idProp, label, error, size = 'medium', step = 1, ..
             <OutlinedInput
               inputRef={props.ref}
               value={state.inputValue}
-              onBlur={props.onBlur}
+              onBlur={(e) => {
+                props.onBlur(e);
+                // Normalizza al blur se odd=true
+                if (odd && state.value != null) {
+                  const normalized = normalizeValue(state.value);
+                  if (normalized !== state.value) {
+                    // Forza il valore normalizzato
+                    e.target.value = normalized.toString();
+                    props.onChange(e);
+                  }
+                }
+              }}
               onChange={props.onChange}
               onKeyUp={props.onKeyUp}
               onKeyDown={props.onKeyDown}
@@ -123,6 +163,11 @@ function NumberSpinner({ id: idProp, label, error, size = 'medium', step = 1, ..
                   },
                   '&:hover .MuiOutlinedInput-notchedOutline': {
                     borderColor: 'error.main',
+                  },
+                }),
+                ...((odd && !validate(state.value)) && {
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'warning.main',
                   },
                 })
               }}
@@ -158,8 +203,8 @@ NumberSpinner.propTypes = {
   id: PropTypes.string,
   label: PropTypes.node,
   min: PropTypes.number,
+  odd: PropTypes.bool,
   size: PropTypes.oneOf(['medium', 'small']),
-  /** Quanto incrementa/decrementa ogni click o pressione tasto. Supporta decimali (es. 0.1, 0.5) */
   step: PropTypes.number,
 };
 

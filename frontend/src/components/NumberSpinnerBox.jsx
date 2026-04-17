@@ -8,6 +8,7 @@ function NumberSpinnerBox({
   step = 1, 
   onChange,
   error = false,
+  odd = false
 }) {
   return (
     <Box
@@ -25,6 +26,7 @@ function NumberSpinnerBox({
         size="small"
         onValueChange={onChange}
         error={error}
+        odd={odd}
       />
     </Box>
   );

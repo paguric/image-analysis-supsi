@@ -69,8 +69,9 @@ function ControlPanel({
                     name="High Pass Filter Window Size"
                     min={0}
                     defaultValue={DEFAULT_PIPELINE_PARAMS.bg_blur_size}
-                    step={2}
+                    step={1}
                     onChange={updateParam('bg_blur_size')}
+                    odd={true}
                 />
 
             </div>
@@ -156,6 +157,7 @@ function ControlPanel({
                         defaultValue={DEFAULT_PIPELINE_PARAMS.morph_kernel_size}
                         step={1}
                         onChange={updateParam('morph_kernel_size')}
+                        odd={true}
                     />
                     <NumberSpinnerBox
                         name="Morph Transformation Number of Iterations"

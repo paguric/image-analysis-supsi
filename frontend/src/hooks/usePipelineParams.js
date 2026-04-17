@@ -3,6 +3,8 @@ import { getStepOfARoi } from '../services/pipelineApi';
 import DEFAULT_PIPELINE_PARAMS from '../constants/DefaultPipelineParams';
 import { PIPELINE_STEPS_NUMBER } from '../constants/PipelineStepsNumber';
 import { getNewComputedRoi } from '../services/pipelineApi';
+import { setTemporaryParametrization } from '../services/temporaryParameters'
+
 
 const DEBOUNCE_MS = 400;
 
@@ -67,11 +69,15 @@ export function usePipelineParams(roiNumber) {
 
                 setNewFirstImage(firstImageNewAnalysis);
                 setNewSecondImage(secondImageNewAnalysis);
+
+
+
+                setTemporaryParametrization(firstImageNewAnalysis);
                 
 
 
             } catch (err) {
-                console.log('Pipeline params fetch failed:', err);
+                console.log('Pipeline params fetch failed:', err);                
             } finally {
                 setIsNewLoaging(false);
                 setIsNewFirstLoading(false);
