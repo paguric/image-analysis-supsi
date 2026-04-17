@@ -1,100 +1,51 @@
-import { getDifferentialFrame } from '../services/pipelineApi'
-import { useState, useEffect, useRef, use } from 'react'
-import { useNavigate } from 'react-router-dom'
-import api, { sleep } from '../services/api'
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-import { getNumberOfFrames } from '../services/pipelineApi'
-
+import { useVideoUpload } from './useVideoUpload';
+import { usePipelineAnalysis } from './usePipelineAnalysis';
+import { useDifferentialFrame } from './useDifferentialFrame';
 
 export function useHome() {
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
-    const [loading, setLoading] = useState(false)
-    const [response, setResponse] = useState(null)
-    const [videoPrima, setVideoPrima] = useState(null)
-    const [videoDopo, setVideoDopo] = useState(null)
-    const [analysisReady, setAnalysisReady] = useState(false)
-    const [urlDiff, setUrlDiff] = useState(null)
-
-    const [firstVideoFrameCount, setFirstVideoFrameCount] = useState(0);
-    const [secondVideoFrameCount, setSecondVideoFrameCount] = useState(0);
-    const [differentFrameCountError, setDifferentFrameCountError] = useState(false);
-    const [totalFrameCount, setTotalFrameCount] = useState(1);
-
-    const prevDiffUrl = useRef(null)
-
-    const analyze = async () => {
-        if (!videoPrima || !videoDopo) {
-            alert("Upload both videos before analyzing them!")
-            return
-        }
-
-        setLoading(true)
-        const formData = new FormData()
-        formData.append('video_prima', videoPrima)
-        formData.append('video_dopo', videoDopo)
-
-        try {
-            await api.post('/pipeline/', formData)
-            setAnalysisReady(true)
-
-
-            const data = await getNumberOfFrames();
-            const framesPrima = data.total_frames_prima;
-            const framesDopo = data.total_frames_dopo;
-
-            if (framesPrima !== framesDopo)
-                setDifferentFrameCountError(true);
-
-            setFirstVideoFrameCount(framesPrima);
-            setSecondVideoFrameCount(framesDopo);
-
-            setTotalFrameCount(Math.min(framesPrima, framesDopo));
-
-
-            setResponse("Analysis completed successfully.")
-            await sleep(1000);
-
-        } catch (err) {
-            setResponse('Error: ' + err.message)
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    async function getFrame(frame = 0) {
-        const url = await getDifferentialFrame(frame)
-        if (prevDiffUrl.current)
-            URL.revokeObjectURL(prevDiffUrl.current)
-        prevDiffUrl.current = url
-        setUrlDiff(url)
-    }
+    const videoUpload = useVideoUpload();
+    const analysis = usePipelineAnalysis();
+    const differential = useDifferentialFrame();
 
     useEffect(() => {
-        if (analysisReady)
-            getFrame(0)
-    }, [analysisReady])
-
-    useEffect(() => {
-        return () => {
-            if (prevDiffUrl.current)
-                URL.revokeObjectURL(prevDiffUrl.current)
+        if (analysis.analysisReady) {
+            differential.getFrame(0);
         }
-    }, [])
-    
+    }, [analysis.analysisReady, differential.getFrame]);
 
-    const navigateToNext = (startingWaveLenght, finalWaveLenght, numberOfFrames) => 
-        navigate(`/differential-view/${startingWaveLenght}/${finalWaveLenght}/${numberOfFrames}/1`)
+    const handleAnalyze = () => {
+        analysis.analyze(videoUpload.videoPrima, videoUpload.videoDopo);
+    };
+
+    const navigateToNext = (startingWaveLength, finalWaveLength, numberOfFrames) => {
+        navigate(`/differential-view/${startingWaveLength}/${finalWaveLength}/${numberOfFrames}/1`);
+    };
 
     return {
-        loading, response,
-        videoPrima, setVideoPrima,
-        videoDopo, setVideoDopo,
-        analyze,
-        firstVideoFrameCount,
-        secondVideoFrameCount,
-        differentFrameCountError, setDifferentFrameCountError,
-        totalFrameCount,
-        navigateToNext
-    }
+        videoPrima: videoUpload.videoPrima,
+        setVideoPrima: videoUpload.setVideoPrima,
+        videoDopo: videoUpload.videoDopo,
+        setVideoDopo: videoUpload.setVideoDopo,
+        isBothUploaded: videoUpload.isBothUploaded,
+
+        loading: analysis.loading,
+        response: analysis.response,
+        analysisReady: analysis.analysisReady,
+        firstVideoFrameCount: analysis.firstVideoFrameCount,
+        secondVideoFrameCount: analysis.secondVideoFrameCount,
+        differentFrameCountError: analysis.differentFrameCountError,
+        setDifferentFrameCountError: analysis.setDifferentFrameCountError,
+
+        totalFrameCount: analysis.totalFrameCount,
+        analyze: handleAnalyze,
+
+        urlDiff: differential.urlDiff,
+
+        navigateToNext,
+    };
 }
