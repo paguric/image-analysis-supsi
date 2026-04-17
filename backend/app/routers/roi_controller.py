@@ -32,24 +32,22 @@ def make_roi_patch_getter(analisi: Analisi):
 
         canvas_size = roi_service.get_min_size(patch_prima, patch_dopo)
 
+        # Porta le patch alla stessa dimensione
+        patch_prima = roi_service.center_patch_on_canvas(
+            patch_prima, canvas_size
+        ).astype(np.float32)
+        patch_dopo = roi_service.center_patch_on_canvas(patch_dopo, canvas_size).astype(
+            np.float32
+        )
+
         match analisi:
             case Analisi.PRIMA:
-                patch = roi_service.center_patch_on_canvas(
-                    patch_prima, canvas_size
-                ).astype(np.float32)
+                patch = patch_prima
                 draw_service.draw_contour(patch, roi_prima.contours, (255, 0, 0))
             case Analisi.DOPO:
-                patch = roi_service.center_patch_on_canvas(
-                    patch_dopo, canvas_size
-                ).astype(np.float32)
+                patch = patch_dopo
                 draw_service.draw_contour(patch, roi_dopo.contours, (255, 0, 0))
             case Analisi.DIFF:
-                patch_prima = roi_service.center_patch_on_canvas(
-                    patch_prima, canvas_size
-                ).astype(np.float32)
-                patch_dopo = roi_service.center_patch_on_canvas(
-                    patch_dopo, canvas_size
-                ).astype(np.float32)
                 patch = patch_dopo - patch_prima
 
         _, buffer = cv2.imencode(".jpg", patch)
