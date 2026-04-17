@@ -94,8 +94,8 @@ class PipelineControllerTest(unittest.TestCase):
         response = self.client.post(
             "/pipeline/local/",
             json={
-                "video_prima": self.video_prima_clip,
-                "video_dopo": self.video_dopo_clip,
+                "video_prima": self.video_prima,
+                "video_dopo": self.video_dopo,
             },
         )
 
