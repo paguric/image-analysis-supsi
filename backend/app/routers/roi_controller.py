@@ -10,7 +10,7 @@ from app.services import roi_service
 
 from app.dependencies import RoiRepoDep
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 
 
@@ -22,11 +22,6 @@ def make_roi_patch_getter(analisi: Analisi):
         roi_repo: RoiRepoDep,
         body: RoiData,
     ) -> StreamingResponse:
-        roi_prima: list[Roi] = roi_service.get_roi_list(roi_repo, Analisi.PRIMA)
-        roi_dopo: list[Roi] = roi_service.get_roi_list(roi_repo, Analisi.DOPO)
-
-        if roi_prima is None or roi_dopo is None:
-            raise HTTPException(status_code=400, detail="No images uploaded yet")
 
         patch_prima = roi_service.get_roi(
             roi_repo, body.index, Analisi.PRIMA
@@ -34,10 +29,6 @@ def make_roi_patch_getter(analisi: Analisi):
         patch_dopo = roi_service.get_roi(roi_repo, body.index, Analisi.DOPO).get_pixels(
             body.frame
         )
-
-        # OLD
-        """patch_prima = roi_prima[body.index].get_pixels(body.frame)
-        patch_dopo = roi_dopo[body.index].get_pixels(body.frame)"""
 
         canvas_size = roi_service.get_min_size(patch_prima, patch_dopo)
 
