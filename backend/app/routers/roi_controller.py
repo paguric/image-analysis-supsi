@@ -28,8 +28,16 @@ def make_roi_patch_getter(analisi: Analisi):
         if roi_prima is None or roi_dopo is None:
             raise HTTPException(status_code=400, detail="No images uploaded yet")
 
-        patch_prima = roi_prima[body.index].get_pixels(body.frame)
-        patch_dopo = roi_dopo[body.index].get_pixels(body.frame)
+        patch_prima = roi_service.get_roi(
+            roi_repo, body.index, Analisi.PRIMA
+        ).get_pixels(body.frame)
+        patch_dopo = roi_service.get_roi(roi_repo, body.index, Analisi.DOPO).get_pixels(
+            body.frame
+        )
+
+        # OLD
+        """patch_prima = roi_prima[body.index].get_pixels(body.frame)
+        patch_dopo = roi_dopo[body.index].get_pixels(body.frame)"""
 
         canvas_size = roi_service.get_min_size(patch_prima, patch_dopo)
 
@@ -85,10 +93,10 @@ def save_new_roi(roi_repo: RoiRepoDep, body: RoiResponse):
 
     roi_old = roi_repo.get(body.idx, body.fase)
 
-    if not roi_repo.delete(body.id):
+    if not roi_repo.delete(roi_old.id):
         raise HTTPException(status_code=404, detail="ROI not found")
 
-    roi_repo.add(body)
+    roi_repo.add(roi_service.response_to_roi(body))
 
     return roi_service.roi_to_response(roi_old)
 

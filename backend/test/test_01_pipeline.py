@@ -1,24 +1,23 @@
 import os
 import cv2
-import unittest
 import pytest
 import utils
 from fastapi.testclient import TestClient
 from app.main import app
-from pydantic_core import from_json
 from app.schemas.roi import RoiResponse
-from app.services import video_metadata_service
 
 
-class PipelineControllerTest(unittest.TestCase):
-    def setUp(self):
+class TestPipelineController:
+    @pytest.fixture(autouse=True)
+    def setup(self, video_prima, video_dopo, total_frames):
         """
         Inizializza il client di test, imposta il percorso dei video da analizzare e crea le cartelle dove salvare
         i file di output per ogni test.
         """
         self.client = TestClient(app)
-        self.video_prima = "/home/lapo225/università/as25-26-sp/prog-semestre/00_image_analysis_unict/dopo.avi"
-        self.video_dopo = "/home/lapo225/università/as25-26-sp/prog-semestre/00_image_analysis_unict/prima.avi"
+        self.video_prima = video_prima
+        self.video_dopo = video_dopo
+        self.total_frames = total_frames
 
         os.makedirs("out", exist_ok=True)
         os.makedirs("out/diff", exist_ok=True)
@@ -71,9 +70,6 @@ class PipelineControllerTest(unittest.TestCase):
 
         _cut(self.video_dopo, self.video_dopo_clip)
         _cut(self.video_prima, self.video_prima_clip)
-
-    def tearDown(self):
-        return None
 
     @pytest.mark.order(1)
     def test_db_reset(self):

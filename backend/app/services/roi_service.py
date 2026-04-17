@@ -41,6 +41,23 @@ def roi_to_response(roi: Roi) -> RoiResponse:
     )
 
 
+def response_to_roi(response: RoiResponse) -> Roi:
+    contours = None
+    if response.contours is not None:
+        # [[x, y], ...] -> np.ndarray shape (N, 1, 2)
+        contours = np.array(response.contours, dtype=np.int32).reshape(-1, 1, 2)
+
+    roi = Roi(
+        id=response.id,
+        idx=response.idx,
+        video_path=response.video_path,
+        fase=response.fase,
+    )
+    if contours is not None:
+        roi.contours = contours
+    return roi
+
+
 def match_rois_by_center(
     roi_1: list[Roi], roi_2: list[Roi]
 ) -> tuple[list[Roi], list[Roi]]:
