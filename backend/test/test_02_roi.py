@@ -102,13 +102,17 @@ class TestRoiController:
 
         new_roi = Roi.model_validate(current_roi.model_dump())
 
-        # Crea un nuovo contorno per simulare l'applicazione della pipeline: il cerchio inscritto all'immagine (che è sempre quadrata)
+        # Crea un nuovo contorno per simulare l'applicazione della pipeline: una sorta di stella (in modo sia visibile facilmente)
         cx, cy = new_roi.get_center()
         h, w = new_roi.get_pixels(self.total_frames // 2).shape[:2]
         radius = min(w, h) // 2
-        angles = np.linspace(0, 2 * np.pi, 360, endpoint=False)
+        n = 5
+        outer, inner = radius, radius // 2
+        angles = np.linspace(0, 2 * np.pi, n * 2, endpoint=False)
+        angles[1::2] += np.pi / n
+        r = np.where(np.arange(n * 2) % 2 == 0, outer, inner)
         pts = np.stack(
-            [cx + radius * np.cos(angles), cy + radius * np.sin(angles)], axis=1
+            [cx + r * np.cos(angles), cy + r * np.sin(angles)], axis=1
         ).astype(np.int32)
         new_roi.contours = pts[:, np.newaxis, :]
 
