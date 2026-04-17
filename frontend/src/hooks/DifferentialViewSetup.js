@@ -3,6 +3,8 @@ import { useEffect, useState, useRef } from 'react';
 import { getDifferentialFrame, getDiffWithContours } from "../services/pipelineApi";
 import { getRoiCount } from '../services/roiApi';
 
+import { loadDifferentialImage } from './differentialImageLoader';
+
 
 export function useDifferentialView(actualFrame) {
 
@@ -18,52 +20,54 @@ export function useDifferentialView(actualFrame) {
     const [showContours, setShowContours] = useState(false);
     const [isContoursLoading, setIsContoursLoading] = useState(false);
     const [urlDiffContours, setUrlDiffContours] = useState(null);
-    const prevContoursUrl = useRef(null);
-    
+    const prevContoursUrl = useRef(null);  
 
-    async function loadDiffFrame(frame) {
-        setIsLoading(true);
-        try {
-            const url = await getDifferentialFrame(frame);
-            if (prevDiffUrl.current)
-                URL.revokeObjectURL(prevDiffUrl.current);
-            prevDiffUrl.current = url;
-            setUrlDiff(url);
-        } finally {
-            setIsLoading(false);
-        }
+
+    async function loadDiffFrame() {
+        loadDifferentialImage({
+            currentFrame,
+            isLoadingFunction: setIsLoading,
+            differentialFrameGetter: getDifferentialFrame,
+            oldDiffUrl: prevDiffUrl,
+            setDifferentialUrl: setUrlDiff,
+            showContours: false,
+            showContoursToggleFunction: setShowContours,
+        });
     }
 
     async function toggleContours() {
+
         if (showContours) {
             setShowContours(false);
             return;
         }
+
 
         if (urlDiffContours) {
             setShowContours(true);
             return;
         }
 
-        setIsContoursLoading(true);
-        try {
-            const url = await getDiffWithContours(currentFrame);
-            if (prevContoursUrl.current)
-                URL.revokeObjectURL(prevContoursUrl.current);
-            prevContoursUrl.current = url;
-            setUrlDiffContours(url);
-            setShowContours(true);
-        } catch (err) {
-            console.error("Errore nel caricamento dei contorni:", err);
-        } finally {
-            setIsContoursLoading(false);
-        }
+
+        loadDifferentialImage({
+            currentFrame,
+            isLoadingFunction: setIsContoursLoading,
+            differentialFrameGetter: getDiffWithContours,
+            oldDiffUrl: prevContoursUrl,           
+            setDifferentialUrl: setUrlDiffContours, 
+            showContours: true,                    
+            showContoursToggleFunction: setShowContours,
+        });
     }
 
     useEffect(() => {
+        if (prevContoursUrl.current) {
+            URL.revokeObjectURL(prevContoursUrl.current);
+            prevContoursUrl.current = null;
+        }
         setShowContours(false);
         setUrlDiffContours(null);
-        loadDiffFrame(currentFrame);
+        loadDiffFrame();
     }, [currentFrame]);
 
     useEffect(() => {
@@ -76,7 +80,9 @@ export function useDifferentialView(actualFrame) {
         return () => {
             if (prevDiffUrl.current)
                 URL.revokeObjectURL(prevDiffUrl.current);
-        }
+            if (prevContoursUrl.current)
+                URL.revokeObjectURL(prevContoursUrl.current);
+        };
     }, []);
 
 
