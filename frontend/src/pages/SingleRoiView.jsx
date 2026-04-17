@@ -51,7 +51,11 @@ function SingleRoiView() {
         setParams,
         newFirstStepUrl,
         newSecondStepUrl,
-        isNewLoading
+        isNewLoading,
+        newFirtImage,
+        newSecondImage,
+        isNewFirstLoading,
+        isNewSecondLoading
     } = usePipelineParams(roiNumber);
 
     const stepsBefore = newFirstStepUrl.map((url, i) => ({ img: url, title: `Step ${i}` }));

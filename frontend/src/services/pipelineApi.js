@@ -11,6 +11,10 @@ export async function getDifferentialFrame(frame) {
   return fetchImage(`${BASE_URL}/pipeline/diff/${frame - 1}/`);
 }
 
+
+
+
+
 export async function getNumberOfFrames() {
   
   const response = await fetch(`${BASE_URL}/pipeline/get-number-of-frames`);
@@ -22,30 +26,32 @@ export async function getNumberOfFrames() {
   return await response.json();
 }
 
-/**
- * Esegue la pipeline su una specifica ROI e restituisce la RoiResponse.
- * Utilizza i parametri di default se non vengono forniti override.
- */
-export async function runPipeline(roiNumber, customParams = {}) {
-  
-  const paramsToSend = {
-    ...DEFAULT_PIPELINE_PARAMS,
-    ...customParams
-  };
 
-  const response = await fetch(`${BASE_URL}/pipeline/roi/prima/${roiNumber}/`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(paramsToSend),
-  });
+export async function getNewComputedRoi(stadium, roiNumber, params)  {
 
-  if (!response.ok) {
-    const errorText = await response.text().catch(() => '');
-    throw new Error(`Failed to run pipeline (HTTP ${response.status}): ${errorText}`);
+  if(params == DEFAULT_PIPELINE_PARAMS) {
+    console.log("Parametri uguali, refresh non chiamato");
+    return
   }
+   
 
-  return await response.json();
+  console.log(`invocato ricalcolo roi ${roiNumber} per la fase ${stadium} 
+                con nuovi parametri: ${JSON.stringify(params)}`);
+
+  
+
+  const response = await fetch(`${BASE_URL}/pipeline/roi/${stadium}/${roiNumber}/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+    });
+
+    if (!response.ok) 
+      throw new Error(`analyzeRoi ${stadium} failed: ${response.status}`);
+
+    return response.json();
 }
+
 
 
 
