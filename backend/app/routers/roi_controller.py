@@ -43,10 +43,14 @@ def make_roi_patch_getter(analisi: Analisi):
         match analisi:
             case Analisi.PRIMA:
                 patch = patch_prima
-                draw_service.draw_contour(patch, roi_prima.contours, (255, 0, 0))
+                draw_service.draw_contour(
+                    patch, roi_prima.get_local_contours(), (255, 0, 0)
+                )
             case Analisi.DOPO:
                 patch = patch_dopo
-                draw_service.draw_contour(patch, roi_dopo.contours, (255, 0, 0))
+                draw_service.draw_contour(
+                    patch, roi_dopo.get_local_contours(), (255, 0, 0)
+                )
             case Analisi.DIFF:
                 patch = patch_dopo - patch_prima
 
