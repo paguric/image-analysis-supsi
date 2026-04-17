@@ -7,6 +7,7 @@ from app.models.enums import Analisi
 from app.schemas.roi import RoiData
 from app.schemas.roi import RoiResponse
 from app.services import roi_service
+from app.services import draw_service
 
 from app.dependencies import RoiRepoDep
 
@@ -23,12 +24,11 @@ def make_roi_patch_getter(analisi: Analisi):
         body: RoiData,
     ) -> StreamingResponse:
 
-        patch_prima = roi_service.get_roi(
-            roi_repo, body.index, Analisi.PRIMA
-        ).get_pixels(body.frame)
-        patch_dopo = roi_service.get_roi(roi_repo, body.index, Analisi.DOPO).get_pixels(
-            body.frame
-        )
+        roi_prima = roi_service.get_roi(roi_repo, body.index, Analisi.PRIMA)
+        roi_dopo = roi_service.get_roi(roi_repo, body.index, Analisi.DOPO)
+
+        patch_prima = roi_prima.get_pixels(body.frame)
+        patch_dopo = roi_dopo.get_pixels(body.frame)
 
         canvas_size = roi_service.get_min_size(patch_prima, patch_dopo)
 
@@ -37,10 +37,12 @@ def make_roi_patch_getter(analisi: Analisi):
                 patch = roi_service.center_patch_on_canvas(
                     patch_prima, canvas_size
                 ).astype(np.float32)
+                draw_service.draw_contour(patch, roi_prima.contours, (255, 0, 0))
             case Analisi.DOPO:
                 patch = roi_service.center_patch_on_canvas(
                     patch_dopo, canvas_size
                 ).astype(np.float32)
+                draw_service.draw_contour(patch, roi_dopo.contours, (255, 0, 0))
             case Analisi.DIFF:
                 patch_prima = roi_service.center_patch_on_canvas(
                     patch_prima, canvas_size
