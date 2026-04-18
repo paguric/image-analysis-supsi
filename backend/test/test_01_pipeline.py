@@ -102,8 +102,10 @@ class TestPipelineController:
             response = self.client.post(
                 "/roi/prima/",
                 json={
-                    "index": i,
-                    "frame": self.total_frames // 2,
+                    "data": {
+                        "index": i,
+                        "frame": self.total_frames // 2,
+                    },
                 },
             )
 
@@ -115,8 +117,10 @@ class TestPipelineController:
             response = self.client.post(
                 "/roi/dopo/",
                 json={
-                    "index": i,
-                    "frame": self.total_frames // 2,
+                    "data": {
+                        "index": i,
+                        "frame": self.total_frames // 2,
+                    },
                 },
             )
 

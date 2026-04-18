@@ -55,8 +55,10 @@ class TestRoiController:
             response = self.client.post(
                 "/roi/prima/",
                 json={
-                    "index": i,
-                    "frame": self.total_frames // 2,
+                    "data": {
+                        "index": i,
+                        "frame": self.total_frames // 2,
+                    },
                 },
             )
 
@@ -77,8 +79,10 @@ class TestRoiController:
             response = self.client.post(
                 "/roi/dopo/",
                 json={
-                    "index": i,
-                    "frame": self.total_frames // 2,
+                    "data": {
+                        "index": i,
+                        "frame": self.total_frames // 2,
+                    },
                 },
             )
 
@@ -126,8 +130,10 @@ class TestRoiController:
         response = self.client.post(
             "/roi/prima/",
             json={
-                "index": i,
-                "frame": self.total_frames // 2,
+                "data": {
+                    "index": i,
+                    "frame": self.total_frames // 2,
+                },
             },
         )
 
@@ -150,11 +156,14 @@ class TestRoiController:
         Verifica il funzionamento di cv2.drawContours(mask, [contours], 0, 255, -1).
         """
 
+        i = 0
         response = self.client.post(
             "/roi/prima/",
             json={
-                "index": 15,
-                "frame": 150,
+                "data": {
+                    "index": i,
+                    "frame": self.total_frames // 2,
+                },
             },
         )
 
