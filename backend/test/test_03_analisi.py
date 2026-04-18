@@ -16,9 +16,6 @@ class TestAnalysisController:
         self.video_dopo = video_dopo
         self.total_frames = total_frames
 
-    def tearDown(self):
-        return None
-
     @pytest.mark.skip(reason="")
     def test_csv(self):
         """
