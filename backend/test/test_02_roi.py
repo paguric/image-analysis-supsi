@@ -52,6 +52,7 @@ class TestRoiController:
         """
 
         for i in range(20):
+            # Test senza overlap
             response = self.client.post(
                 "/roi/prima/",
                 json={
@@ -68,6 +69,32 @@ class TestRoiController:
             utils.save_image(
                 response.content,
                 f"out/roi/prima/idx_{i}_frame_{self.total_frames // 2}.jpg",
+            )
+
+            # Test con overlap di un'altra ROI
+            roi_clone = Roi.model_validate(
+                self.roi_repo.get(i, Analisi.PRIMA).model_dump()
+            )
+            utils.apply_special_contours(roi_clone)
+            roi_clone_response = roi_service.roi_to_response(roi_clone)
+
+            response = self.client.post(
+                "/roi/prima/",
+                json={
+                    "data": {
+                        "index": i,
+                        "frame": self.total_frames // 2,
+                    },
+                    "response": roi_clone_response.model_dump(),
+                },
+            )
+
+            assert response.status_code == 200
+            assert response.headers["content-type"] == "image/jpeg"
+
+            utils.save_image(
+                response.content,
+                f"out/roi/prima/idx_{i}_frame_{self.total_frames // 2}_with_overlap.jpg",
             )
 
     def test_get_roi_dopo(self):
@@ -94,6 +121,32 @@ class TestRoiController:
                 f"out/roi/dopo/idx_{i}_frame_{self.total_frames // 2}.jpg",
             )
 
+            # Test con overlap di un'altra ROI
+            roi_clone = Roi.model_validate(
+                self.roi_repo.get(i, Analisi.PRIMA).model_dump()
+            )
+            utils.apply_special_contours(roi_clone)
+            roi_clone_response = roi_service.roi_to_response(roi_clone)
+
+            response = self.client.post(
+                "/roi/dopo/",
+                json={
+                    "data": {
+                        "index": i,
+                        "frame": self.total_frames // 2,
+                    },
+                    "response": roi_clone_response.model_dump(),
+                },
+            )
+
+            assert response.status_code == 200
+            assert response.headers["content-type"] == "image/jpeg"
+
+            utils.save_image(
+                response.content,
+                f"out/roi/dopo/idx_{i}_frame_{self.total_frames // 2}_with_overlap.jpg",
+            )
+
     # @pytest.mark.skip(reason="Da rifare, sia il test che l'endpoint.")
     def test_save_new_roi(self):
         """
@@ -107,18 +160,7 @@ class TestRoiController:
         new_roi = Roi.model_validate(current_roi.model_dump())
 
         # Crea un nuovo contorno per simulare l'applicazione della pipeline: una sorta di stella (in modo sia visibile facilmente)
-        cx, cy = new_roi.get_center()
-        h, w = new_roi.get_pixels(self.total_frames // 2).shape[:2]
-        radius = min(w, h) // 2
-        n = 5
-        outer, inner = radius, radius // 2
-        angles = np.linspace(0, 2 * np.pi, n * 2, endpoint=False)
-        angles[1::2] += np.pi / n
-        r = np.where(np.arange(n * 2) % 2 == 0, outer, inner)
-        pts = np.stack(
-            [cx + r * np.cos(angles), cy + r * np.sin(angles)], axis=1
-        ).astype(np.int32)
-        new_roi.contours = pts[:, np.newaxis, :]
+        utils.apply_special_contours(new_roi)
 
         response = self.client.post(
             "/roi/save/",
