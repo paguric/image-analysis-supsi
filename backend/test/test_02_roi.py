@@ -139,6 +139,12 @@ class TestRoiController:
             f"out/roi/prima/idx_{i}_frame_{self.total_frames // 2}_aftersave.jpg",
         )
 
+        # Cleanup: re-inserisce la ROI originale nel db
+        self.client.post(
+            "/roi/save/",
+            json=roi_service.roi_to_response(current_roi).model_dump(mode="json"),
+        )
+
     def test_intensity_extraction(self):
         """
         Verifica il funzionamento di cv2.drawContours(mask, [contours], 0, 255, -1).
