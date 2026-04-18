@@ -1,21 +1,20 @@
 import os
-import unittest
 import pytest
 from fastapi.testclient import TestClient
 from app.main import app
 
 
-class AnalysisControllerTest(unittest.TestCase):
-    def setUp(self):
+class TestAnalysisController:
+    @pytest.fixture(autouse=True)
+    def setUp(self, video_prima, video_dopo, total_frames):
         """
         Inizializza il client di test e crea le cartelle dove salvare i file di output per ogni test.
         """
         self.client = TestClient(app)
 
-        os.makedirs("out", exist_ok=True)
-        os.makedirs("out/roi", exist_ok=True)
-        os.makedirs("out/roi/prima", exist_ok=True)
-        os.makedirs("out/roi/dopo", exist_ok=True)
+        self.video_prima = video_prima
+        self.video_dopo = video_dopo
+        self.total_frames = total_frames
 
     def tearDown(self):
         return None
