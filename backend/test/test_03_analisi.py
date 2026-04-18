@@ -26,3 +26,17 @@ class TestAnalysisController:
         """
         response = self.client.get("/analysis/diff/results/420/730/")
         assert response.status_code == 200
+
+    def test_csv_pixels(self):
+        """
+        Verifica /analysis/export-csv/diff/frame/{frame}/pixels/ (calcolo CSV pixel-pixel).
+        """
+        response = self.client.get(
+            f"/analysis/export-csv/diff/frame/{self.total_frames // 2}/pixels/"
+        )
+
+        assert response.status_code == 200
+
+        if response.json()["success"]:
+            assert os.path.exists(response.json()["path"])
+            print("DEBUG")
