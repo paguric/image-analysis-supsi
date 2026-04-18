@@ -6,6 +6,7 @@ from app.models.roi import Roi
 from app.models.enums import Analisi
 from app.schemas.roi import RoiData
 from app.schemas.roi import RoiResponse
+from app.schemas.roi import RoiPatchBody
 from app.services import roi_service
 from app.services import draw_service
 
@@ -21,14 +22,15 @@ router = APIRouter(prefix="/roi")
 def make_roi_patch_getter(analisi: Analisi):
     async def endpoint(
         roi_repo: RoiRepoDep,
-        body: RoiData,
+        body: RoiPatchBody,
     ) -> StreamingResponse:
 
-        roi_prima = roi_service.get_roi(roi_repo, body.index, Analisi.PRIMA)
-        roi_dopo = roi_service.get_roi(roi_repo, body.index, Analisi.DOPO)
+        # NOTA: body.data = RoiData, body.response = RoiResponse
+        roi_prima = roi_service.get_roi(roi_repo, body.data.index, Analisi.PRIMA)
+        roi_dopo = roi_service.get_roi(roi_repo, body.data.index, Analisi.DOPO)
 
-        patch_prima = roi_prima.get_pixels(body.frame)
-        patch_dopo = roi_dopo.get_pixels(body.frame)
+        patch_prima = roi_prima.get_pixels(body.data.frame)
+        patch_dopo = roi_dopo.get_pixels(body.data.frame)
 
         canvas_size = roi_service.get_min_size(patch_prima, patch_dopo)
 

@@ -16,3 +16,8 @@ class RoiResponse(BaseModel):
     center_y: int | None = None
     has_contours: bool = False
     contours: list[list[int]] | None = None  # Lista di punti [[x1,y1], [x2,y2], ...]
+
+
+class RoiPatchBody(BaseModel):
+    data: RoiData
+    response: RoiResponse | None = None
