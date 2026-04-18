@@ -56,6 +56,15 @@ def make_roi_patch_getter(analisi: Analisi):
             case Analisi.DIFF:
                 patch = patch_dopo - patch_prima
 
+        # Applica overlay
+        if analisi != Analisi.DIFF and body.response:
+            roi_to_overlap = roi_service.response_to_roi(body.response)
+            draw_service.draw_contour(
+                patch,
+                roi_to_overlap.get_local_contours(),
+                (0, 0, 255),
+            )
+
         _, buffer = cv2.imencode(".jpg", patch)
         io_buffer = io.BytesIO(buffer)
 
