@@ -1,5 +1,6 @@
 import os
-
+import tkinter as tk
+from tkinter import filedialog
 from app.db import database
 from app.dependencies import RoiRepoDep
 from app.models.enums import Analisi
@@ -63,5 +64,29 @@ def get_diff_csv(roi_repo: RoiRepoDep, min_freq: int, max_freq: int):
     analysis_service.compute_diff_csv(roi_repo, min_freq, max_freq, total_frames)
 
 
-# TODO
-# @router.get("/diff/results/pixels/")
+@router.get("/export-csv/diff/frame/{frame}/pixels/")
+def export_csv(roi_repo: RoiRepoDep, frame: int):
+    """
+    Apre finestra dell'OS per selezionare dove salvare il file, genera il CSV e lo salva su disco.
+    """
+    root = tk.Tk()
+    root.withdraw()
+
+    file_path = filedialog.asksaveasfilename(
+        title="Save CSV",
+        defaultextension=".csv",
+        filetypes=[("CSV files", ".csv"), ("All files", ".*")],
+        initialfile="roi_analysis_export_pixels.csv",
+    )
+
+    root.destroy()
+
+    if not file_path:  # annullato
+        return {"success": False, "cancelled": True}
+
+    csv_data = "None"  # TODO sostituire con analysis_service.compute_diff_csv_pixels(roi_repo, frame)
+
+    with open(file_path, "w", newline="") as f:
+        f.write(csv_data)
+
+    return {"success": True, "path": file_path, "cancelled": False}
