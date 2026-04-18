@@ -36,4 +36,3 @@ class TestAnalysisController:
 
         if response.json()["success"]:
             assert os.path.exists(response.json()["path"])
-            print("DEBUG")
