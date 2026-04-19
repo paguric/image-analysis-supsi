@@ -244,7 +244,7 @@ class TestRoiController:
         print("MEAN TEST")
         print(cv2.mean(image, mask=mask))
 
-        # Salvataggio su file per check manuale
+        """# Salvataggio su file per check manuale
         os.makedirs("out", exist_ok=True)
         os.makedirs("out/intensity", exist_ok=True)
 
@@ -253,4 +253,4 @@ class TestRoiController:
                 cv2.imencode(".jpg", cv2.bitwise_and(image, image, mask=mask))[
                     1
                 ].tobytes()
-            )
+            )"""
