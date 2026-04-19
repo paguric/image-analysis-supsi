@@ -44,6 +44,7 @@ class TestRoiController:
             "roi",
             "roi/prima",
             "roi/dopo",
+            "roi/diff",
         ]
 
         for folder in folders:
@@ -156,6 +157,72 @@ class TestRoiController:
                 f"out/roi/dopo/idx_{i}_frame_{self.total_frames // 2}_with_overlap.jpg",
             )
             utils.save_image(response.content, out_path)
+
+    def test_roi_diff(self):
+        """
+        Verifica gli step intermedi di roi_service.compute_aligned_roi_diff.
+        Al momento, questo è un copia-incolla diretto dei contenuti del metodo originale.
+        """
+        for i in range(len(self.roi_repo.list(Analisi.PRIMA))):
+            roi_l = self.roi_repo.get(i, Analisi.PRIMA)
+            roi_r = self.roi_repo.get(i, Analisi.DOPO)
+
+            patch_l = roi_l.get_pixels(self.total_frames // 2)
+            patch_r = roi_r.get_pixels(self.total_frames // 2)
+
+            common_size = roi_service.get_common_size(patch_l, patch_r)
+            patch_l = roi_service.center_patch_on_canvas(patch_l, common_size)
+            patch_r = roi_service.center_patch_on_canvas(patch_r, common_size)
+
+            ## Calcola maschera con regione comune per le due aree
+            mask_l = np.zeros((common_size, common_size), dtype=np.uint8)
+            mask_r = np.zeros((common_size, common_size), dtype=np.uint8)
+
+            cv2.drawContours(mask_l, [roi_l.get_local_contours()], 0, 255, -1)
+            cv2.drawContours(mask_r, [roi_r.get_local_contours()], 0, 255, -1)
+
+            # Debug manuale
+            out_path = os.path.join(
+                self.pwd,
+                f"out/roi/diff/idx_{i}_frame_{self.total_frames // 2}_mask_l.jpg",
+            )
+            _, buffer = cv2.imencode(".jpg", mask_l)
+            img_bytes = buffer.tobytes()
+            utils.save_image(img_bytes, out_path)
+
+            out_path = os.path.join(
+                self.pwd,
+                f"out/roi/diff/idx_{i}_frame_{self.total_frames // 2}_mask_r.jpg",
+            )
+            _, buffer = cv2.imencode(".jpg", mask_r)
+            img_bytes = buffer.tobytes()
+            utils.save_image(img_bytes, out_path)
+
+            common_mask = cv2.bitwise_and(mask_r, mask_r)
+
+            # Debug manuale
+            out_path = os.path.join(
+                self.pwd,
+                f"out/roi/diff/idx_{i}_frame_{self.total_frames // 2}_mask_common.jpg",
+            )
+            _, buffer = cv2.imencode(".jpg", common_mask)
+            img_bytes = buffer.tobytes()
+            utils.save_image(img_bytes, out_path)
+
+            # Applica la maschera sulle patch
+            patch_l = cv2.bitwise_and(patch_l, patch_l, mask=common_mask)
+            patch_r = cv2.bitwise_and(patch_r, patch_r, mask=common_mask)
+
+            diff = patch_r.astype(np.float32) - patch_l.astype(np.float32)
+
+            # Debug manuale
+            out_path = os.path.join(
+                self.pwd,
+                f"out/roi/diff/idx_{i}_frame_{self.total_frames // 2}.jpg",
+            )
+            _, buffer = cv2.imencode(".jpg", diff)
+            img_bytes = buffer.tobytes()
+            utils.save_image(img_bytes, out_path)
 
     def test_save_new_roi(self):
         """
