@@ -42,6 +42,4 @@ def compute_diff_csv(
 
             data[i + 1].append(intensity_dopo - intensity_prima)
 
-    with open("out/temp.csv", "w", newline="") as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerows(data)
+    return data

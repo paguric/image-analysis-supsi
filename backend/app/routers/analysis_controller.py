@@ -1,8 +1,10 @@
 import os
+import csv
 import tkinter as tk
 from tkinter import filedialog
 from app.db import database
 from app.dependencies import RoiRepoDep
+from app.dependencies import VideoMetadataRepoDep
 from app.models.enums import Analisi
 from app.services import analysis_service
 from app.services import roi_service
@@ -42,32 +44,49 @@ async def reset_db():
 
 
 @router.get("/diff/results/{min_freq}/{max_freq}/")
-def get_diff_csv(roi_repo: RoiRepoDep, min_freq: int, max_freq: int):
+def get_diff_csv(
+    roi_repo: RoiRepoDep,
+    video_metadata_repo: VideoMetadataRepoDep,
+    min_freq: int,
+    max_freq: int,
+):
     """
-    Restituisce il file CSV della differenza ROI-ROI.
+    Apre finestra dell'OS per selezionare dove salvare il file, genera il CSV della differenza d'intensità per ROI e lo salva su disco.
     """
+    root = tk.Tk()
+    root.withdraw()
 
-    # TODO linee duplicate da get_number_of_frames in pipeline_controller. Va aggiunta una colonna a VideoMetadata con il numero di frame, così da sostituire cv2_service
-    roi_prima = roi_service.get_roi_list(roi_repo, Analisi.PRIMA)
-    roi_dopo = roi_service.get_roi_list(roi_repo, Analisi.DOPO)
-
-    video_path_prima = roi_prima[0].video_path
-    video_path_dopo = roi_dopo[0].video_path
-
-    video_prima_info = video_metadata_service.get_video_info(video_path_prima)
-    video_dopo_info = video_metadata_service.get_video_info(video_path_dopo)
-
-    total_frames = min(
-        video_prima_info["total_frames"], video_dopo_info["total_frames"]
+    file_path = filedialog.asksaveasfilename(
+        title="Save CSV",
+        defaultextension=".csv",
+        filetypes=[("CSV files", ".csv"), ("All files", ".*")],
+        initialfile="roi_analysis_export.csv",
     )
 
-    analysis_service.compute_diff_csv(roi_repo, min_freq, max_freq, total_frames)
+    root.destroy()
+
+    if not file_path:  # annullato
+        return {"success": False, "cancelled": True}
+
+    total_frames = min(
+        video_metadata_repo.get(Analisi.PRIMA).total_frames,
+        video_metadata_repo.get(Analisi.DOPO).total_frames,
+    )
+    csv_data = analysis_service.compute_diff_csv(
+        roi_repo, min_freq, max_freq, total_frames
+    )
+
+    with open(file_path, "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerows(csv_data)
+
+    return {"success": True, "path": file_path, "cancelled": False}
 
 
 @router.get("/export-csv/diff/frame/{frame}/pixels/")
 def export_csv(roi_repo: RoiRepoDep, frame: int):
     """
-    Apre finestra dell'OS per selezionare dove salvare il file, genera il CSV e lo salva su disco.
+    Apre finestra dell'OS per selezionare dove salvare il file, genera il CSV della differenza pixel-pixel e lo salva su disco.
     """
     root = tk.Tk()
     root.withdraw()
