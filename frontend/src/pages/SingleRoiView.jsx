@@ -19,16 +19,6 @@ function SingleRoiView() {
     const { roiNumber, totalRoiCount, frameNumber, totalFrameCount, startingWaveLenght, finalWaveLenght } = useParams();
 
 
-    const {
-        isBeforeLoading,
-        isAfterLoading,
-        isDiffLoading,
-        beforeImgUrl,
-        afterImgUrl,
-        diffImgUrl
-    } = useSingleRoiView(roiNumber, frameNumber);
-
-
     const { handleFrameChange } = useHandleFrameChange({
         roiNumber,
         startingWaveLenght,
@@ -57,6 +47,15 @@ function SingleRoiView() {
         isNewFirstLoading,
         isNewSecondLoading
     } = usePipelineParams(roiNumber);
+
+    const {
+        isBeforeLoading,
+        isAfterLoading,
+        isDiffLoading,
+        beforeImgUrl,
+        afterImgUrl,
+        diffImgUrl
+    } = useSingleRoiView(roiNumber, frameNumber, newFirtImage, newSecondImage);
 
     const stepsBefore = newFirstStepUrl.map((url, i) => ({ img: url, title: `Step ${i}` }));
     const stepsAfter = newSecondStepUrl.map((url, i) => ({ img: url, title: `Step ${i}` }));

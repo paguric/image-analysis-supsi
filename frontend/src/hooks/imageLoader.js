@@ -1,16 +1,17 @@
-export async function imageLoader({ setImageLoadingState, 
-                                    setError, 
-                                    setImageUrl, 
-                                    imageGetter, 
-                                    roiNumber, 
-                                    frameNumber }) {
+export async function imageLoader({ setImageLoadingState,
+                                    setError,
+                                    setImageUrl,
+                                    imageGetter,
+                                    roiNumber,
+                                    frameNumber,
+                                    response = null }) {
 
     setImageLoadingState(true);
     setError(false);
 
     try {
 
-        const url = await imageGetter(roiNumber, frameNumber);
+        const url = await imageGetter(roiNumber, frameNumber, response);
 
         setImageUrl(url);
 
@@ -18,5 +19,5 @@ export async function imageLoader({ setImageLoadingState,
         console.log("An error occurred while loading images:", err)
     } finally {
         setImageLoadingState(false);
-    }   
+    }
 }
