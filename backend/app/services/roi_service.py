@@ -181,34 +181,30 @@ def compute_aligned_roi_diff(
     )
 
     for roi_l, roi_r in zip(roi_prima, roi_dopo):
-        patch_prima = roi_l.get_pixels(frame)
-        patch_dopo = roi_r.get_pixels(frame)
+        patch_l = roi_l.get_pixels(frame)
+        patch_r = roi_r.get_pixels(frame)
 
-        # OLD - Padding se i due patch non sono della stessa dimensione - prende raggio comune, cioè il più grande dei due
-        # common_size = get_common_size(patch_prima, patch_dopo)
-        common_size = get_min_size(patch_prima, patch_dopo)
+        common_size = get_common_size(patch_l, patch_r)
+        patch_l = center_patch_on_canvas(patch_l, common_size)
+        patch_r = center_patch_on_canvas(patch_r, common_size)
 
-        # La conversione a float32 permette di aumentare la precisione della differenza (altrimenti glitcha)
-        p1_centered = center_patch_on_canvas(patch_prima, common_size).astype(
-            np.float32
-        )
-        p2_centered = center_patch_on_canvas(patch_dopo, common_size).astype(np.float32)
+        ## Calcola maschera con regione comune per le due aree
+        mask_l = np.zeros((common_size, common_size), dtype=np.uint8)
+        mask_r = np.zeros((common_size, common_size), dtype=np.uint8)
 
-        diff = p2_centered - p1_centered  # oppure potremmo usare cv2.subtract()
+        cv2.drawContours(mask_l, [roi_l.get_local_contours()], 0, 255, -1)
+        cv2.drawContours(mask_r, [roi_r.get_local_contours()], 0, 255, -1)
+        common_mask = cv2.bitwise_and(mask_r, mask_r)
 
-        # Maschera circolare per escludere gli angoli
-        maschera = np.zeros((common_size, common_size), dtype=np.uint8)
-        cv2.circle(
-            maschera, (common_size // 2, common_size // 2), common_size // 2, 255, -1
-        )
-        m = maschera.astype(np.float32) / 255.0
+        # Applica la maschera sulle patch
+        patch_l = cv2.bitwise_and(patch_l, patch_l, mask=common_mask)
+        patch_r = cv2.bitwise_and(patch_r, patch_r, mask=common_mask)
 
-        if diff.ndim == 3:
-            m = m[:, :, np.newaxis]
+        diff = patch_r.astype(np.float32) - patch_l.astype(np.float32)
 
         # Scrittura del differenziale mascherato nella posizione originale del contorno "prima"
         cx_l, cy_l = roi_l.get_center()
         x0, y0 = cx_l - common_size // 2, cy_l - common_size // 2
-        output[y0 : y0 + common_size, x0 : x0 + common_size] = diff * m
+        output[y0 : y0 + common_size, x0 : x0 + common_size] = diff
 
     return np.clip(output, 0, 255).astype(np.uint8)
