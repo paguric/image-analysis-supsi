@@ -1,11 +1,12 @@
-let savedRoiPrima = null;
+let savedRoi = { prima: null, dopo: null };
 
-export const setTemporaryParametrization = (roiResponse) => {
-  savedRoiPrima = roiResponse;
+export const setTemporaryParametrization = (fase, roiResponse) => {
+  savedRoi[fase] = roiResponse;
 };
 
-export const getTemporaryParametrization = () => savedRoiPrima;
+export const getTemporaryParametrization = (fase) =>
+  fase ? savedRoi[fase] : { ...savedRoi };
 
 export const clearTemporaryParametrization = () => {
-  savedRoiPrima = null;
+  savedRoi = { prima: null, dopo: null };
 };

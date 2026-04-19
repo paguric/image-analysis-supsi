@@ -72,7 +72,8 @@ export function usePipelineParams(roiNumber) {
 
 
 
-                setTemporaryParametrization(firstImageNewAnalysis);
+                setTemporaryParametrization("prima", firstImageNewAnalysis);
+                setTemporaryParametrization("dopo", secondImageNewAnalysis);
                 
 
 

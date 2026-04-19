@@ -4,7 +4,7 @@ import { imageLoader } from './imageLoader';
 import { getPreprocessedROI, getPostprocessedROI, getDifferentialROI } from '../services/roiApi'
 
 
-export function useSingleRoiView(roiNumber, frameNumber) {
+export function useSingleRoiView(roiNumber, frameNumber, primaResponse = null, dopoResponse = null) {
 
     const [isBeforeLoading, setIsBeforeLoading] = useState(false);
     const [beforeImgUrl, setBeforeImgUrl] = useState(null);
@@ -28,7 +28,8 @@ export function useSingleRoiView(roiNumber, frameNumber) {
                         setImageUrl: setBeforeImgUrl,
                         imageGetter: getPreprocessedROI,
                         roiNumber,
-                        frameNumber
+                        frameNumber,
+                        response: primaResponse
                     }),
 
                     imageLoader({
@@ -37,7 +38,8 @@ export function useSingleRoiView(roiNumber, frameNumber) {
                         setImageUrl: setAfterImgUrl,
                         imageGetter: getPostprocessedROI,
                         roiNumber,
-                        frameNumber
+                        frameNumber,
+                        response: dopoResponse
                     }),
 
                     imageLoader({
@@ -64,7 +66,7 @@ export function useSingleRoiView(roiNumber, frameNumber) {
             if (diffImgUrl)    URL.revokeObjectURL(diffImgUrl);
         };
 
-    }, [roiNumber, frameNumber]);
+    }, [roiNumber, frameNumber, primaResponse, dopoResponse]);
 
     return {
         isBeforeLoading,
