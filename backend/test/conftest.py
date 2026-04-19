@@ -24,3 +24,13 @@ def total_frames(video_prima, video_dopo):
         video_metadata_service.get_video_info(video_prima)["total_frames"],
         video_metadata_service.get_video_info(video_dopo)["total_frames"],
     )
+
+
+@pytest.fixture
+def min_freq():
+    return 420
+
+
+@pytest.fixture
+def max_freq():
+    return 730
