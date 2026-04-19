@@ -7,6 +7,7 @@ from app.models.roi import Roi
 from app.models.enums import Analisi
 from app.schemas.roi import RoiResponse
 from app.repositories.roi_repo import RoiRepository
+from app.dependencies import RoiRepoDep
 
 
 def add_roi(repo: RoiRepository, roi: Roi):
@@ -159,9 +160,7 @@ def center_patch_on_canvas(patch: np.ndarray, canvas_size: int) -> np.ndarray:
     return canvas
 
 
-def compute_aligned_roi_diff(
-    roi_prima: list[Roi], roi_dopo: list[Roi], frame: int
-) -> np.ndarray:
+def compute_aligned_roi_diff(roi_repo: RoiRepoDep, frame: int) -> np.ndarray:
     """
     Calcola il differenziale tra le Roi corrispondenti di img_prima e img_dopo.
     I patch vengono estratti tramite cerchio minimo circoscritto, centrati
@@ -170,6 +169,9 @@ def compute_aligned_roi_diff(
     Nota: si assume che roi_prima e roi_dopo siano già allineate
           (stesso numero di elementi e stesso ordine dopo il matching).
     """
+    roi_prima = get_roi_list(roi_repo, Analisi.PRIMA)
+    roi_dopo = get_roi_list(roi_repo, Analisi.DOPO)
+
     if len(roi_prima) != len(roi_dopo):
         raise ValueError(
             "Le due liste di Roi devono avere la stessa lunghezza dopo il matching"

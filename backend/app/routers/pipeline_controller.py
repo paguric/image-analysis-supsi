@@ -144,15 +144,13 @@ async def analyze_local(
 
 
 @router.get("/diff/{frame}/")
-def get_diff(session: SessionDep, repo: RoiRepoDep, frame: int) -> StreamingResponse:
+def get_diff(
+    session: SessionDep, roi_repo: RoiRepoDep, frame: int
+) -> StreamingResponse:
     """
     Calcola il frame differenziale fra le due analisi.
     """
-
-    roi_prima = roi_service.get_roi_list(repo, Analisi.PRIMA)
-    roi_dopo = roi_service.get_roi_list(repo, Analisi.DOPO)
-
-    diff_frame = roi_service.compute_aligned_roi_diff(roi_prima, roi_dopo, frame)
+    diff_frame = roi_service.compute_aligned_roi_diff(roi_repo, frame)
 
     _, buffer = cv2.imencode(".jpg", diff_frame)
     io_buffer = io.BytesIO(buffer)
@@ -162,37 +160,39 @@ def get_diff(session: SessionDep, repo: RoiRepoDep, frame: int) -> StreamingResp
 
 @router.get("/diff/{frame}/contours/")
 def get_diff_with_contours(
-    session: SessionDep, repo: RoiRepoDep, frame: int
+    session: SessionDep, roi_repo: RoiRepoDep, frame: int
 ) -> StreamingResponse:
     """
     Calcola il frame differenziale, poi applica un overlay verde che permette di identificare le ROI sul differenziale fra le due analisi.
     L'overlay è calcolato come il minEnclosingCircle di raggio minimo fra le due patch.
     Viene aggiunto anche un indice per identificare le ROI.
     """
-
-    roi_prima = roi_service.get_roi_list(repo, Analisi.PRIMA)
-    roi_dopo = roi_service.get_roi_list(repo, Analisi.DOPO)
-
-    diff_frame = roi_service.compute_aligned_roi_diff(roi_prima, roi_dopo, frame)
+    diff_frame = roi_service.compute_aligned_roi_diff(roi_repo, frame)
+    roi_prima = roi_service.get_roi_list(roi_repo, Analisi.PRIMA)
+    roi_dopo = roi_service.get_roi_list(roi_repo, Analisi.DOPO)
 
     # Prende come riferimento per il centro le ROI del prima, coerentemente con roi_service.compute_aligned_roi_diff che ricompone il differenziale sui centri delle ROI del prima
-    for i, roi in enumerate(roi_prima):
+    for i, roi_l in enumerate(roi_prima):
         # Raggio minimo, coerente con calcolo differenziale sempre in roi_service.compute_aligned_roi_diff
         radius = (
             roi_service.get_min_size(
-                roi.get_pixels(frame), roi_dopo[i].get_pixels(frame)
+                roi_l.get_pixels(frame), roi_dopo[i].get_pixels(frame)
             )
             // 2
         )
 
         # Disegna il minEnclosingCircle sul frame differenziale
         draw_service.draw_circle(
-            diff_frame, roi.get_center(), radius=radius, color=(255, 0, 0), filled=False
+            diff_frame,
+            roi_l.get_center(),
+            radius=radius,
+            color=(255, 0, 0),
+            filled=False,
         )
 
         # Applica indice sull'angolo in alto a sx
-        x, y, w, h = cv2.boundingRect(roi.contours)
-        draw_service.draw_label(diff_frame, (roi.idx + 1), (x, y), (0, 255, 0), 0.8)
+        x, y, w, h = cv2.boundingRect(roi_l.contours)
+        draw_service.draw_label(diff_frame, (roi_l.idx + 1), (x, y), (0, 255, 0), 0.8)
 
     _, buffer = cv2.imencode(".jpg", diff_frame)
     io_buffer = io.BytesIO(buffer)
