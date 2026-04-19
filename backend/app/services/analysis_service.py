@@ -3,11 +3,12 @@ import csv
 from app.dependencies import RoiRepoDep
 from app.models.enums import Analisi
 from app.services.video_metadata_service import VideoReader
+from app.services import roi_service
 
 
 def compute_diff_csv(
     roi_repo: RoiRepoDep, min_freq: int, max_freq: int, total_frames: int
-):
+) -> list[list[str | float]]:
     roi_prima = roi_repo.list(Analisi.PRIMA)
     roi_dopo = roi_repo.list(Analisi.DOPO)
     freq_increment = (max_freq - min_freq) / total_frames
@@ -41,5 +42,14 @@ def compute_diff_csv(
             intensity_dopo, _, _, _ = roi_dopo[i].get_intensity_from_patch(patch_dopo)
 
             data[i + 1].append(intensity_dopo - intensity_prima)
+
+    return data
+
+
+def compute_diff_csv_pixels(roi_repo: RoiRepoDep, frame: int) -> list[list[float]]:
+    """
+    Restituisce un CSV dove vengono salvati i valori per ogni pixel dell'immagine differenziale fra le due analisi.
+    """
+    data = roi_service.compute_aligned_roi_diff(roi_repo, frame)
 
     return data
