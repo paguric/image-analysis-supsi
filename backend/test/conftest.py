@@ -1,15 +1,21 @@
+import os
 import pytest
 from app.services import video_metadata_service
 
 
 @pytest.fixture
-def video_prima():
-    return "/home/lapo225/università/as25-26-sp/prog-semestre/00_image_analysis_unict/dopo.avi"
+def pwd():
+    return os.path.dirname(os.path.realpath(__file__))
 
 
 @pytest.fixture
-def video_dopo():
-    return "/home/lapo225/università/as25-26-sp/prog-semestre/00_image_analysis_unict/prima.avi"
+def video_prima(pwd):
+    return os.path.join(pwd, "prima.avi")
+
+
+@pytest.fixture
+def video_dopo(pwd):
+    return os.path.join(pwd, "dopo.avi")
 
 
 @pytest.fixture

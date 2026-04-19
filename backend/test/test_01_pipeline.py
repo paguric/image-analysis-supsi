@@ -9,23 +9,32 @@ from app.schemas.roi import RoiResponse
 
 class TestPipelineController:
     @pytest.fixture(autouse=True)
-    def setup(self, video_prima, video_dopo, total_frames):
+    def setup(self, pwd, video_prima, video_dopo, total_frames):
         """
         Inizializza il client di test, imposta il percorso dei video da analizzare e crea le cartelle dove salvare
         i file di output per ogni test.
         """
         self.client = TestClient(app)
+
+        self.pwd = pwd
         self.video_prima = video_prima
         self.video_dopo = video_dopo
         self.total_frames = total_frames
 
-        os.makedirs("out", exist_ok=True)
-        os.makedirs("out/diff", exist_ok=True)
-        os.makedirs("out/roi", exist_ok=True)
-        os.makedirs("out/roi/prima", exist_ok=True)
-        os.makedirs("out/roi/dopo", exist_ok=True)
-        os.makedirs("out/roi/prima/steps", exist_ok=True)
-        os.makedirs("out/roi/dopo/steps", exist_ok=True)
+        base = os.path.join(pwd, "out")
+
+        folders = [
+            "",
+            "diff",
+            "roi",
+            "roi/prima",
+            "roi/dopo",
+            "roi/prima/steps",
+            "roi/dopo/steps",
+        ]
+
+        for folder in folders:
+            os.makedirs(os.path.join(base, folder), exist_ok=True)
 
         # Non capisco perchè, ma se genero una clip non trova più un paio di ROI
         return
@@ -135,9 +144,10 @@ class TestPipelineController:
         assert response.status_code == 200
         assert response.headers["content-type"] == "image/jpeg"
 
-        utils.save_image(
-            response.content, f"out/diff/diff_frame_{self.total_frames // 2}.jpg"
+        out_path = os.path.join(
+            self.pwd, f"out/diff/diff_frame_{self.total_frames // 2}.jpg"
         )
+        utils.save_image(response.content, out_path)
 
     def test_get_diff_with_contours(self):
         """
@@ -148,10 +158,10 @@ class TestPipelineController:
         assert response.status_code == 200
         assert response.headers["content-type"] == "image/jpeg"
 
-        utils.save_image(
-            response.content,
-            f"out/diff/diff_frame_{self.total_frames // 2}_contours.jpg",
+        out_path = os.path.join(
+            self.pwd, f"out/diff/diff_frame_{self.total_frames // 2}_contours.jpg"
         )
+        utils.save_image(response.content, out_path)
 
     def test_get_roi_prima_steps(self):
         """
@@ -176,9 +186,10 @@ class TestPipelineController:
             assert response.status_code == 200
             assert response.headers["content-type"] == "image/jpeg"
 
-            utils.save_image(
-                response.content, f"out/roi/prima/steps/roi_10_prima_step_{i}.jpg"
+            out_path = os.path.join(
+                self.pwd, f"out/roi/prima/steps/roi_10_prima_step_{i}.jpg"
             )
+            utils.save_image(response.content, out_path)
 
     def test_get_roi_dopo_steps(self):
         """
@@ -204,9 +215,10 @@ class TestPipelineController:
             assert response.status_code == 200
             assert response.headers["content-type"] == "image/jpeg"
 
-            utils.save_image(
-                response.content, f"out/roi/dopo/steps/roi_10_prima_step_{i}.jpg"
+            out_path = os.path.join(
+                self.pwd, f"out/roi/dopo/steps/roi_10_prima_step_{i}.jpg"
             )
+            utils.save_image(response.content, out_path)
 
     def test_roi_analyzer(self):
         """

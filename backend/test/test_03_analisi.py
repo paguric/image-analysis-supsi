@@ -16,7 +16,7 @@ class TestAnalysisController:
         self.video_dopo = video_dopo
         self.total_frames = total_frames
 
-    @pytest.mark.skip(reason="")
+    @pytest.mark.skip(reason="Impiega troppo tempo.")
     def test_csv(self):
         """
         Verifica /analysis/diff/results/{min_freq}/{max_freq}/ (calcolo CSV globale).

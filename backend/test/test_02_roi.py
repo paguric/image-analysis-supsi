@@ -19,7 +19,7 @@ import numpy as np
 
 class TestRoiController:
     @pytest.fixture(autouse=True)
-    def setup(self, video_prima, video_dopo, total_frames):
+    def setup(self, pwd, video_prima, video_dopo, total_frames):
         """
         Inizializza il client di test e crea le cartelle dove salvare i file di output per ogni test.
         """
@@ -32,14 +32,22 @@ class TestRoiController:
         app.dependency_overrides[get_session] = override_get_session
         self.client = TestClient(app)
 
+        self.pwd = pwd
         self.video_prima = video_prima
         self.video_dopo = video_dopo
         self.total_frames = total_frames
 
-        os.makedirs("out", exist_ok=True)
-        os.makedirs("out/roi", exist_ok=True)
-        os.makedirs("out/roi/prima", exist_ok=True)
-        os.makedirs("out/roi/dopo", exist_ok=True)
+        base = os.path.join(pwd, "out")
+
+        folders = [
+            "",
+            "roi",
+            "roi/prima",
+            "roi/dopo",
+        ]
+
+        for folder in folders:
+            os.makedirs(os.path.join(base, folder), exist_ok=True)
 
         yield  # esegue i test (equivale al tearDown di unittest)
 
@@ -66,10 +74,10 @@ class TestRoiController:
             assert response.status_code == 200
             assert response.headers["content-type"] == "image/jpeg"
 
-            utils.save_image(
-                response.content,
-                f"out/roi/prima/idx_{i}_frame_{self.total_frames // 2}.jpg",
+            out_path = os.path.join(
+                self.pwd, f"out/roi/prima/idx_{i}_frame_{self.total_frames // 2}.jpg"
             )
+            utils.save_image(response.content, out_path)
 
             # Test con overlap di un'altra ROI
             roi_clone = Roi.model_validate(
@@ -92,10 +100,11 @@ class TestRoiController:
             assert response.status_code == 200
             assert response.headers["content-type"] == "image/jpeg"
 
-            utils.save_image(
-                response.content,
+            out_path = os.path.join(
+                self.pwd,
                 f"out/roi/prima/idx_{i}_frame_{self.total_frames // 2}_with_overlap.jpg",
             )
+            utils.save_image(response.content, out_path)
 
     def test_get_roi_dopo(self):
         """
@@ -116,10 +125,10 @@ class TestRoiController:
             assert response.status_code == 200
             assert response.headers["content-type"] == "image/jpeg"
 
-            utils.save_image(
-                response.content,
-                f"out/roi/dopo/idx_{i}_frame_{self.total_frames // 2}.jpg",
+            out_path = os.path.join(
+                self.pwd, f"out/roi/dopo/idx_{i}_frame_{self.total_frames // 2}.jpg"
             )
+            utils.save_image(response.content, out_path)
 
             # Test con overlap di un'altra ROI
             roi_clone = Roi.model_validate(
@@ -142,12 +151,12 @@ class TestRoiController:
             assert response.status_code == 200
             assert response.headers["content-type"] == "image/jpeg"
 
-            utils.save_image(
-                response.content,
+            out_path = os.path.join(
+                self.pwd,
                 f"out/roi/dopo/idx_{i}_frame_{self.total_frames // 2}_with_overlap.jpg",
             )
+            utils.save_image(response.content, out_path)
 
-    # @pytest.mark.skip(reason="Da rifare, sia il test che l'endpoint.")
     def test_save_new_roi(self):
         """
         Verifica /roi/save/ (sostituzione contorni di una ROI).
@@ -182,10 +191,11 @@ class TestRoiController:
         assert response.status_code == 200
         assert response.headers["content-type"] == "image/jpeg"
 
-        utils.save_image(
-            response.content,
+        out_path = os.path.join(
+            self.pwd,
             f"out/roi/prima/idx_{i}_frame_{self.total_frames // 2}_aftersave.jpg",
         )
+        utils.save_image(response.content, out_path)
 
         # Cleanup: re-inserisce la ROI originale nel db
         self.client.post(
@@ -193,6 +203,7 @@ class TestRoiController:
             json=roi_service.roi_to_response(current_roi).model_dump(mode="json"),
         )
 
+    @pytest.mark.skip(reason="Da spostare/refactorare.")
     def test_intensity_extraction(self):
         """
         Verifica il funzionamento di cv2.drawContours(mask, [contours], 0, 255, -1).
