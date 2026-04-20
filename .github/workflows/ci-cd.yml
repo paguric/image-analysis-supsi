@@ -49,6 +49,9 @@ jobs:
       #   run: |
       #     cd backend
       #     uv run pytest --junitxml=test-results.xml --cov=src --cov-report=xml
+      # - name: Build MkDocs site and PDF
+      #   run: uv run mkdocs build
+
 
       - name: Upload artifact test backend e coverage backend
         # Il job fallirà se pytest fallisce, ma questo step caricherà comunque i log
@@ -75,8 +78,42 @@ jobs:
             !backend/.pytest_cache/
           retention-days: 7
 
+#  JOB DOCUMENTAZIONE 
+  docs:
+    runs-on: ubuntu-latest
+    needs: backend
 
+    steps:
+      - name: Checkout codice
+        uses: actions/checkout@v6
 
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Installa dipendenze per la documentazione
+        run: |
+          cd backend
+          uv sync --extra docs
+
+      - name: Build MkDocs site + PDF
+        run: |
+          cd backend
+          uv run mkdocs build --strict
+
+      - name: Upload PDF Documentation as artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: Image-Analysis-Documentation-PDF
+          path: backend/site/pdf/image-analysis_documentation.pdf
+          if-no-files-found: error
+          retention-days: 7
 
 
 
