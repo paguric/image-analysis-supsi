@@ -268,3 +268,4 @@ backend/app/testing/valori_paper/
 backend/database.db
 database.db
 backend/test/out/
+backend/site/
