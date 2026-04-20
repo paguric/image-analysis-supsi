@@ -162,9 +162,8 @@ def center_patch_on_canvas(patch: np.ndarray, canvas_size: int) -> np.ndarray:
 
 def compute_aligned_roi_diff(roi_repo: RoiRepoDep, frame: int) -> np.ndarray:
     """
-    Calcola il differenziale tra le Roi corrispondenti di img_prima e img_dopo.
-    I patch vengono estratti tramite cerchio minimo circoscritto, centrati
-    sui rispettivi contorni, e sottratti pixel per pixel dentro una maschera circolare.
+    Calcola il differenziale sulla regione comune tra Roi corrispondenti.
+    Restituisce un frame in scala di grigi con dtype uint8.
 
     Nota: si assume che roi_prima e roi_dopo siano già allineate
           (stesso numero di elementi e stesso ordine dopo il matching).
@@ -177,20 +176,26 @@ def compute_aligned_roi_diff(roi_repo: RoiRepoDep, frame: int) -> np.ndarray:
             "Le due liste di Roi devono avere la stessa lunghezza dopo il matching"
         )
 
-    output = np.zeros_like(
-        video_metadata_service.extract_frame(roi_prima[0].video_path, frame),
-        dtype=np.float32,
-    )
+    frame_img = video_metadata_service.extract_frame(roi_prima[0].video_path, frame)
+    # Lavora direttamente su frame in grayscale (1 canale), in modo da creare una matrice 2D
+    gray_frame = cv2.cvtColor(frame_img, cv2.COLOR_BGR2GRAY)
+    # float32 per calcolare la differenza senza overflow
+    output = np.zeros_like(gray_frame, dtype=np.float32)
 
     for roi_l, roi_r in zip(roi_prima, roi_dopo):
         patch_l = roi_l.get_pixels(frame)
         patch_r = roi_r.get_pixels(frame)
 
+        # Converte le patch in grayscale (1 canale)
+        patch_l = cv2.cvtColor(patch_l, cv2.COLOR_BGR2GRAY)
+        patch_r = cv2.cvtColor(patch_r, cv2.COLOR_BGR2GRAY)
+
         common_size = get_common_size(patch_l, patch_r)
         patch_l = center_patch_on_canvas(patch_l, common_size)
         patch_r = center_patch_on_canvas(patch_r, common_size)
 
-        ## Calcola maschera con regione comune per le due aree
+        # Calcola maschera con regione comune per le due aree
+        # uint8 è richiesto da drawContours e bitwise_and
         mask_l = np.zeros((common_size, common_size), dtype=np.uint8)
         mask_r = np.zeros((common_size, common_size), dtype=np.uint8)
 
@@ -202,11 +207,13 @@ def compute_aligned_roi_diff(roi_repo: RoiRepoDep, frame: int) -> np.ndarray:
         patch_l = cv2.bitwise_and(patch_l, patch_l, mask=common_mask)
         patch_r = cv2.bitwise_and(patch_r, patch_r, mask=common_mask)
 
+        # Converte in float32 per non incorrere in overflow
         diff = patch_r.astype(np.float32) - patch_l.astype(np.float32)
 
-        # Scrittura del differenziale mascherato nella posizione originale del contorno "prima"
+        # Scrive il differenziale mascherato nella posizione originale del contorno "prima"
         cx_l, cy_l = roi_l.get_center()
         x0, y0 = cx_l - common_size // 2, cy_l - common_size // 2
         output[y0 : y0 + common_size, x0 : x0 + common_size] = diff
 
+    # Riconverte a uint8. come l'immagine originale
     return np.clip(output, 0, 255).astype(np.uint8)
