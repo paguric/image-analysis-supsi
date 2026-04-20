@@ -196,7 +196,7 @@ def compute_aligned_roi_diff(roi_repo: RoiRepoDep, frame: int) -> np.ndarray:
 
         cv2.drawContours(mask_l, [roi_l.get_local_contours()], 0, 255, -1)
         cv2.drawContours(mask_r, [roi_r.get_local_contours()], 0, 255, -1)
-        common_mask = cv2.bitwise_and(mask_r, mask_r)
+        common_mask = cv2.bitwise_and(mask_l, mask_r)
 
         # Applica la maschera sulle patch
         patch_l = cv2.bitwise_and(patch_l, patch_l, mask=common_mask)
