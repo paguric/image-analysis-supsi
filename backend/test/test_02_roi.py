@@ -198,7 +198,7 @@ class TestRoiController:
             img_bytes = buffer.tobytes()
             utils.save_image(img_bytes, out_path)
 
-            common_mask = cv2.bitwise_and(mask_r, mask_r)
+            common_mask = cv2.bitwise_and(mask_l, mask_r)
 
             # Debug manuale
             out_path = os.path.join(
