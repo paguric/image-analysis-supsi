@@ -105,6 +105,6 @@ def export_csv(roi_repo: RoiRepoDep, frame: int):
         return {"success": False, "cancelled": True}
 
     csv_data = np.asarray(analysis_service.compute_diff_csv_pixels(roi_repo, frame))
-    np.savetxt(file_path, csv_data, delimiter=",", fmt="%.5f")
+    np.savetxt(file_path, csv_data, delimiter=",", fmt="%d")
 
     return {"success": True, "path": file_path, "cancelled": False}
