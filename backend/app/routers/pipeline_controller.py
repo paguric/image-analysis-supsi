@@ -168,6 +168,8 @@ def get_diff_with_contours(
     Viene aggiunto anche un indice per identificare le ROI.
     """
     diff_frame = roi_service.compute_aligned_roi_diff(roi_repo, frame)
+    # Riconverte diff_frame in immagine a colori con 3 canali per pixel, in modo da disegnare correttamente i bordi colorati
+    diff_frame = cv2.cvtColor(diff_frame, cv2.COLOR_GRAY2BGR)
     roi_prima = roi_service.get_roi_list(roi_repo, Analisi.PRIMA)
     roi_dopo = roi_service.get_roi_list(roi_repo, Analisi.DOPO)
 
