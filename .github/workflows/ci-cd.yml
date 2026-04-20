@@ -100,7 +100,7 @@ jobs:
       - name: Installa dipendenze per la documentazione
         run: |
           cd backend
-          uv sync --group docs
+          uv sync --extra docs
 
       - name: Build MkDocs site + PDF
         run: |
