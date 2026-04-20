@@ -1,5 +1,6 @@
 import os
 import csv
+import numpy as np
 import tkinter as tk
 from tkinter import filedialog
 from app.db import database
@@ -103,9 +104,7 @@ def export_csv(roi_repo: RoiRepoDep, frame: int):
     if not file_path:  # annullato
         return {"success": False, "cancelled": True}
 
-    csv_data = "None"  # TODO sostituire con analysis_service.compute_diff_csv_pixels(roi_repo, frame)
-
-    with open(file_path, "w", newline="") as f:
-        f.write(csv_data)
+    csv_data = np.asarray(analysis_service.compute_diff_csv_pixels(roi_repo, frame))
+    np.savetxt(file_path, csv_data, delimiter=",", fmt="%.5f")
 
     return {"success": True, "path": file_path, "cancelled": False}
