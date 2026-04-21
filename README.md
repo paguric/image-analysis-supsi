@@ -21,3 +21,34 @@
 | uv      | Latest   | [docs.astral.sh/uv](https://docs.astral.sh/uv/getting-started/installation/) |
 | Node.js | 18+      | [nodejs.org](https://nodejs.org/)                                            |
 | npm     | 9+       | Installato assieme a Node.js                                                 |
+
+
+## Quick Start
+
+### 1. Clona la repository
+
+```bash
+git clone 
+cd
+```
+
+### 2. Avvia il backend
+
+```bash
+cd backend
+uv sync                      # Installa dipendenze Python
+uv run fastapi dev main.py   # Avvia server FastAPI
+```
+
+L'API sarà disponibile all'indirizzo **http://localhost:8000**
+La documentazione generata automaticamente si trova all'indirizzo **http://localhost:8000/docs**
+
+### 3. Avvia il frontend (da un altro terminale)
+
+```bash
+cd frontend
+npm install                  # Installa dipendenze Node
+npm run dev                  # Avvia server Vite
+```
+
+Potrai accedere all'app all'indirizzo  **http://localhost:5173**
