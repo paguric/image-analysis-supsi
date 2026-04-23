@@ -3,16 +3,18 @@ import { BASE_URL } from  '../constants/BaseUrl'
 
 
 /**
- * @description Crea un collegamento con il backend
+ * @description Axios instance pre-configured with the application base URL.
  */
 const api = axios.create({ baseURL: BASE_URL });
 
 
 /**
- * @description Function that manages the images retrieved from the backend 
- * @param {*} url The URL to the backend method endpoint
- * @param {*} options 
- * @returns Restituisce in url per utilizzare l'immagine
+ * @description Fetches a resource from the backend and returns a temporary object URL
+ * pointing to the received Blob. Throws a descriptive error if the response is not OK.
+ *
+ * @param {string} url - The backend endpoint URL.
+ * @param {RequestInit} [options={}] - Optional fetch options (method, headers, body, etc.).
+ * @returns {Promise<string>} A temporary object URL usable as an image `src`.
  */
 export async function fetchImage(url, options = {}) {
   const res = await fetch(url, options);
@@ -21,15 +23,17 @@ export async function fetchImage(url, options = {}) {
     const detail = Array.isArray(err.detail)
       ? err.detail.map(e => `${e.loc?.join(".")} — ${e.msg}`).join(", ")
       : (err.detail ?? `HTTP ${res.status}`);
-    throw new Error(detail); 
+    throw new Error(detail);
   }
   const blob = await res.blob();
   return URL.createObjectURL(blob);
 }
 
 /**
- * @description This function allows to wait a certaing amount of time before executing the next line 
- * @param {*} ms The amount of time you want to wait (in milliseconds)
+ * @description Returns a Promise that resolves after the specified number of milliseconds.
+ *
+ * @param {number} ms - Duration to wait in milliseconds.
+ * @returns {Promise<void>}
  */
 export const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 

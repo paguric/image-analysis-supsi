@@ -3,8 +3,10 @@ import { clearTemporaryParametrization } from './temporaryParameters'
 
 
 /**
- * @description This function triggers the clear database function
- * in the backend and the clear of the temporary analysis parametrization.
+ * @description Triggers the reset endpoint on the backend to clear all analysis data,
+ * then clears the temporary analysis parametrization stored in memory.
+ *
+ * @returns {Promise<void>}
  */
 export async function clearDataBase() {
     const response = await fetch(`${BASE_URL}/analysis/reset/`, {
@@ -19,9 +21,11 @@ export async function clearDataBase() {
 }
 
 /**
- * @description Function to handle the csv export response 
- * @param {*} response takes the response returned from the backend call
- * @returns returns the analyzed result from the backend call
+ * @description Handles a backend export response: throws on HTTP error, returns
+ * `{ success: false }` if the export was cancelled by the user, otherwise returns the parsed JSON result.
+ *
+ * @param {Response} response - The fetch Response object returned from the backend.
+ * @returns {Promise<{success: false}|object>} The export result or a cancellation indicator.
  */
 async function handleExportResponse(response) {
     if (!response.ok) {
@@ -39,9 +43,10 @@ async function handleExportResponse(response) {
 }
 
 /**
- * @description Function to handle the pixel-by-pixel, single frame CSV export
- * @param {*} frameToExport takes as parameter the frame you want to export
- * @returns returns the analyzed result from the backend call
+ * @description Exports a pixel-by-pixel differential analysis of a single frame to CSV.
+ *
+ * @param {number} frameToExport - The frame index to export.
+ * @returns {Promise<{success: false}|object>} The export result or a cancellation indicator.
  */
 export async function exportFrameToCSV(frameToExport) {
     const response = await fetch(`${BASE_URL}/analysis/export-csv/diff/frame/${frameToExport}/pixels/`);
@@ -50,10 +55,11 @@ export async function exportFrameToCSV(frameToExport) {
 
 
 /**
- * @description Function to handle the global CSV export
- * @param {*} minWavelength the starting wavelength
- * @param {*} maxWavelength the final wavelength
- * @returns returns the analyzed result from the backend call
+ * @description Exports the global differential analysis results filtered by wavelength range to CSV.
+ *
+ * @param {number} minWavelength - The lower bound of the wavelength range.
+ * @param {number} maxWavelength - The upper bound of the wavelength range.
+ * @returns {Promise<{success: false}|object>} The export result or a cancellation indicator.
  */
 export async function exportGlobalToCSV(minWavelength, maxWavelength) {
     const response = await fetch(`${BASE_URL}/analysis/diff/results/${minWavelength}/${maxWavelength}/`);
