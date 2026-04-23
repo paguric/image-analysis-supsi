@@ -7,7 +7,7 @@ theme:
 
 nav:
   - Backend: references.md
-  - Frontend: frontend/service.md
+  - Frontend: frontend/api.md
 
 
 plugins:
@@ -15,7 +15,7 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
-          paths: [backend/app]
+          paths: [backend]
           options:
             docstring_style: google
             show_source: true
