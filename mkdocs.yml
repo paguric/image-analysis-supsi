@@ -5,11 +5,17 @@ copyright: ""
 theme:
   name: material
 
+nav:
+  - Backend: references.md
+  - Frontend: frontend/service.md
+
+
 plugins:
   - search
   - mkdocstrings:
       handlers:
         python:
+          paths: [backend/app]
           options:
             docstring_style: google
             show_source: true
