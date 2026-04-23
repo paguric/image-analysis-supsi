@@ -92,7 +92,7 @@ async function saveOne(payload) {
 
 /**
  * @description Saves the current temporary ROI parametrization (before and/or after stages) to the backend.
- * Reads the temporary state via {@link getTemporaryParametrization} and persists
+ * Reads the temporary state via `getTemporaryParametrization` and persists
  * whichever stages are defined. Both saves run in parallel via `Promise.all`.
  *
  * @returns {Promise<boolean>} `true` if at least one stage was saved, `false` if nothing to save.
