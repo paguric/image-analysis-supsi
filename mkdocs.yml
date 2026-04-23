@@ -32,5 +32,3 @@ plugins:
       cover_subtitle: ""
       author: ""
       copyright: "© 2026 Image Analysis"
-      exclude_pages:
-        - 'frontend/api'

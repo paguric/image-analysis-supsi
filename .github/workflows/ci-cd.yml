@@ -140,7 +140,7 @@ jobs:
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
-      # Genera il markdown dal frontend (jsdoc2md legge le JSDoc)
+      # Genera il markdown dal frontend
       - name: Genera docs frontend da JSDoc
         run: |
           cd frontend
