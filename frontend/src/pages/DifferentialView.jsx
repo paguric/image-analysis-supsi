@@ -3,6 +3,8 @@ import { ImgBox } from '../components/ImgBox';
 import DifferentialViewButtonGroup from '../components/DifferentialViewButtonGroup'
 import DiscreteSlider from '../components/DiscreteSlider';
 import CircularIndeterminate from '../components/CircularIndeterminate';
+import DarkModeToggle from '../components/DarkModeToggle';
+import InfoPopupWindow from '../components/InfoPopupWindow';
 
 import { useDifferentialView } from '../hooks/DifferentialViewSetup'
 import { useParams } from 'react-router-dom';
@@ -48,8 +50,12 @@ function DifferentialView() {
             {/* colonna sinistra */}
             <div className="w-1/5 border-r border-gray-200 dark:border-gray-700 flex flex-col">
 
-                <div className="p-4 border-b dark:border-gray-700 font-medium text-gray-700 dark:text-gray-200">
-                    <div className="flex justify-center">
+                <div className="py-1 px-2 border-b dark:border-gray-700 flex items-center">
+                    <div className="flex items-center shrink-0">
+                        <DarkModeToggle />
+                        <InfoPopupWindow title="differential_view_title" description="differential_description" />
+                    </div>
+                    <div className="flex-1 text-center font-medium text-gray-700 dark:text-black pr-16">
                         ROIs List
                     </div>
                 </div>
@@ -123,7 +129,7 @@ function DifferentialView() {
                                 }, 150);
                             }}
                         />
-                        <div className="text-center text-sm text-gray-600 dark:text-gray-400">
+                        <div className="text-center text-sm text-gray-600 dark:text-black">
                             <p>Current Frame: <strong>{currentFrame}</strong></p>
                             <p>Current Wavelength: <strong>{Number(currentWavelength).toFixed(2)} nm</strong></p>
                         </div>

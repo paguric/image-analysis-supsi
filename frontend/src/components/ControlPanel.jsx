@@ -13,7 +13,8 @@ function ControlPanel({
     onFrameChange,
     onRoiChange,
     onParamsChange,
-    totalFrameCount
+    totalFrameCount,
+    totalRoiCount
 
 }) {
 
@@ -32,16 +33,16 @@ function ControlPanel({
             <NumberSpinnerBox
                 name={`Actual ROI`}
                 min={1}
+                max={isNaN(Number(totalRoiCount)) ? undefined : Number(totalRoiCount)}
                 defaultValue={isNaN(Number(actualRoi)) ? 1 : (Number(actualRoi) + Number(1))}
                 step={1}
                 onChange={onRoiChange}
-
             />
 
-
             <NumberSpinnerBox
-                name={`Actual Frame (max allowed: ${totalFrameCount})`}
+                name={`Actual Frame`}
                 min={0}
+                max={isNaN(Number(totalFrameCount)) ? undefined : Number(totalFrameCount)}
                 defaultValue={isNaN(Number(actualFrame)) ? 0 : Number(actualFrame)}
                 step={1}
                 onChange={onFrameChange}

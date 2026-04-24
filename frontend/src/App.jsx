@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import Home from './pages/Home'
 import SingleRoiView from './pages/SingleRoiView'
 import DifferentialView from './pages/DifferentialView'
@@ -8,13 +8,17 @@ import { useInfoPopup } from './context/ThemeContext'
 
 function App() {
   const { infoProps } = useInfoPopup()
+  const location = useLocation()
+  const showOverlay = location.pathname === '/'
 
   return (
     <>
-      <div style={{ position: 'fixed', top: 7, left: 12, zIndex: 9999, display: 'flex', alignItems: 'center', gap: 4 }}>
-        <DarkModeToggle />
-        {infoProps && <InfoPopupWindow title={infoProps.title} description={infoProps.description} />}
-      </div>
+      {showOverlay && (
+        <div style={{ position: 'fixed', top: 7, left: 12, zIndex: 9999, display: 'flex', alignItems: 'center', gap: 4 }}>
+          <DarkModeToggle />
+          {infoProps && <InfoPopupWindow title={infoProps.title} description={infoProps.description} />}
+        </div>
+      )}
       <Routes>
         <Route path="/" element={<Home/>}/>
         <Route path="/differential-view/:startingWaveLenght/:finalWaveLenght/:totalFrameCount/:actualFrame" element={<DifferentialView/>}/>

@@ -6,20 +6,15 @@ export function useHandleFrameChange({ roiNumber, startingWaveLenght, finalWaveL
     const debounceTimer = useRef(null);
 
     const handleFrameChange = (newFrame) => {
-        if (debounceTimer.current) {
-            clearTimeout(debounceTimer.current);
-        }
+        if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
-        if (newFrame > totalFrameCount) {
-            debounceTimer.current = setTimeout(() => {
-                setFrameCountError(true);
-                navigate(`/single-roi-view/${roiNumber}/${totalRoiCount}/${totalFrameCount}/${totalFrameCount}/${startingWaveLenght}/${finalWaveLenght}`, { replace: true });
-            }, 180);
-            return;  
-        }
+        const clampedFrame = Math.min(Number(newFrame), Number(totalFrameCount));
 
         debounceTimer.current = setTimeout(() => {
-            navigate(`/single-roi-view/${roiNumber}/${totalRoiCount}/${newFrame-1}/${totalFrameCount}/${startingWaveLenght}/${finalWaveLenght}`, { replace: true });
+            navigate(
+                `/single-roi-view/${roiNumber}/${totalRoiCount}/${clampedFrame - 1}/${totalFrameCount}/${startingWaveLenght}/${finalWaveLenght}`,
+                { replace: true }
+            );
         }, 180);
     };
 

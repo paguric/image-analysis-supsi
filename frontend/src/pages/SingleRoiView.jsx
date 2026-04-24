@@ -1,6 +1,8 @@
 import ControlPanel from '../components/ControlPanel';
 import { ImgBox } from '../components/ImgBox';
 import { useParams, useNavigate } from 'react-router-dom';
+import DarkModeToggle from '../components/DarkModeToggle';
+import InfoPopupWindow from '../components/InfoPopupWindow';
 import { useSingleRoiView } from '../hooks/SingleRoiViewSetup';
 import ImageGrid from '../components/ImageGrid';
 import CircularIndeterminate from '../components/CircularIndeterminate';
@@ -72,11 +74,17 @@ function SingleRoiView() {
             {/* Colonna sinistra */}
             <div className="w-1/4 p-6 border-r dark:border-gray-700 overflow-y-auto">
                 <div className="mb-6">
-                    <p className="text-center font-bold text-3xl mb-1 dark:text-gray-100">
-                        ROI #{Number(roiNumber) + Number(1)}
-                    </p>
+                    <div className="flex items-center mb-1">
+                        <div className="flex items-center shrink-0">
+                            <DarkModeToggle />
+                            <InfoPopupWindow title="single_roi_view_title" description="single_roi_view_description" />
+                        </div>
+                        <p className="flex-1 text-center font-bold text-3xl text-gray-100 dark:text-black pr-14">
+                            ROI #{Number(roiNumber) + Number(1)}
+                        </p>
+                    </div>
 
-                    <p className="text-center text-gray-600 dark:text-gray-400">
+                    <p className="text-center text-gray-600 dark:text-black">
                         Current Wavelength: <strong>{isNaN(currentWavelength) ? '-' : `${Number(currentWavelength).toFixed(2)} nm`}</strong>
                     </p>
                 </div>
@@ -91,6 +99,7 @@ function SingleRoiView() {
                     onRoiChange={handleRoiChange}
                     onParamsChange={setParams}
                     totalFrameCount={totalFrameCount}
+                    totalRoiCount={totalRoiCount}
                 />
 
             </div>

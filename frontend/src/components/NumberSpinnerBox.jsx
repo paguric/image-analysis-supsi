@@ -1,11 +1,12 @@
 import Box from '@mui/material/Box';
 import NumberSpinner from './NumberSpinner';
 
-function NumberSpinnerBox({ 
-  name, 
-  min, 
-  defaultValue, 
-  step = 1, 
+function NumberSpinnerBox({
+  name,
+  min,
+  max,
+  defaultValue,
+  step = 1,
   onChange,
   error = false,
   odd = false
@@ -18,11 +19,12 @@ function NumberSpinnerBox({
         gap: 1,
       }}
     >
-      <NumberSpinner 
-        label={name} 
-        min={min} 
-        defaultValue={defaultValue} 
-        step={step} 
+      <NumberSpinner
+        label={name}
+        min={min}
+        max={max}
+        defaultValue={defaultValue}
+        step={step}
         size="small"
         onValueChange={onChange}
         error={error}
