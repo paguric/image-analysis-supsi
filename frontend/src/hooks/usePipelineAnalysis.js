@@ -19,12 +19,16 @@ export function usePipelineAnalysis() {
         }
 
         setLoading(true);
-        const formData = new FormData();
-        formData.append('video_prima', videoPrima);
-        formData.append('video_dopo', videoDopo);
 
         try {
-            await api.post('/pipeline/', formData);
+            if (typeof videoPrima === 'string') {
+                await api.post('/pipeline/local/', { video_prima: videoPrima, video_dopo: videoDopo });
+            } else {
+                const formData = new FormData();
+                formData.append('video_prima', videoPrima);
+                formData.append('video_dopo', videoDopo);
+                await api.post('/pipeline/', formData);
+            }
             setAnalysisReady(true);
 
             const data = await getNumberOfFrames();
