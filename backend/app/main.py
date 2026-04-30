@@ -14,6 +14,18 @@ from fastapi.responses import FileResponse
 from app.bootstrapper import bootstrap
 
 
+class Api:
+    def open_file_dialog(self):
+        result = webview.windows[0].create_file_dialog(
+            webview.OPEN_DIALOG,
+            allow_multiple=False,
+            file_types=('Video files (*.avi;*.mp4;*.mkv)', 'All files (*.*)')
+        )
+        if result and len(result) > 0:
+            return result[0]
+        return None
+
+
 app = FastAPI()
 
 app.add_middleware(
@@ -91,6 +103,7 @@ if __name__ == "__main__":
         width=1200,
         height=800,
         resizable=True,
+        js_api=Api(),
     )
     # Apre effettivamente la finestra e la mantiene aperta
     webview.start()

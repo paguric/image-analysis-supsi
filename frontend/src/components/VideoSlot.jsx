@@ -23,7 +23,7 @@ function VideoSlot({ deletable, titolo, fileSelezionato, setFileSelezionato, vid
               &times;
             </span>
           )}
-          <p>File: <strong>{fileSelezionato.name}</strong></p>
+          <p>File: <strong>{typeof fileSelezionato === 'string' ? fileSelezionato.split(/[/\\]/).pop() : fileSelezionato.name}</strong></p>
         </div>
       ) : (
         <VideoUploader onVideoSelected={setFileSelezionato} />
