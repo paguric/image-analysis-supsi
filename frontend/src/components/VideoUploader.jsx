@@ -29,7 +29,7 @@ function VideoUploader({ onVideoSelected }) {
         onClick={handleDesktopClick}
         className="border-2 border-dashed rounded-lg p-5 text-center cursor-pointer transition-all duration-200 bg-white/5 border-[#666] text-[#aaa] hover:border-[#888] hover:bg-white/10"
       >
-        <p className="m-0 text-sm">Clicca per selezionare il video (.avi, .mp4, .mkv)</p>
+        <p className="m-0 text-sm">Click to select the video to upload (.avi, .mp4, .mkv)</p>
       </div>
     )
   }
