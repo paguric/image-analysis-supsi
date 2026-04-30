@@ -26,6 +26,7 @@ from fastapi.responses import StreamingResponse
 
 from sqlmodel import select
 
+from app.bootstrapper import get_out_dir
 
 router = APIRouter(prefix="/pipeline")
 
@@ -56,10 +57,10 @@ async def analyze(
     prima_bytes = await video_prima.read()
     dopo_bytes = await video_dopo.read()
 
-    output_dir = get_output_dir()
-    os.makedirs(output_dir, exist_ok=True)
-    prima_avi_path = os.path.join(output_dir, "prima.avi")
-    dopo_avi_path = os.path.join(output_dir, "dopo.avi")
+    output_dir = get_out_dir()
+    output_dir.mkdir(exist_ok=True)
+    prima_avi_path = str(output_dir / "prima.avi")
+    dopo_avi_path = str(output_dir / "dopo.avi")
 
     # Salva i file caricati
     with open(prima_avi_path, "wb") as f:
