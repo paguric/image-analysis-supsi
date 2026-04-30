@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 
-export default function MaterialNumberField({ label, color, onChange }) {
+export default function MaterialNumberField({ label, color, onChange, error, helperText }) {
   const [value, setValue] = useState('');
 
   const handleKeyDown = (e) => {
@@ -18,7 +18,7 @@ export default function MaterialNumberField({ label, color, onChange }) {
       newValue = 0;
 
     setValue(newValue);
-    onChange?.(Number(newValue));
+    onChange?.(newValue === '' ? null : Number(newValue));
   };
 
   return (
@@ -28,7 +28,6 @@ export default function MaterialNumberField({ label, color, onChange }) {
       noValidate
       autoComplete="off"
     >
-
       <TextField
         label={label}
         color={color}
@@ -37,9 +36,9 @@ export default function MaterialNumberField({ label, color, onChange }) {
         value={value}
         onKeyDown={handleKeyDown}
         onChange={handleChange}
+        error={error}
+        helperText={helperText}
       />
-
-
     </Box>
   );
 }

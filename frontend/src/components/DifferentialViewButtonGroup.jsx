@@ -22,16 +22,16 @@ function DifferentialViewButtonGroup({ showContours,
 
             <Button
                 onClick={onGlobalCsvExport}
-                disabled={isExportingGlobal}
+                loading={isExportingGlobal}
             >
-                {isExportingGlobal ? 'Exporting...' : 'Export CSV (Global)'}
+                Export CSV (Global)
             </Button>
 
             <Button
                 onClick={onFrameCsvExport}
-                disabled={isExportingFrame}
+                loading={isExportingFrame}
             >
-                {isExportingFrame ? 'Exporting...' : 'Export Frame CSV (Pixel by Pixel)'}
+                Export Frame CSV (Pixel by Pixel)
             </Button>
 
         </ButtonGroup>

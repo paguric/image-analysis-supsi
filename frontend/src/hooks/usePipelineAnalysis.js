@@ -53,6 +53,16 @@ export function usePipelineAnalysis() {
         }
     };
 
+    const resetAnalysis = () => {
+        setLoading(false);
+        setResponse(null);
+        setAnalysisReady(false);
+        setFirstVideoFrameCount(0);
+        setSecondVideoFrameCount(0);
+        setDifferentFrameCountError(false);
+        setTotalFrameCount(1);
+    };
+
     return {
         loading,
         response,
@@ -61,6 +71,7 @@ export function usePipelineAnalysis() {
         secondVideoFrameCount,
         differentFrameCountError, setDifferentFrameCountError,
         totalFrameCount,
-        analyze,          
+        analyze,
+        resetAnalysis,
     };
 }

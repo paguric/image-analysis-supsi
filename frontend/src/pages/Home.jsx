@@ -5,14 +5,16 @@ import MaterialNumberField from '../components/ColorTextField';
 import { useState } from 'react'
 import { useSetInfoPopup } from '../hooks/useSetInfoPopup'
 import ConfirmationAlert from '../components/ConfirmationAlert';
+import { clearDataBase } from '../services/analysisApi';
 
 
 function Home() {
   useSetInfoPopup("home_title", "home_description")
 
 
-  const [startingWaveLenght, setStartingWaveLenght] = useState(0);
-  const [finalWaveLenght, setFinalWaveLenght] = useState(0);
+  const [startingWaveLenght, setStartingWaveLenght] = useState(null);
+  const [finalWaveLenght, setFinalWaveLenght] = useState(null);
+  const [waveError, setWaveError] = useState(false);
 
   const {
 
@@ -21,6 +23,7 @@ function Home() {
     videoPrima, setVideoPrima,
     videoDopo, setVideoDopo,
     analyze,
+    resetAnalysis,
     firstVideoFrameCount,
     secondVideoFrameCount,
     differentFrameCountError, setDifferentFrameCountError,
@@ -56,7 +59,10 @@ function Home() {
         firstVideoFrameCount={firstVideoFrameCount}
         secondVideoFrameCount={secondVideoFrameCount}
         totalFrameCount={totalFrameCount}
-        onAbort={() => setDifferentFrameCountError(false)}
+        onAbort={async () => {
+          await clearDataBase();
+          resetAnalysis();
+        }}
         onContinue={() => {
           setDifferentFrameCountError(false)
           navigateToNext(startingWaveLenght, finalWaveLenght, totalFrameCount)
@@ -70,23 +76,33 @@ function Home() {
         <MaterialNumberField
           label={"Starting Wavelength"}
           color={"info"}
-          onChange={setStartingWaveLenght}
+          onChange={(v) => { setStartingWaveLenght(v); setWaveError(false); }}
+          error={waveError && startingWaveLenght === null}
+          helperText={waveError && startingWaveLenght === null ? "Required" : ""}
         />
 
         <MaterialNumberField
           label={"Final Wavelength"}
           color={"info"}
-          onChange={setFinalWaveLenght}
+          onChange={(v) => { setFinalWaveLenght(v); setWaveError(false); }}
+          error={waveError && finalWaveLenght === null}
+          helperText={waveError && finalWaveLenght === null ? "Required" : ""}
         />
       </div>
 
       <div className="p-8 flex flex-col items-center gap-4">
         <Button
-          onClick={analyze}
-          disabled={loading}
-          variant="outlined" aria-label="Basic button group"
+          onClick={() => {
+            if (startingWaveLenght === null || finalWaveLenght === null) {
+              setWaveError(true);
+              return;
+            }
+            analyze();
+          }}
+          loading={loading}
+          variant="outlined"
         >
-          {loading ? "Analyzing..." : "Analyze"}
+          Analyze
         </Button>
       </div>
 
