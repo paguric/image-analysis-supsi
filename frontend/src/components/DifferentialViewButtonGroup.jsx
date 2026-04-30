@@ -2,11 +2,13 @@ import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
 
 
-function DifferentialViewButtonGroup({ showContours, 
-                                       isContoursLoading, 
-                                       onToggleContours, 
+function DifferentialViewButtonGroup({ showContours,
+                                       isContoursLoading,
+                                       onToggleContours,
                                        onFrameCsvExport,
-                                       onGlobalCsvExport 
+                                       isExportingFrame,
+                                       onGlobalCsvExport,
+                                       isExportingGlobal,
                                     }) {
     return (
         <ButtonGroup fullWidth>
@@ -20,14 +22,16 @@ function DifferentialViewButtonGroup({ showContours,
 
             <Button
                 onClick={onGlobalCsvExport}
+                disabled={isExportingGlobal}
             >
-                Export CSV (Global)
+                {isExportingGlobal ? 'Exporting...' : 'Export CSV (Global)'}
             </Button>
 
             <Button
                 onClick={onFrameCsvExport}
+                disabled={isExportingFrame}
             >
-                Export Frame CSV (Pixel by Pixel)
+                {isExportingFrame ? 'Exporting...' : 'Export Frame CSV (Pixel by Pixel)'}
             </Button>
 
         </ButtonGroup>

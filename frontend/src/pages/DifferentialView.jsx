@@ -7,7 +7,8 @@ import DarkModeToggle from '../components/DarkModeToggle';
 import InfoPopupWindow from '../components/InfoPopupWindow';
 
 import { useDifferentialView } from '../hooks/DifferentialViewSetup'
-import { useParams } from 'react-router-dom';
+import { useParams, } from 'react-router-dom';
+import { useState } from 'react';
 import { computeWaveLength } from '../hooks/ComputeActualWaveLen';
 import { clearDataBase } from '../services/analysisApi'
 import { useSetInfoPopup } from '../hooks/useSetInfoPopup'
@@ -17,6 +18,9 @@ function DifferentialView() {
     useSetInfoPopup("differential_view_title", "differential_description")
 
     const { startingWaveLenght, finalWaveLenght, totalFrameCount, actualFrame } = useParams();
+
+    const [isExportingFrame, setIsExportingFrame] = useState(false);
+    const [isExportingGlobal, setIsExportingGlobal] = useState(false);
 
     
     const {
@@ -40,8 +44,17 @@ function DifferentialView() {
                                                 );
 
 
-    const handleFrameCsvExport = () => handleFrameExport(currentFrame);
-    const handleGlobalCsvExport = () => handleGlobalExport(startingWaveLenght, finalWaveLenght);
+    const handleFrameCsvExport = async () => {
+        setIsExportingFrame(true);
+        await handleFrameExport(currentFrame);
+        setIsExportingFrame(false);
+    };
+
+    const handleGlobalCsvExport = async () => {
+        setIsExportingGlobal(true);
+        await handleGlobalExport(startingWaveLenght, finalWaveLenght);
+        setIsExportingGlobal(false);
+    };
 
 
     return (
@@ -99,9 +112,10 @@ function DifferentialView() {
                             showContours={showContours}
                             isContoursLoading={isContoursLoading}
                             onToggleContours={toggleContours}
-
                             onFrameCsvExport={handleFrameCsvExport}
+                            isExportingFrame={isExportingFrame}
                             onGlobalCsvExport={handleGlobalCsvExport}
+                            isExportingGlobal={isExportingGlobal}
                         />
                     </div>
 

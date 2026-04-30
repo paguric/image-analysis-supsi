@@ -37,7 +37,6 @@ def bootstrap():
     """
     app_dir = get_app_dir()
     app_dir.mkdir(exist_ok=True)
-    get_out_dir().mkdir(exist_ok=True)
 
     # Su Windows, nasconde la cartella (su Linux/Mac il punto iniziale basta)
     if _is_frozen() and sys.platform == "win32":
