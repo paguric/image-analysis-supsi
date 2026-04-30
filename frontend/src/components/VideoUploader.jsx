@@ -29,7 +29,7 @@ function VideoUploader({ onVideoSelected }) {
         onClick={handleDesktopClick}
         className="border-2 border-dashed rounded-lg p-5 text-center cursor-pointer transition-all duration-200 bg-white/5 border-[#666] text-[#aaa] hover:border-[#888] hover:bg-white/10"
       >
-        <p className="m-0 text-sm">Click to select the video to upload (.avi, .mp4, .mkv)</p>
+        <p className="m-0 text-sm">Click to upload a video</p>
       </div>
     )
   }
@@ -45,9 +45,9 @@ function VideoUploader({ onVideoSelected }) {
     >
       <input {...getInputProps()} />
       {isDragActive ? (
-        <p className="m-0 text-sm">Drop the video here...</p>
+        <p className="m-0 text-sm">Click to upload a video</p>
       ) : (
-        <p className="m-0 text-sm">Drag the video you want to analyze (.avi) here, or click</p>
+        <p className="m-0 text-sm">Click to upload a video</p>
       )}
     </div>
   )
