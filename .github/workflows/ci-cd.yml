@@ -57,7 +57,7 @@ jobs:
         # Il job fallirà se pytest fallisce, ma questo step caricherà comunque i log
         if: always() 
         # non metto la 7 perché ho visto che è stata rilasciata 3 settimane fa
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: backend-test-results
           path: |
@@ -66,7 +66,7 @@ jobs:
           retention-days: 7
 
       - name: Upload artifact codice backend
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           # nome dell'artifact generato per il backend
           name: backend-source
@@ -106,7 +106,7 @@ jobs:
           npm run build
 
       - name: Upload artifact build frontend
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           # nome dell'artifact generato
           name: frontend-build
@@ -157,7 +157,7 @@ jobs:
         run: uv run --project backend mkdocs build --strict
 
       - name: Upload PDF Documentation as artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: Image-Analysis-Documentation-PDF
           path: site/pdf/image-analysis_documentation.pdf
@@ -206,7 +206,7 @@ jobs:
           uv run pyinstaller --clean --log-level=DEBUG ../imageanalysis.spec
 
       - name: Upload Artifact EXE
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: Applicazione-Windows
           path: backend/dist/*.exe
