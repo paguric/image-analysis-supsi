@@ -190,7 +190,7 @@ jobs:
       # Scarica la build del frontend creata nel job precedente
       - name: Download Frontend Build
         # non metto la 8.0.1 perché ho visto che è stata rilasciata settimana scorsa
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: frontend-build
           path: frontend/dist
