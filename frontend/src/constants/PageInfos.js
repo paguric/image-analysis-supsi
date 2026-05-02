@@ -31,6 +31,7 @@ const TEXT = {
         <ul>
             <li>Show detected contours</li>
             <li>Export analyzed data as a CSV file</li>
+            <li>Export the current frame data as a CSV file (pixel by pixel)</li>
         </ul>
 
         <p>Below these controls, you can start a new analysis.</p>
@@ -42,7 +43,8 @@ const TEXT = {
     single_roi_view_description: `
         <p>In this page, you can modify the parameters for a specific ROI and re-run the analysis.</p>
 
-        <p>Click <strong>"Save"</strong> to return to the previous page with the updated ROI.</p>
+        <p>Click <strong>"Save"</strong> to apply the changes and return to the previous page with the updated ROI,
+        or <strong>"Abort"</strong> to discard them.</p>
 
         <p>In the <strong>top right</strong>, you can view:</p>
         <ul>
@@ -51,10 +53,8 @@ const TEXT = {
             <li>The differential ROI</li>
         </ul>
 
-    
-
         <p>In the <strong>bottom right</strong>, the intermediate pipeline steps
-        are displayed with your modified parameters applied.</p>
+        are displayed with your modified parameters applied — one grid for each video.</p>
     `
 };
 
