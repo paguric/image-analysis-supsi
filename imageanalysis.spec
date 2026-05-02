@@ -38,4 +38,5 @@ exe = EXE(
     onefile=True,
     windowed=True,
     console=False,
+    icon='assets/icon.ico'
 )
