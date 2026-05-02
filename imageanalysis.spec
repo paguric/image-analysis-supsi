@@ -34,7 +34,7 @@ exe = EXE(
     a.scripts,
     a.binaries,
     a.datas,
-    name='SUPSI Image Analysis',
+    name='Image Analysis',
     onefile=True,
     windowed=True,
     console=False,
