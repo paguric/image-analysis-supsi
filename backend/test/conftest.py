@@ -34,3 +34,13 @@ def min_freq():
 @pytest.fixture
 def max_freq():
     return 730
+
+
+@pytest.fixture
+def brightest_idx_prima():
+    return 165
+
+
+@pytest.fixture
+def brightest_idx_dopo():
+    return 161

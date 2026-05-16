@@ -25,6 +25,7 @@ class TestPipelineController:
 
         folders = [
             "",
+            "brightest",
             "diff",
             "roi",
             "roi/prima",
