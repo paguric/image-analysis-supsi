@@ -1,0 +1,59 @@
+@startuml
+skinparam defaultFontSize 13
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 6
+skinparam sequence {
+    ParticipantBorderColor #3A7BD5
+    ParticipantBackgroundColor #EBF3FF
+    ParticipantFontStyle bold
+    ArrowColor #333
+    LifeLineBorderColor #AAA
+    GroupBorderColor #3A7BD5
+    GroupFontColor #333
+    GroupBackgroundColor #F0F5FF
+}
+skinparam noteBorderColor #E8901A
+skinparam noteBackgroundColor #FFF4E0
+
+title Sequence — POST /pipeline/
+
+participant "Controller" as PC
+participant "PipelineService" as PS
+participant "RoiService" as RS
+database "Database" as DB
+
+[-> PC : POST /pipeline/\n{ video_prima, video_dopo }
+
+PC -> PC : Salva video su disco\nEstrai metadata + brightest_frame\nper PRIMA e DOPO → DB
+
+loop PRIMA · DOPO
+    PC -> PS : extract_rois(brightest_frame)
+    activate PS
+
+    group pipeline(frame)
+        PS -> PS : BGR → GRAY
+        PS -> PS : GaussianBlur → subtract  [HPF]
+        PS -> PS : CLAHE
+        PS -> PS : Canny
+        PS -> PS : morphologyEx CLOSE
+    end
+
+    group find_valid_contours(edges_closed)
+        PS -> PS : findContours()
+        PS -> PS : filtro area + circolarità
+    end
+
+    PS --> PC : list[Roi]
+    deactivate PS
+end
+
+PC -> RS : match_rois_by_center(roi_prima, roi_dopo)
+activate RS
+RS -> RS : matrice distanze euclidee\nlinear_sum_assignment()
+RS --> PC : ROI abbinate
+deactivate RS
+
+PC -> DB : INSERT Roi × N
+
+[<-- PC : 200 OK
+@enduml

@@ -1,0 +1,53 @@
+@startuml
+skinparam defaultFontSize 13
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 6
+skinparam sequence {
+    ParticipantBorderColor #3A7BD5
+    ParticipantBackgroundColor #EBF3FF
+    ParticipantFontStyle bold
+    ArrowColor #333
+    LifeLineBorderColor #AAA
+    BoxBorderColor #CCC
+}
+skinparam noteBorderColor #E8901A
+skinparam noteBackgroundColor #FFF4E0
+
+title Sequence — Export CSV Pixel-per-Pixel\n(GET /analysis/export-csv/diff/frame/{N}/pixels/)
+
+participant "Controller" as AC
+participant "RoiService" as RS
+database "Database" as DB
+participant "File System" as FS
+
+[-> AC : GET .../frame/{N}/pixels/
+
+AC -> AC : filedialog.asksaveasfilename()\n[finestra OS bloccante]
+
+AC -> RS : compute_aligned_roi_diff(frame=N)
+
+RS -> DB : SELECT Roi WHERE fase=PRIMA
+DB --> RS : list[Roi]
+RS -> DB : SELECT Roi WHERE fase=DOPO
+DB --> RS : list[Roi]
+
+RS -> RS : extract_frame(video_path, N)\n(PyAV: seek → decode)
+
+loop per ogni coppia (roi_prima_i, roi_dopo_i)
+    RS -> RS : Estrai patch · converti gray\nCentra su canvas comune
+    RS -> RS : Maschere dai contorni\ncommon_mask = AND(mask_l, mask_r)
+    note right of RS
+      Regione di pixel
+      comune ai due contorni
+    end note
+    RS -> RS : diff = patch_dopo − patch_prima\n(solo su common_mask, float32)\nScrivi nel frame di output
+end
+
+RS -> RS : clip(0,255) → uint8
+RS --> AC : diff_matrix (ndarray)
+
+AC -> FS : np.savetxt(path, diff_matrix,\n  delimiter=",", fmt="%d")
+FS --> AC : OK
+
+[<-- AC : { success: true, path: "..." }
+@enduml

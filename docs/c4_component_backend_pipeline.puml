@@ -1,0 +1,31 @@
+@startuml
+!pragma layout smetana
+!include <c4/C4_Component>
+
+LAYOUT_LEFT_RIGHT()
+
+title C4 — Component: FastAPI Backend (Pipeline)
+
+Container_Ext(spa, "React", "React / Vite")
+ContainerDb_Ext(db, "Database", "SQLite", "Persiste VideoMetadata e Roi", "Interfaccia grafica")
+ContainerDb_Ext(videos, "Video Files", "Filesystem", "File .avi prima e dopo")
+
+Container_Boundary(api, "FastAPI Backend") {
+    Component(pc, "PipelineController", "FastAPI Router", "Upload, estrazione, matching, persistenza")
+    Component(vms, "VideoMetadataService", "PyAV", "Calcolo brightest_frame\ne salvataggio metadati del video")
+    Component(ps, "PipelineService", "OpenCV", "Individuazione posizione e area ROI")
+    Component(rs, "RoiService", "scipy / OpenCV", "Allineamento e gestione ROI")
+    Component(repo, "RoiRepository", "SQLModel", "CRUD sulla tabella Roi")
+    Component(vmr, "VideoMetadataRepository", "SQLModel", "CRUD sulla tabella VideoMetadata")
+}
+
+Rel(spa, pc, "POST /pipeline/local", "HTTP")
+Rel(pc, vms, "add_video_metadata_from_path()\nget_video_metadata()")
+Rel(pc, ps, "extract_rois(brightest_frame)")
+Rel(pc, rs, "match_rois_by_center()\nadd_roi()")
+Rel(vms, vmr, "repo.add() / repo.get()")
+Rel(rs, repo, "repo.add() / repo.list()")
+Rel(vmr, db, "INSERT / SELECT VideoMetadata", "SQLModel")
+Rel(repo, db, "INSERT / SELECT Roi", "SQLModel")
+Rel(vms, videos, "Lettura frame video", "File I/O")
+@enduml

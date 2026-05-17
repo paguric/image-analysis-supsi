@@ -1,0 +1,30 @@
+@startuml
+!pragma layout smetana
+!include <c4/C4_Container>
+
+LAYOUT_TOP_DOWN()
+LAYOUT_WITH_LEGEND()
+
+title C4 — Container: Export CSV Pixel-per-Pixel
+
+Person(user, "Utente", "Esporta il differenziale\npixel-per-pixel di un frame")
+
+System_Ext(os, "Sistema Operativo", "Finestra nativa salvataggio file\n(tkinter filedialog)")
+
+System_Boundary(sys, "Image Analysis System") {
+    Container(gui, "React", "React / Vite", "Navigazione frame-by-frame\ne avvio export CSV")
+    Container(api, "FastAPI Backend", "Python / FastAPI", "Calcola differenziale pixel-per-pixel\ne serializza su CSV")
+    ContainerDb(db, "Database", "SQLite / SQLModel", "ROI\nMetadati video")
+    ContainerDb(videos, "Video Files", "Filesystem", "File .avi da cui decodificare\ni frame via PyAV")
+    ContainerDb(csv, "CSV Output", "Filesystem", "Matrice differenziale uint8\nsalvata su disco")
+}
+
+Rel(user, gui, "Click Export Frame CSV", "UI")
+Rel(gui, api, "GET /analysis/export-csv/\ndiff/frame/{N}/pixels/", "HTTP/REST")
+Rel(api, os, "filedialog.asksaveasfilename()\n[bloccante]", "tkinter")
+Rel(api, db, "SELECT Roi PRIMA + DOPO", "SQLModel ORM")
+Rel(api, videos, "Decode frame N per ogni\nROI patch (PyAV)", "File I/O")
+Rel(api, csv, "np.savetxt(path, diff_matrix)", "File I/O")
+Rel_Back(gui, api, "{ success: true, path }", "HTTP/REST")
+Rel(gui, user, "Alert percorso file salvato", "UI")
+@enduml

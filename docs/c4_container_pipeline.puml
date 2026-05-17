@@ -1,0 +1,24 @@
+@startuml
+!pragma layout smetana
+!include <c4/C4_Container>
+
+LAYOUT_TOP_DOWN()
+LAYOUT_WITH_LEGEND()
+
+title C4 — Container: Pipeline Feature
+
+Person(user, "Utente", "")
+
+System_Boundary(sys, "Image Analysis System") {
+    Container(gui, "React", "React / Vite / Electron", "Selezione video,\nnavigazione risultati")
+    Container(api, "FastAPI Backend", "Python / FastAPI", "Orchestrazione pipeline CV,\nmatching ROI, persistenza dati")
+    ContainerDb(db, "Database", "SQLite / SQLModel", "Persiste VideoMetadata\ne ROI con contorni")
+    ContainerDb(videos, "Video Files", "Filesystem", "File .avi prima e dopo")
+}
+
+Rel(user, gui, "Carica i due video da analizzare")
+Rel(gui, api, "POST /pipeline/", "HTTP/REST")
+Rel_Back(gui, api, "GET /get-number-of-frames", "HTTP/REST")
+Rel(api, videos, "Salva video; legge frame\nper estrazione brightest_frame")
+Rel(api, db, "INSERT VideoMetadata x2\nINSERT Roi x N", "SQLModel ORM")
+@enduml

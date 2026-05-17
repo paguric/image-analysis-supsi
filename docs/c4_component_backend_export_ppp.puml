@@ -1,0 +1,33 @@
+@startuml
+!pragma layout smetana
+!include <c4/C4_Component>
+
+LAYOUT_TOP_DOWN()
+LAYOUT_WITH_LEGEND()
+
+title C4 — Component: FastAPI Backend (Export CSV)
+
+Container_Ext(spa, "React SPA", "React / Vite", "Invia GET /export-csv/.../pixels/")
+ContainerDb_Ext(db, "Database", "SQLite", "Persiste Roi con contorni e path video")
+ContainerDb_Ext(videos, "Video Files", "Filesystem", "File .avi prima e dopo")
+ContainerDb_Ext(csv, "CSV Output", "Filesystem", "File .csv differenziale pixel-per-pixel")
+System_Ext(os, "Sistema Operativo", "File dialog nativo (tkinter)")
+
+Container_Boundary(api, "FastAPI Backend") {
+    Component(ac, "AnalysisController", "FastAPI Router /analysis/", "Gestisce la richiesta export:\napre OS dialog, salva CSV su disco")
+    Component(as_, "AnalysisService", "Python / NumPy", "compute_diff_csv_pixels():\ndelega il calcolo differenziale a RoiService")
+    Component(rs, "RoiService", "OpenCV / NumPy", "compute_aligned_roi_diff():\npatch → gray → canvas → maschera\n→ diff float32 → clip uint8")
+    Component(repo, "RoiRepository", "SQLModel", "Legge le ROI di PRIMA e DOPO dal DB")
+    Component(vms, "VideoMetadataService", "PyAV", "extract_frame():\nseek + decode del frame N dal video")
+}
+
+Rel(spa, ac, "GET /analysis/export-csv/\ndiff/frame/{N}/pixels/", "HTTP")
+Rel(ac, os, "filedialog.asksaveasfilename()", "tkinter")
+Rel(ac, as_, "compute_diff_csv_pixels(frame=N)", "Funzione")
+Rel(as_, rs, "compute_aligned_roi_diff(frame=N)", "Funzione")
+Rel(rs, repo, "repo.list(PRIMA)\nrepo.list(DOPO)", "Funzione")
+Rel(rs, vms, "extract_frame(video_path, N)", "Funzione")
+Rel(repo, db, "SELECT Roi WHERE fase", "SQLModel")
+Rel(vms, videos, "av.open() → seek → decode", "File I/O")
+Rel(ac, csv, "np.savetxt(path, diff_matrix)", "File I/O")
+@enduml

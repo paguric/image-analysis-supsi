@@ -1,0 +1,79 @@
+@startuml
+!pragma layout smetana
+skinparam defaultFontSize 13
+skinparam roundcorner 8
+skinparam state {
+    BackgroundColor #EBF3FF
+    BorderColor #3A7BD5
+    FontStyle bold
+    ArrowColor #333
+    StartColor #2C3E50
+    EndColor #2C3E50
+}
+skinparam noteBorderColor #E8901A
+skinparam noteBackgroundColor #FFF4E0
+
+title State Machine — Image Analysis Application
+
+[*] --> Idle
+
+state Idle {
+    [*] --> AwaitingVideos
+    AwaitingVideos : Nessun dato · DB vuoto
+}
+
+Idle --> VideoSelezionati : entrambi i video\ncaricati dal filesystem
+
+state VideoSelezionati {
+    [*] --> Pronto
+    Pronto : video_prima ✓  video_dopo ✓
+}
+
+VideoSelezionati --> Analisi : click "Analyze"
+
+state Analisi {
+    [*] --> EstrazioneMetadati
+    EstrazioneMetadati : brightest_frame + video_info\nper PRIMA e DOPO
+    EstrazioneMetadati --> EstrazioneROI : metadata salvati nel DB
+    EstrazioneROI : CV pipeline sul brightest_frame\n(HPF·CLAHE·Canny·Closing·findContours)
+    EstrazioneROI --> MatchingROI : ROI estratte per PRIMA e DOPO
+    MatchingROI : Algoritmo ungherese\nsu matrice distanze centri
+    MatchingROI --> PersistenzaROI : ROI abbinate con indici coerenti
+    PersistenzaROI : INSERT Roi × N nel DB
+    PersistenzaROI --> [*]
+}
+
+Analisi --> Idle : errore ← DELETE /analysis/reset/
+Analisi --> VistaDifferenziale : analisi completata\n+ frame count recuperato
+
+state VistaDifferenziale {
+    [*] --> DiffFrame
+    DiffFrame : Frame differenziale calcolato\nslider per navigazione frame
+    DiffFrame --> DiffFrameContorni : toggle contorni ON\nGET /pipeline/diff/{f}/contours/
+    DiffFrameContorni --> DiffFrame : toggle contorni OFF
+    DiffFrame --> EsportazioneCSV : click "Export Frame CSV"\no "Export Global CSV"
+    EsportazioneCSV : Finestra OS per salvataggio\nnp.savetxt su disco
+    EsportazioneCSV --> DiffFrame : export completato\no annullato
+}
+
+VistaDifferenziale --> SingleRoiView : click su ROI i
+note on link
+  GET /roi/prima/ · /roi/dopo/ · /roi/diff/
+  (3 immagini in parallelo)
+end note
+
+state SingleRoiView {
+    [*] --> VisualizzazionePatch
+    VisualizzazionePatch : Patch PRIMA · DOPO · DIFF\nper la ROI selezionata
+    VisualizzazionePatch --> RicalcoloPipeline : modifica parametri\npipeline (slider)
+    RicalcoloPipeline : POST /pipeline/roi/{fase}/{idx}/\nnuovo contorno calcolato
+    RicalcoloPipeline --> VisualizzazionePatch : overlay aggiornato
+    VisualizzazionePatch --> SalvataggioROI : click "Save ROI"
+    SalvataggioROI : POST /roi/save/\nsovrascrive contorni nel DB
+    SalvataggioROI --> VisualizzazionePatch : ROI salvata
+}
+
+SingleRoiView --> VistaDifferenziale : torna indietro
+
+VistaDifferenziale --> Idle : "Take another Analysis"\nDELETE /analysis/reset/
+@enduml

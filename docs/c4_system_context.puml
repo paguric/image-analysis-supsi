@@ -1,0 +1,19 @@
+@startuml
+!pragma layout smetana
+!include <c4/C4_Context>
+
+LAYOUT_TOP_DOWN()
+
+title C4 — System Context
+
+Person(user, "Utente")
+
+System(sys, "Image Analysis System", "Estrae e confronta le ROI,\nEsporta i risultati in CSV")
+
+System_Ext(fs, "Filesystem locale", "Archivia i file video\ne i file CSV esportati")
+System_Ext(os, "Sistema Operativo", "Fornisce la finestra nativa\ndi salvataggio file (tkinter)")
+
+Rel(user, sys, "Carica video, esporta CSV")
+Rel(sys, fs, "Legge video; scrive file CSV", $offsetX="-60")
+Rel(sys, os, "Apre dialog salvataggio file")
+@enduml
