@@ -24,7 +24,7 @@ jobs:
     # la @v4 serve semplicemente ad identificare la versione.
     # La struttura generale è [Autore]/[Nome-Repository]@[Versione]
       - name: Checkout codice
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       # Setup di uv per gestione delle dipendenze
       - name: Setup uv
@@ -86,7 +86,7 @@ jobs:
 
     steps:
       - name: Checkout codice
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -121,7 +121,7 @@ jobs:
 
     steps:
       - name: Checkout codice
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup uv
         uses: astral-sh/setup-uv@v7
@@ -174,7 +174,7 @@ jobs:
 
     steps:
       - name: Checkout codice
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup uv
         uses: astral-sh/setup-uv@v7
